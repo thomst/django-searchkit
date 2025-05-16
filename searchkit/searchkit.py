@@ -184,32 +184,6 @@ FIELD_PLAN = OrderedDict((
         }
     ),
 ))
-class SearchkitFormset(list):
-    """
-    Holding all searchkit forms and handle their validation.
-    """
-    def __init__(self, model, data):
-        self.forms = list()
-        indices = data['index']
-        for index in indices:
-            data['index'] = index
-            self.forms.append(SearchkitForm(model, data))
-
-    def __iter__(self):
-        """
-        Yield the forms in the order they should be rendered.
-        """
-        return iter(self.forms)
-
-    def is_valid(self):
-        return all(f.is_valid() for f in self.forms)
-
-    def get_filter_rules(self):
-        """
-        Returns filter rules of all forms as list. Works after is_valid was
-        called.
-        """
-        return [f.get_filter_rule() for f in self.forms]
 
 
 class SearchkitForm(forms.Form):
@@ -324,3 +298,41 @@ class SearchkitForm(forms.Form):
             operator = self.cleaned_data['operator']
             value = self.cleaned_data['value']
             return f'{model_field}__{operator}', value
+
+
+class BaseSearchkitFormset(forms.BaseFormSet):
+    """
+    Formset holding all searchkit forms.
+    """
+    @classmethod
+    def get_default_prefix(cls):
+        return DEFAULT_PREFIX
+
+    @property
+    def is_complete(self):
+        """
+        True if all forms are completed.
+        False otherwise. Works after is_valid was called.
+        """
+        return len(self.cleaned_data) == 3
+
+    def extend(self):
+        """
+        Add additional unbound form field for operator or value based on the
+        cleaned data for each form. Works after is_valid was called.
+        """
+        for form in self.forms:
+            form.extend()
+
+    def get_filter_rules(self):
+        """
+        Returns filter rules of all forms as list. Works after is_valid was
+        called.
+        """
+        return [f.get_filter_rule() for f in self.forms]
+
+
+SearchkitFormSet = forms.formset_factory(
+        form=SearchkitForm,
+        formset=BaseSearchkitFormset,
+    )
