@@ -8,11 +8,7 @@
 
 ## Description
 
-Tired of pseudo-free money split apps with tons of advertisements? Then launch
-your own little money split project with *django-searchkit* and share expenses with
-friends and family using a super simple and easy to use django application based
-on a well configured django admin backend.
-
+TODO
 
 ## Setup
 
@@ -31,22 +27,8 @@ INSTALLED_APPS = [
 
 ## Getting started
 
-Feel free to use the example project. (Actually it is all you need for a fully
-functional money split application.)
-
-Start it with:
-```
-python example/manage.py loaddata example/fixtures/testdata.json
-python example/manage.py changepassword admin # Choose your password
-python example/manage.py runserver
-```
-Then check it out by visiting `localhost:8000`.
-
+TODO
 
 ## Usage
 
-Each user creates expenses when needed and choose the users to share the expense with.
-
-If you want to checkout the balance, just click the add calculation button and you will be shown a handy overview about who owes what to whom.
-
-Save the calculation if your done dealing with the money. Open expenses will be tied to this calculation then and won't be regarded in further calculations.
+TODO
