@@ -76,6 +76,9 @@ class DateTimeRangeField(BaseRangeField):
         )
 
 
+DEFAULT_PREFIX = 'searchkit'
+
+
 OPERATOR_DESCRIPTION = {
     'exact': _('is exact'),
     'contains': _('contains'),
@@ -202,7 +205,8 @@ class SearchkitForm(forms.Form):
     See the FIELD_PLAN variable for the logic of building the form.
     """
     def __init__(self, model, index, *args, **kwargs):
-        super().__init__(prefix=f'skform{index}', *args, **kwargs)
+        prefix = kwargs.pop('prefix', None) or f'{DEFAULT_PREFIX}-{index}'
+        super().__init__(prefix=prefix, *args, **kwargs)
         self.model = model
         self.model_field = None
         self.operator = None
