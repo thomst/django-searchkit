@@ -1,7 +1,7 @@
 from django import forms
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import FieldDoesNotExist
+from django.utils.functional import cached_property
 
 
 class RangeWidget(forms.MultiWidget):
@@ -201,47 +201,40 @@ class SearchkitForm(forms.Form):
 
     See the FIELD_PLAN variable for the logic of building the form.
     """
-    index = forms.CharField(widget=forms.HiddenInput)
-
     def __init__(self, model, index, *args, **kwargs):
-        super().__init__(initial=dict(index=index), *args, **kwargs)
+        super().__init__(prefix=f'skform{index}', *args, **kwargs)
         self.model = model
-        self.index = index
         self.model_field = None
         self.operator = None
         self.field_plan = None
         self._build_form()
 
-    @property
-    def _field_name_for_model_field(self):
-        return f'{self.index}_searchkit_model_field'
-
-    @property
-    def _field_name_for_operator(self):
-        return f'{self.index}_searchkit_operator'
-
-    @property
-    def _field_name_for_value(self):
-        return f'{self.index}_searchkit_value'
+    @cached_property
+    def unprefixed_data(self):
+        data = dict()
+        for key, value in self.data.items():
+            if key.startswith(self.prefix):
+                data[key[len(self.prefix) + 1:]] = value
+        return data
 
     def _build_form(self):
         """
         Add additional form fields for operator and value based on the raw data.
         """
         self._add_model_field_field()
-        if self._preload_model_field_data() and self._field_name_for_operator in self.data:
+        if self._preload_model_field_data() and 'operator' in self.unprefixed_data:
             self._add_operator_field()
-            if self._preload_operator_data() and self._field_name_for_value in self.data:  # FIXME: RangeFields using suffixed field-names!
+            if self._preload_operator_data() and any(v in self.unprefixed_data for v in ['value', 'value_0', 'value_1']):
                 self._add_value_field()
 
     def _preload_clean_data(self, field_name):
         try:
-            return self.fields[field_name].clean(self.data[field_name])
+            return self.fields[field_name].clean(self.unprefixed_data[field_name])
         except (KeyError, forms.ValidationError):
             return None
 
     def _preload_model_field_data(self):
-        if model_field_name := self._preload_clean_data(self._field_name_for_model_field):
+        if model_field_name := self._preload_clean_data('field'):
             self.model_field = self.model._meta.get_field(model_field_name)
             self.field_plan = next(iter([p for t, p in FIELD_PLAN.items() if t(self.model_field)]))
             return True
@@ -249,7 +242,7 @@ class SearchkitForm(forms.Form):
             return False
 
     def _preload_operator_data(self):
-        if operator := self._preload_clean_data(self._field_name_for_operator):
+        if operator := self._preload_clean_data('operator'):
             self.operator = operator
             return True
         else:
@@ -262,12 +255,12 @@ class SearchkitForm(forms.Form):
                 choices.append((model_field.name, model_field.verbose_name))
 
         field = forms.ChoiceField(label=_('Model field'), choices=choices)
-        self.fields[self._field_name_for_model_field] = field
+        self.fields['field'] = field
 
     def _add_operator_field(self):
         choices = [(o, OPERATOR_DESCRIPTION[o]) for o in self.field_plan.keys()]
         field = forms.ChoiceField(label=_('Operator'), choices=choices)
-        self.fields[self._field_name_for_operator] = field
+        self.fields['operator'] = field
 
     def _add_value_field(self):
         field_class = self.field_plan[self.operator][0]
@@ -276,7 +269,7 @@ class SearchkitForm(forms.Form):
             field = field_class(choices=self.model_field.choices)
         else:
             field = field_class()
-        self.fields[self._field_name_for_value] = field
+        self.fields['value'] = field
 
     @property
     def is_complete(self):
@@ -284,16 +277,16 @@ class SearchkitForm(forms.Form):
         True if the form has valid values for model_field, operator and value.
         False otherwise. Works after is_valid was called.
         """
-        return len(self.cleaned_data) == 4
+        return len(self.cleaned_data) == 3
 
     def extend(self):
         """
         Add additional unbound form field for operator or value based on the
         cleaned data. Works after is_valid was called.
         """
-        if len(self.cleaned_data) < 3:
+        if len(self.cleaned_data) < 2:
             self._add_operator_field()
-        elif len(self.cleaned_data) < 4:
+        elif len(self.cleaned_data) < 3:
             self._add_value_field()
 
     def get_filter_rule(self):
@@ -302,7 +295,7 @@ class SearchkitForm(forms.Form):
         Works after is_valid was called.
         """
         if self.is_complete:
-            model_field = self.cleaned_data[self._field_name_for_model_field]
-            operator = self.cleaned_data[self._field_name_for_operator]
-            value = self.cleaned_data[self._field_name_for_value]
+            model_field = self.cleaned_data['field']
+            operator = self.cleaned_data['operator']
+            value = self.cleaned_data['value']
             return f'{model_field}__{operator}', value

@@ -38,15 +38,14 @@ class SearchkitFormTestCase(TestCase):
             self.assertFalse(form.is_valid())
 
             # Two fields should be present: index and model_field
-            self.assertIn('index', form.fields)
-            self.assertIn(form._field_name_for_model_field, form.fields)
-            self.assertEqual(len(form.fields), 2)
+            self.assertIn('field', form.fields)
+            self.assertEqual(len(form.fields), 1)
 
-            # Model_field name should be contain the index.
-            self.assertIn(str(index), form._field_name_for_model_field)
+            # Field name should be prefixed in hatml.
+            self.assertIn(f'{form.prefix}-field', form.as_div())
 
             # Check choices of the model_field.
-            form_model_field = form.fields[form._field_name_for_model_field]
+            form_model_field = form.fields['field']
             self.assertTrue(form_model_field.choices)
             self.assertEqual(len(form_model_field.choices), len(ModelA._meta.fields))
             for model_field in ModelA._meta.fields:
@@ -54,10 +53,9 @@ class SearchkitFormTestCase(TestCase):
 
     def test_searchkitform_with_invalid_model_field_data(self):
         index = 0
-        _form = SearchkitForm(ModelA, index)
+        prefix = SearchkitForm(ModelA, index).prefix
         data = {
-            'index': index,
-            _form._field_name_for_model_field: 'foobar',
+            f'{prefix}-field': 'foobar',
         }
         form = SearchkitForm(ModelA, index, data)
 
@@ -65,20 +63,18 @@ class SearchkitFormTestCase(TestCase):
         self.assertFalse(form.is_valid())
 
         # Two fields should be present: index and model_field
-        self.assertIn('index', form.fields)
-        self.assertIn(form._field_name_for_model_field, form.fields)
-        self.assertEqual(len(form.fields), 2)
+        self.assertIn('field', form.fields)
+        self.assertEqual(len(form.fields), 1)
 
         # Check error message in html.
         errors = ['Select a valid choice. foobar is not one of the available choices.']
-        self.assertFormError(form, form._field_name_for_model_field, errors)
+        self.assertFormError(form, 'field', errors)
 
     def test_searchkitform_with_valid_model_field_data(self):
         index = 0
-        _form = SearchkitForm(ModelA, index)
+        prefix = SearchkitForm(ModelA, index).prefix
         data = {
-            'index': index,
-            _form._field_name_for_model_field: 'integer',
+            f'{prefix}-field': 'integer',
         }
         form = SearchkitForm(ModelA, index, data)
 
@@ -88,26 +84,24 @@ class SearchkitFormTestCase(TestCase):
         self.assertFalse(form.is_complete)
 
         # Two fields should be present: index and model_field
-        self.assertIn('index', form.fields)
-        self.assertIn(form._field_name_for_model_field, form.fields)
-        self.assertEqual(len(form.fields), 2)
+        self.assertIn('field', form.fields)
+        self.assertEqual(len(form.fields), 1)
 
         # Extend the form with operator field.
         form.extend()
-        self.assertIn(form._field_name_for_operator, form.fields)
-        self.assertEqual(len(form.fields), 3)
+        self.assertIn('operator', form.fields)
+        self.assertEqual(len(form.fields), 2)
 
         # Check html.
         html = form.as_div()
-        self.assertIn(form._field_name_for_operator, html)
+        self.assertIn(f'{form.prefix}-operator', html)
 
     def test_searchkitform_with_invalid_operator_data(self):
         index = 0
-        _form = SearchkitForm(ModelA, index)
+        prefix = SearchkitForm(ModelA, index).prefix
         data = {
-            'index': index,
-            _form._field_name_for_model_field: 'integer',
-            _form._field_name_for_operator: 'foobar',
+            f'{prefix}-field': 'integer',
+            f'{prefix}-operator': 'foobar',
         }
         form = SearchkitForm(ModelA, index, data)
 
@@ -115,19 +109,18 @@ class SearchkitFormTestCase(TestCase):
         self.assertFalse(form.is_valid())
 
         # Three fields should be present: index, model_field and operator
-        self.assertEqual(len(form.fields), 3)
+        self.assertEqual(len(form.fields), 2)
 
         # Check error message in html.
         errors = ['Select a valid choice. foobar is not one of the available choices.']
-        self.assertFormError(form, form._field_name_for_operator, errors)
+        self.assertFormError(form, 'operator', errors)
 
     def test_searchkitform_with_valid_operator_data(self):
         index = 0
-        _form = SearchkitForm(ModelA, index)
+        prefix = SearchkitForm(ModelA, index).prefix
         data = {
-            'index': index,
-            _form._field_name_for_model_field: 'integer',
-            _form._field_name_for_operator: 'exact',
+            f'{prefix}-field': 'integer',
+            f'{prefix}-operator': 'exact',
         }
         form = SearchkitForm(ModelA, index, data)
 
@@ -137,25 +130,24 @@ class SearchkitFormTestCase(TestCase):
         self.assertFalse(form.is_complete)
 
         # Two fields should be present: index and model_field
-        self.assertEqual(len(form.fields), 3)
+        self.assertEqual(len(form.fields), 2)
 
         # Extend the form with value field.
         form.extend()
-        self.assertIn(form._field_name_for_value, form.fields)
-        self.assertEqual(len(form.fields), 4)
+        self.assertIn('value', form.fields)
+        self.assertEqual(len(form.fields), 3)
 
         # Check html.
         html = form.as_div()
-        self.assertIn(form._field_name_for_value, html)
+        self.assertIn(f'{form.prefix}-value', html)
 
     def test_searchkitform_with_valid_data(self):
         index = 0
-        _form = SearchkitForm(ModelA, index)
+        prefix = SearchkitForm(ModelA, index).prefix
         data = {
-            'index': index,
-            _form._field_name_for_model_field: 'integer',
-            _form._field_name_for_operator: 'exact',
-            _form._field_name_for_value: '123',
+            f'{prefix}-field': 'integer',
+            f'{prefix}-operator': 'exact',
+            f'{prefix}-value': '123',
         }
         form = SearchkitForm(ModelA, index, data)
 
@@ -165,11 +157,11 @@ class SearchkitFormTestCase(TestCase):
         self.assertTrue(form.is_complete)
 
         # All fields should be present.
-        self.assertEqual(len(form.fields), 4)
+        self.assertEqual(len(form.fields), 3)
 
         # Extend should do nothing now.
         form.extend()
-        self.assertEqual(len(form.fields), 4)
+        self.assertEqual(len(form.fields), 3)
 
         # Get filter rule and check if a lookup does not raises any error.
         rule = form.get_filter_rule()
@@ -177,12 +169,11 @@ class SearchkitFormTestCase(TestCase):
 
     def test_searchkitform_with_invalid_data(self):
         index = 0
-        _form = SearchkitForm(ModelA, index)
+        prefix = SearchkitForm(ModelA, index).prefix
         data = {
-            'index': index,
-            _form._field_name_for_model_field: 'integer',
-            _form._field_name_for_operator: 'exact',
-            _form._field_name_for_value: 'foobar',
+            f'{prefix}-field': 'integer',
+            f'{prefix}-operator': 'exact',
+            f'{prefix}-value': 'foobar',
         }
         form = SearchkitForm(ModelA, index, data)
 
@@ -190,11 +181,11 @@ class SearchkitFormTestCase(TestCase):
         self.assertFalse(form.is_valid())
 
         # All fields should be present.
-        self.assertEqual(len(form.fields), 4)
+        self.assertEqual(len(form.fields), 3)
 
         # Check error message in html.
         errors = ['Enter a whole number.']
-        self.assertFormError(form, form._field_name_for_value, errors)
+        self.assertFormError(form, 'value', errors)
 
 
 
