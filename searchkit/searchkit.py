@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from django import forms
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -104,16 +105,19 @@ SUPPORTED_FIELDS = [
 ]
 
 
-FIELD_PLAN = {
-    lambda f: isinstance(f, models.CharField) and not f.choices:
+FIELD_PLAN = OrderedDict((
+    (
+        lambda f: isinstance(f, models.CharField) and not f.choices,
         {
             'exact': (forms.CharField,),
             'contains': (forms.CharField,),
             'startswith': (forms.CharField,),
             'endswith': (forms.CharField,),
             'regex': (forms.CharField,),
-        },
-    lambda f: isinstance(f, models.CharField) and f.choices:
+        }
+    ),
+    (
+        lambda f: isinstance(f, models.CharField) and f.choices,
         {
             'exact': (forms.ChoiceField,),
             'contains': (forms.CharField,),
@@ -121,18 +125,10 @@ FIELD_PLAN = {
             'endswith': (forms.CharField,),
             'regex': (forms.CharField,),
             'in': (forms.MultipleChoiceField,),
-        },
-    lambda f: isinstance(f, models.IntegerField):
-        {
-            'exact': (forms.IntegerField,),
-            'gt': (forms.IntegerField,),
-            'gte': (forms.IntegerField,),
-            'lt': (forms.IntegerField,),
-            'lte': (forms.IntegerField,),
-            'range': (forms.CharField,),
-            'in': (forms.CharField,),
-        },
-    lambda f: any(isinstance(f, c) for c in (models.FloatField, models.DecimalField)):
+        }
+    ),
+    (
+        lambda f: isinstance(f, models.IntegerField),
         {
             'exact': (forms.IntegerField,),
             'gt': (forms.IntegerField,),
@@ -141,17 +137,32 @@ FIELD_PLAN = {
             'lte': (forms.IntegerField,),
             'range': (IntegerRangeField,),
             'in': (forms.CharField,),
-        },
-    lambda f: isinstance(f, models.DateField):
+        }
+    ),
+    (
+        lambda f: isinstance(f, models.FloatField),
         {
-            'exact': (forms.DateField,),
-            'gt': (forms.DateField,),
-            'gte': (forms.DateField,),
-            'lt': (forms.DateField,),
-            'lte': (forms.DateField,),
-            'range': (DateRangeField,),
-        },
-    lambda f: isinstance(f, models.DateTimeField):
+            'exact': (forms.FloatField,),
+            'gt': (forms.FloatField,),
+            'gte': (forms.FloatField,),
+            'lt': (forms.FloatField,),
+            'lte': (forms.FloatField,),
+            'range': (IntegerRangeField,),
+        }
+    ),
+    (
+        lambda f: isinstance(f, models.DecimalField),
+        {
+            'exact': (forms.DecimalField,),
+            'gt': (forms.DecimalField,),
+            'gte': (forms.DecimalField,),
+            'lt': (forms.DecimalField,),
+            'lte': (forms.DecimalField,),
+            'range': (IntegerRangeField,),
+        }
+    ),
+    (
+        lambda f: isinstance(f, models.DateTimeField),
         {
             'exact': (forms.DateTimeField,),
             'gt': (forms.DateTimeField,),
@@ -159,10 +170,20 @@ FIELD_PLAN = {
             'lt': (forms.DateTimeField,),
             'lte': (forms.DateTimeField,),
             'range': (DateTimeRangeField,),
-        },
-}
-
-
+        }
+    ),
+    (
+        lambda f: isinstance(f, models.DateField),
+        {
+            'exact': (forms.DateField,),
+            'gt': (forms.DateField,),
+            'gte': (forms.DateField,),
+            'lt': (forms.DateField,),
+            'lte': (forms.DateField,),
+            'range': (DateRangeField,),
+        }
+    ),
+))
 class SearchkitFormset(list):
     """
     Holding all searchkit forms and handle their validation.
