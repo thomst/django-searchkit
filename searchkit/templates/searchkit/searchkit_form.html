@@ -1,0 +1,15 @@
+{% block searchkit_form %}
+<form id="searchkit_form" action="{{ searchkit_form_action }}" method="post">
+    {% block extra_form_fields %}{% endblock %}
+    {% csrf_token %}
+    <div class="searchkit_filter_rule">
+        {{ searchkit_form.as_div }}
+    </div>
+    <div id="searchkit_add_filter_rule">
+        <a style="padding:10px 15px" href="{{ searchkit_add_filter_rule_url }}" class="button">{% trans "Add filter rule" %}</a>
+    </div>
+    <div id="searchkit_submit">
+        <input type="submit" name="searchkit_form" value="{% trans "Submit" %}" />
+    </div>
+</form>
+{% endblock %}
