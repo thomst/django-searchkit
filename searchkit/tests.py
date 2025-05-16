@@ -1,29 +1,30 @@
 from django.test import TestCase
 from example.models import ModelA
-from .searchkit import SearchkitFormset
 from .searchkit import SearchkitForm
+from .searchkit import SearchkitFormSet
 
 
 TEST_DATA = {
-    'index': [0, 1, 2, 3, 4, 5],
-    '0_model_field': 'chars',
-    '0_operator': 'exact',
-    '0_value0': 'anytext',
-    '1_model_field': 'integer',
-    '1_operator': 'exact',
-    '1_value0': '123',
-    '2_model_field': 'float',
-    '2_operator': 'exact',
-    '2_value0': '0.3',
-    '3_model_field': 'decimal',
-    '3_operator': 'exact',
-    '3_value0': '1,23',
-    '4_model_field': 'date',
-    '4_operator': 'exact',
-    '4_value0': '2025-05-14',
-    '5_model_field': 'datetime',
-    '5_operator': 'exact',
-    '5_value0': '2025-05-14 08:45',
+    'searchkit-TOTAL_FORMS': '6',
+    'searchkit-INITIAL_FORMS': '1',
+    'searchkit-0-field': 'chars',
+    'searchkit-0-operator': 'exact',
+    'searchkit-0-value': 'anytext',
+    'searchkit-1-field': 'integer',
+    'searchkit-1-operator': 'exact',
+    'searchkit-1-value': '123',
+    'searchkit-2-field': 'float',
+    'searchkit-2-operator': 'exact',
+    'searchkit-2-value': '0.3',
+    'searchkit-3-field': 'decimal',
+    'searchkit-3-operator': 'exact',
+    'searchkit-3-value': '1.23',
+    'searchkit-4-field': 'date',
+    'searchkit-4-operator': 'exact',
+    'searchkit-4-value': '2025-05-14',
+    'searchkit-5-field': 'datetime',
+    'searchkit-5-operator': 'exact',
+    'searchkit-5-value': '2025-05-14 08:45',
 }
 
 
