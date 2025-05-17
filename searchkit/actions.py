@@ -33,6 +33,14 @@ def searchkit_action(modeladmin, request, queryset):
             change_list_url = reverse(f'admin:{app_label}_{model_name}_changelist')
             return HttpResponseRedirect(f'{change_list_url}?search={search.id}')
 
+        else:
+            # If the form is not valid, render the form again with errors.
+            return render(request, 'admin/searchkit/searchkit_action.html', {
+                'objects': queryset.order_by('pk'),
+                'search_form': search_form,
+                'formset': formset,
+            })
+
     else:
         # Display the form
         search_form = SearchkitSearchForm()
