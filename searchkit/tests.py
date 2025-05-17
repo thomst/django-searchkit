@@ -192,3 +192,15 @@ class SearchkitFormSetTestCase(TestCase):
         formset = SearchkitFormSet(ModelA, TEST_DATA)
         self.assertTrue(formset.is_bound)
         self.assertTrue(formset.is_valid())
+        self.assertTrue(formset.is_complete)
+        # Just check if the filter rules are applicable.
+        self.assertFalse(ModelA.objects.filter(**formset.get_filter_rules()))
+
+    def test_searchkit_formset_with_incomplete_data(self):
+        data = TEST_DATA.copy()
+        del data['searchkit-0-value']
+        formset = SearchkitFormSet(ModelA, data)
+        self.assertTrue(formset.is_bound)
+        self.assertTrue(all(f.is_valid() for f in formset.forms))
+        self.assertFalse(formset.is_valid())
+        self.assertFalse(formset.is_complete)
