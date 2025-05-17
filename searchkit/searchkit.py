@@ -29,7 +29,7 @@ class IntegerRangeField(BaseRangeField):
             forms.IntegerField(label=_('From')),
             forms.IntegerField(label=_('To')),
         )
-        widget = RangeWidget(widgets=[forms.NumberInput, forms.NumberInput]),
+        widget = RangeWidget(widgets=[forms.NumberInput, forms.NumberInput])
         super().__init__(
             fields=fields,
             widget=widget,
