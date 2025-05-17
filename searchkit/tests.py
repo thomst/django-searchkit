@@ -186,13 +186,9 @@ class SearchkitFormTestCase(TestCase):
 
 
 
-# class SearchkitFormSetTestCase(TestCase):
+class SearchkitFormSetTestCase(TestCase):
 
-#     def test_searchkit_formset_with_valid_data(self):
-#         formset = SearchkitFormset(TEST_DATA)
-#         self.assertEqual(len(formset.forms), 6)
-#         html = str(formset)
-#         self.assertInHTML('index', html, 6)
-#         for key, value in TEST_DATA.items():
-#             self.assertInHTML(key, html)
-#             self.assertInHTML(value, html)
+    def test_searchkit_formset_with_valid_data(self):
+        formset = SearchkitFormSet(ModelA, TEST_DATA)
+        self.assertTrue(formset.is_bound)
+        self.assertTrue(formset.is_valid())
