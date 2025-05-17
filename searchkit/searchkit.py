@@ -199,9 +199,8 @@ class SearchkitForm(forms.Form):
 
     See the FIELD_PLAN variable for the logic of building the form.
     """
-    def __init__(self, model, index, *args, **kwargs):
-        prefix = kwargs.pop('prefix', None) or f'{DEFAULT_PREFIX}-{index}'
-        super().__init__(prefix=prefix, *args, **kwargs)
+    def __init__(self, model, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.model = model
         self.model_field = None
         self.operator = None

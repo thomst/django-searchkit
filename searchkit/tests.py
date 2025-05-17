@@ -32,7 +32,8 @@ class SearchkitFormTestCase(TestCase):
 
     def test_blank_searchkitform(self):
         for index in range(3):
-            form = SearchkitForm(ModelA, index)
+            prefix = SearchkitFormSet(ModelA).add_prefix(index)
+            form = SearchkitForm(ModelA, prefix=prefix)
 
             # Form should not be bound or valid.
             self.assertFalse(form.is_bound)
@@ -53,12 +54,11 @@ class SearchkitFormTestCase(TestCase):
                 self.assertIn(model_field.name, [c[0] for c in form_model_field.choices])
 
     def test_searchkitform_with_invalid_model_field_data(self):
-        index = 0
-        prefix = SearchkitForm(ModelA, index).prefix
+        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
             f'{prefix}-field': 'foobar',
         }
-        form = SearchkitForm(ModelA, index, data)
+        form = SearchkitForm(ModelA, data, prefix=prefix)
 
         # Form should be invalid.
         self.assertFalse(form.is_valid())
@@ -72,12 +72,11 @@ class SearchkitFormTestCase(TestCase):
         self.assertFormError(form, 'field', errors)
 
     def test_searchkitform_with_valid_model_field_data(self):
-        index = 0
-        prefix = SearchkitForm(ModelA, index).prefix
+        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
             f'{prefix}-field': 'integer',
         }
-        form = SearchkitForm(ModelA, index, data)
+        form = SearchkitForm(ModelA, data, prefix=prefix)
 
         # Form should be valid, bound and incomplete
         self.assertTrue(form.is_valid())
@@ -98,13 +97,12 @@ class SearchkitFormTestCase(TestCase):
         self.assertIn(f'{form.prefix}-operator', html)
 
     def test_searchkitform_with_invalid_operator_data(self):
-        index = 0
-        prefix = SearchkitForm(ModelA, index).prefix
+        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
             f'{prefix}-field': 'integer',
             f'{prefix}-operator': 'foobar',
         }
-        form = SearchkitForm(ModelA, index, data)
+        form = SearchkitForm(ModelA, data, prefix=prefix)
 
         # Form should be invalid.
         self.assertFalse(form.is_valid())
@@ -117,13 +115,12 @@ class SearchkitFormTestCase(TestCase):
         self.assertFormError(form, 'operator', errors)
 
     def test_searchkitform_with_valid_operator_data(self):
-        index = 0
-        prefix = SearchkitForm(ModelA, index).prefix
+        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
             f'{prefix}-field': 'integer',
             f'{prefix}-operator': 'exact',
         }
-        form = SearchkitForm(ModelA, index, data)
+        form = SearchkitForm(ModelA, data, prefix=prefix)
 
         # Form should be valid, bound and incomplete
         self.assertTrue(form.is_valid())
@@ -143,14 +140,13 @@ class SearchkitFormTestCase(TestCase):
         self.assertIn(f'{form.prefix}-value', html)
 
     def test_searchkitform_with_valid_data(self):
-        index = 0
-        prefix = SearchkitForm(ModelA, index).prefix
+        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
             f'{prefix}-field': 'integer',
             f'{prefix}-operator': 'exact',
             f'{prefix}-value': '123',
         }
-        form = SearchkitForm(ModelA, index, data)
+        form = SearchkitForm(ModelA, data, prefix=prefix)
 
         # Form should be valid, bound and complete
         self.assertTrue(form.is_valid())
@@ -169,14 +165,13 @@ class SearchkitFormTestCase(TestCase):
         self.assertFalse(ModelA.objects.filter(**dict((rule,))))
 
     def test_searchkitform_with_invalid_data(self):
-        index = 0
-        prefix = SearchkitForm(ModelA, index).prefix
+        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
             f'{prefix}-field': 'integer',
             f'{prefix}-operator': 'exact',
             f'{prefix}-value': 'foobar',
         }
-        form = SearchkitForm(ModelA, index, data)
+        form = SearchkitForm(ModelA, data, prefix=prefix)
 
         # Form should be invalid.
         self.assertFalse(form.is_valid())
