@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import SearchkitSearch
 
-# Register your models here.
+
+@admin.register(SearchkitSearch)
+class SearchkitSearchAdmin(admin.ModelAdmin):
+    list_display = ('name', 'created_date')
