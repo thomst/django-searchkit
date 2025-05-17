@@ -319,7 +319,13 @@ class BaseSearchkitFormset(forms.BaseFormSet):
         True if all forms are completed.
         False otherwise. Works after is_valid was called.
         """
-        return len(self.cleaned_data) == 3
+        return all(f.is_complete for f in self.forms)
+
+    def is_valid(self):
+        """
+        Check if all forms are valid and complete.
+        """
+        return super().is_valid() and self.is_complete
 
     def extend(self):
         """
@@ -334,7 +340,7 @@ class BaseSearchkitFormset(forms.BaseFormSet):
         Returns filter rules of all forms as list. Works after is_valid was
         called.
         """
-        return [f.get_filter_rule() for f in self.forms]
+        return OrderedDict([f.get_filter_rule() for f in self.forms])
 
 
 SearchkitFormSet = forms.formset_factory(
