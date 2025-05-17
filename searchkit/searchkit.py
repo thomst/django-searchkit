@@ -303,6 +303,12 @@ class BaseSearchkitFormset(forms.BaseFormSet):
     """
     Formset holding all searchkit forms.
     """
+    def __init__(self, model, *args, **kwargs):
+        form_kwargs = kwargs.pop('form_kwargs', dict())
+        form_kwargs['model'] = model
+        kwargs['form_kwargs'] = form_kwargs
+        super().__init__(*args, **kwargs)
+
     @classmethod
     def get_default_prefix(cls):
         return DEFAULT_PREFIX
