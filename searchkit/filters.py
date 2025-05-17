@@ -17,7 +17,6 @@ class SearchkitFilter(SimpleListFilter):
         # Filter the queryset based on the selected SearchkitSearch object
         if self.value():
             search = SearchkitSearch.objects.get(id=int(self.value()))
-            print(search.data)
             formset = SearchkitFormSet(search.contenttype.model_class(), search.data)
 
             if formset.is_valid():  # Hopefully we only saved valid searches.
