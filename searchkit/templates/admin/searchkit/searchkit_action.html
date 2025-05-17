@@ -1,0 +1,28 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ formset.media }}
+{% endblock %}
+
+{% block content %}
+<form action="" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="searchkit_action" />
+    <input type="hidden" name="searchkit_action" value="searchkit_action" />
+
+    {{ search_form }}
+
+    {{ formset }}
+
+
+    {% for object in objects %}
+        <input type="hidden" name="_selected_action" value="{{ object.pk }}">
+    {% endfor %}
+
+    <div>
+        <input type="submit" name="save_and_apply" value="{% trans "Save and apply search" %}" />
+    </div>
+</form>
+{% endblock %}
