@@ -298,12 +298,23 @@ class SearchkitForm(forms.Form):
             value = self.cleaned_data['value']
             return f'{model_field}__{operator}', value
 
+    class Media:
+        js = [
+            'admin/js/vendor/jquery/jquery.min.js',
+            'admin/js/jquery.init.js',
+            "searchkit/searchkit.js"
+        ]
+
 
 class BaseSearchkitFormset(forms.BaseFormSet):
     """
     Formset holding all searchkit forms.
     """
+    template_name_div = "searchkit/formset_as_div.html"
+
     def __init__(self, model, *args, **kwargs):
+        self.app_label = model._meta.app_label
+        self.model_name = model._meta.model_name
         form_kwargs = kwargs.pop('form_kwargs', dict())
         form_kwargs['model'] = model
         kwargs['form_kwargs'] = form_kwargs
@@ -329,11 +340,22 @@ class BaseSearchkitFormset(forms.BaseFormSet):
 
     def extend(self):
         """
-        Add additional unbound form field for operator or value based on the
-        cleaned data for each form. Works after is_valid was called.
+        Add an additional empty form.
         """
-        for form in self.forms:
-            form.extend()
+        # Update the total forms count in the data dictionary.
+        self.management_form.data = self.management_form.data.copy()  # QueryDict is immutable. So we use a copy.
+        self.management_form.data[f'{self.prefix}-TOTAL_FORMS'] = len(self.forms) + 1
+
+        # Add an empty form to the formset.
+        form_kwargs = {
+            **self.get_form_kwargs(None),
+            "auto_id": self.auto_id,
+            "prefix": self.add_prefix(len(self.forms)),
+            "empty_permitted": True,
+            "use_required_attribute": False,
+            "renderer": self.form_renderer,
+        }
+        self.forms.append(self.form(**form_kwargs))
 
     def get_filter_rules(self):
         """

@@ -1,0 +1,12 @@
+<div id="searchkit_formset">
+    {{ formset.management_form }}
+    <h2>Filter Rules</h2>
+    {% for form in formset %}
+        <div class="searchkit_form" data-index="{{ forloop.counter0 }}">
+            {{ form.as_div }}
+        </div>
+    {% endfor %}
+    <div id="searchkit_add_form">
+        <a href="{% url 'searchkit_new_form' formset.app_label formset.model_name %}" class="button">Add a new filter rule</a>
+    </div>
+</div>

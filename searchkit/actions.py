@@ -44,7 +44,7 @@ def searchkit_action(modeladmin, request, queryset):
     else:
         # Display the form
         search_form = SearchkitSearchForm()
-        formset = SearchkitFormSet(modeladmin.model, data=TEST_DATA)
+        formset = SearchkitFormSet(modeladmin.model)
 
         return render(request, 'admin/searchkit/searchkit_action.html', {
             'objects': queryset.order_by('pk'),
