@@ -202,10 +202,13 @@ class SearchkitForm(forms.Form):
     def __init__(self, model, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = model
-        self.model_field = None
-        self.operator = None
-        self.field_plan = None
-        self._build_form()
+        self._add_field_name_field()
+        field_name = self._preload_clean_data('field')
+        self.model_field = self.model._meta.get_field(field_name)
+        self.field_plan = next(iter([p for t, p in FIELD_PLAN.items() if t(self.model_field)]))
+        self._add_operator_field()
+        self.operator = self._preload_clean_data('operator')
+        self._add_value_field()
 
     @cached_property
     def unprefixed_data(self):
@@ -215,38 +218,13 @@ class SearchkitForm(forms.Form):
                 data[key[len(self.prefix) + 1:]] = value
         return data
 
-    def _build_form(self):
-        """
-        Add additional form fields for operator and value based on the raw data.
-        """
-        self._add_model_field_field()
-        if self._preload_model_field_data() and 'operator' in self.unprefixed_data:
-            self._add_operator_field()
-            if self._preload_operator_data() and any(v in self.unprefixed_data for v in ['value', 'value_0', 'value_1']):
-                self._add_value_field()
-
     def _preload_clean_data(self, field_name):
         try:
             return self.fields[field_name].clean(self.unprefixed_data[field_name])
         except (KeyError, forms.ValidationError):
-            return None
+            return self.fields[field_name].choices[0][0]
 
-    def _preload_model_field_data(self):
-        if model_field_name := self._preload_clean_data('field'):
-            self.model_field = self.model._meta.get_field(model_field_name)
-            self.field_plan = next(iter([p for t, p in FIELD_PLAN.items() if t(self.model_field)]))
-            return True
-        else:
-            return False
-
-    def _preload_operator_data(self):
-        if operator := self._preload_clean_data('operator'):
-            self.operator = operator
-            return True
-        else:
-            return False
-
-    def _add_model_field_field(self):
+    def _add_field_name_field(self):
         choices = list()
         for model_field in self.model._meta.fields:
             if any(issubclass(type(model_field), f) for f in SUPPORTED_FIELDS):
@@ -268,24 +246,6 @@ class SearchkitForm(forms.Form):
         else:
             field = field_class()
         self.fields['value'] = field
-
-    @property
-    def is_complete(self):
-        """
-        True if the form has valid values for model_field, operator and value.
-        False otherwise. Works after is_valid was called.
-        """
-        return len(self.cleaned_data) == 3
-
-    def extend(self):
-        """
-        Add additional unbound form field for operator or value based on the
-        cleaned data. Works after is_valid was called.
-        """
-        if len(self.cleaned_data) < 2:
-            self._add_operator_field()
-        elif len(self.cleaned_data) < 3:
-            self._add_value_field()
 
     def get_filter_rule(self):
         """
@@ -323,20 +283,6 @@ class BaseSearchkitFormset(forms.BaseFormSet):
     @classmethod
     def get_default_prefix(cls):
         return DEFAULT_PREFIX
-
-    @property
-    def is_complete(self):
-        """
-        True if all forms are completed.
-        False otherwise. Works after is_valid was called.
-        """
-        return all(f.is_complete for f in self.forms)
-
-    def is_valid(self):
-        """
-        Check if all forms are valid and complete.
-        """
-        return super().is_valid() and self.is_complete
 
     def extend(self):
         """

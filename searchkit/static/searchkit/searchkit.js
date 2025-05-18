@@ -1,16 +1,15 @@
 django.jQuery(document).ready(function () {
     addFormsetHandlers();
 
-    function updateFormset(index=null) {
+    function updateFormset(add_form=false) {
         const formset = django.jQuery('#searchkit_formset');
-        const ajaxUrl = django.jQuery('#searchkit_add_form a').attr('href');
-        const totalFormsInput = django.jQuery("input[id$='TOTAL_FORMS']");
-
+        const baseUrl = django.jQuery('#searchkit_add_form a').attr('href').replace('/add/', '');
         var formData = django.jQuery('form').serialize();
-        if (index !== null) {
-            var url = `${ajaxUrl}${index}/?${formData}`;
+
+        if (add_form) {
+            var url = `${baseUrl}/add/?${formData}`;
         } else {
-            var url = `${ajaxUrl}?${formData}`;
+            var url = `${baseUrl}/update/?${formData}`;
         }
 
         django.jQuery.ajax({
@@ -19,8 +18,10 @@ django.jQuery(document).ready(function () {
             success: function (response) {
                 console.log('AJAX GET request successful:', response);
                 formset.replaceWith(response);
+                // We do not want error messages on formset updates. They are
+                // not relevant yet.
+                django.jQuery('#searchkit_formset').find('.errorlist').remove();
                 addFormsetHandlers();
-                // formset = django.jQuery('#searchkit_formset');
             },
             error: function (error) {
                 console.error('AJAX GET request failed:', error);
@@ -32,18 +33,17 @@ django.jQuery(document).ready(function () {
         const forms = django.jQuery('.searchkit_form');
         forms.each(function () {
             const form = django.jQuery(this);
-            const index = form.attr('data-index');
 
             // Update the formset when the form is changed
             form.on('change', function () {
-                updateFormset(index);
+                updateFormset(false);
             });
         });
 
         const addButton = django.jQuery('#searchkit_add_form a');
         addButton.on('click', function (e) {
             e.preventDefault();
-            updateFormset();
+            updateFormset(true);
         });
     }
 

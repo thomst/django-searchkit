@@ -9,17 +9,11 @@ class SearchkitAjaxView(View):
     """
     Return a searchkit view to update the formset via ajax.
     """
-    def get(self, request, app_label, model_name, index=None):
+    def get(self, request, app_label, model_name, add_form=False):
         model = apps.get_model(app_label=app_label, model_name=model_name)
         formset = SearchkitFormSet(model, data=request.GET)
-
-        if index is None:
+        if add_form:
             formset.extend()
-        else:
-
-            form = formset.forms[int(index)]
-            if form.is_valid():
-                form.extend()
         return HttpResponse(formset.as_div())
 
 
