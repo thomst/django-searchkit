@@ -280,8 +280,7 @@ class BaseSearchkitFormset(forms.BaseFormSet):
         self.model_name = model._meta.model_name
         form_kwargs = kwargs.pop('form_kwargs', dict())
         form_kwargs['model'] = model
-        kwargs['form_kwargs'] = form_kwargs
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs, form_kwargs=form_kwargs)
 
     @classmethod
     def get_default_prefix(cls):
