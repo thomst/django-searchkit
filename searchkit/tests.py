@@ -176,17 +176,3 @@ class SearchkitFormSetTestCase(TestCase):
         del data['searchkit-0-value']
         formset = SearchkitFormSet(ModelA, data)
         self.assertFalse(formset.is_valid())
-
-    def test_searchkit_formset_extend_with_valid_data(self):
-        formset = SearchkitFormSet(ModelA, TEST_DATA)
-        length = len(formset.forms)
-        formset.extend()
-        self.assertEqual(len(formset.forms), length + 1)
-
-    def test_searchkit_formset_extend_with_invalid_data(self):
-        data = TEST_DATA.copy()
-        del data['searchkit-0-value']
-        formset = SearchkitFormSet(ModelA, data)
-        length = len(formset.forms)
-        formset.extend()
-        self.assertEqual(len(formset.forms), length + 1)

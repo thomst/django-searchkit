@@ -287,25 +287,6 @@ class BaseSearchkitFormset(forms.BaseFormSet):
     def get_default_prefix(cls):
         return DEFAULT_PREFIX
 
-    def extend(self):
-        """
-        Add an additional empty form.
-        """
-        # Update the total forms count in the data dictionary.
-        self.management_form.data = self.management_form.data.copy()  # QueryDict is immutable. So we use a copy.
-        self.management_form.data[f'{self.prefix}-TOTAL_FORMS'] = len(self.forms) + 1
-
-        # Add an empty form to the formset.
-        form_kwargs = {
-            **self.get_form_kwargs(None),
-            "auto_id": self.auto_id,
-            "prefix": self.add_prefix(len(self.forms)),
-            "empty_permitted": True,
-            "use_required_attribute": False,
-            "renderer": self.form_renderer,
-        }
-        self.forms.append(self.form(**form_kwargs))
-
     def get_filter_rules(self):
         """
         Returns filter rules of all forms as list. Works after is_valid was
