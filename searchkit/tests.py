@@ -6,29 +6,48 @@ from .searchkit import SearchkitForm
 from .searchkit import SearchkitFormSet
 
 
-TEST_DATA = {
-    'searchkit-TOTAL_FORMS': '6',
-    'searchkit-INITIAL_FORMS': '1',
-    'searchkit-0-field': 'chars',
-    'searchkit-0-operator': 'exact',
-    'searchkit-0-value': 'anytext',
-    'searchkit-1-field': 'integer',
-    'searchkit-1-operator': 'range',
-    'searchkit-1-value_0': '1',
-    'searchkit-1-value_1': '123',
-    'searchkit-2-field': 'float',
-    'searchkit-2-operator': 'exact',
-    'searchkit-2-value': '0.3',
-    'searchkit-3-field': 'decimal',
-    'searchkit-3-operator': 'exact',
-    'searchkit-3-value': '1.23',
-    'searchkit-4-field': 'date',
-    'searchkit-4-operator': 'exact',
-    'searchkit-4-value': '2025-05-14',
-    'searchkit-5-field': 'datetime',
-    'searchkit-5-operator': 'exact',
-    'searchkit-5-value': '2025-05-14 08:45',
+INITIAL_DATA = [
+    dict(
+        field='chars',
+        operator='exact',
+        value='anytext',
+    ),
+    dict(
+        field='integer',
+        operator='range',
+        value_0=1,
+        value_1=123,
+    ),
+    dict(
+        field='float',
+        operator='exact',
+        value='0.3',
+    ),
+    dict(
+        field='decimal',
+        operator='exact',
+        value='1.23',
+    ),
+    dict(
+        field='date',
+        operator='exact',
+        value='2025-05-14',
+    ),
+    dict(
+        field='datetime',
+        operator='exact',
+        value='2025-05-14 08:45',
+    )
+]
+
+DEFAULT_PREFIX = SearchkitFormSet.get_default_prefix()
+FORM_DATA = {
+    f'{DEFAULT_PREFIX}-TOTAL_FORMS': '6',
+    f'{DEFAULT_PREFIX}-INITIAL_FORMS': '1'
 }
+for i, data in enumerate(INITIAL_DATA):
+    for key, value in data.items():
+        FORM_DATA.update({f'{DEFAULT_PREFIX}-{i}-{key}': value})
 
 
 class SearchkitFormTestCase(TestCase):
@@ -165,14 +184,14 @@ class SearchkitFormTestCase(TestCase):
 class SearchkitFormSetTestCase(TestCase):
 
     def test_searchkit_formset_with_valid_data(self):
-        formset = SearchkitFormSet(ModelA, TEST_DATA)
+        formset = SearchkitFormSet(ModelA, FORM_DATA)
         self.assertTrue(formset.is_valid())
 
         # Just check if the filter rules are applicable. Result should be empty.
         self.assertFalse(ModelA.objects.filter(**formset.get_filter_rules()))
 
     def test_searchkit_formset_with_incomplete_data(self):
-        data = TEST_DATA.copy()
-        del data['searchkit-0-value']
+        data = FORM_DATA.copy()
+        del data[f'{DEFAULT_PREFIX}-0-value']
         formset = SearchkitFormSet(ModelA, data)
         self.assertFalse(formset.is_valid())
