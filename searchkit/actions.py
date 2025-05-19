@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 from .searchkit import SearchkitFormSet
 from .forms import SearchkitSearchForm
 from .models import SearchkitSearch
-from .tests import TEST_DATA
 
 
 def searchkit_action(modeladmin, request, queryset):
