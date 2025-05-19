@@ -12,7 +12,7 @@ class SearchkitAjaxView(View):
     def get(self, request, app_label, model_name):
         model = apps.get_model(app_label=app_label, model_name=model_name)
         formset = SearchkitFormSet(model, data=request.GET)
-        return HttpResponse(formset.as_div())
+        return HttpResponse(formset.render())
 
 
 # class SearchkitView(View):
