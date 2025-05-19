@@ -77,9 +77,6 @@ class DateTimeRangeField(BaseRangeField):
         )
 
 
-DEFAULT_PREFIX = 'searchkit'
-
-
 OPERATOR_DESCRIPTION = {
     'exact': _('is exact'),
     'contains': _('contains'),
@@ -285,7 +282,7 @@ class BaseSearchkitFormset(forms.BaseFormSet):
 
     @classmethod
     def get_default_prefix(cls):
-        return DEFAULT_PREFIX
+        return 'searchkit'
 
     def get_filter_rules(self):
         """
