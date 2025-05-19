@@ -273,7 +273,7 @@ class BaseSearchkitFormset(forms.BaseFormSet):
     """
     Formset holding all searchkit forms.
     """
-    template_name_div = "searchkit/formset_as_div.html"
+    template_name_div = "searchkit/formsets/div.html"
 
     def __init__(self, model, *args, **kwargs):
         self.app_label = model._meta.app_label
