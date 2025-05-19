@@ -252,11 +252,14 @@ class SearchkitForm(forms.Form):
         Returns lookup string and value pair if the form is valid and complete.
         Works after is_valid was called.
         """
-        if self.is_complete:
+        if self.is_valid():
             model_field = self.cleaned_data['field']
             operator = self.cleaned_data['operator']
             value = self.cleaned_data['value']
             return f'{model_field}__{operator}', value
+        else:
+            msg = _('The form is not valid. Please check the form.')
+            raise forms.ValidationError(msg, code='invalid')
 
     class Media:
         js = [
