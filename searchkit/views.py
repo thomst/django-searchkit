@@ -7,7 +7,7 @@ from .searchkit import SearchkitFormSet
 # TODO: What about security? Permission? Authentication?
 class SearchkitAjaxView(View):
     """
-    Return a searchkit view to update the formset via ajax.
+    Dynamically reload the formset.
     """
     def get(self, request, app_label, model_name):
         model = apps.get_model(app_label=app_label, model_name=model_name)
