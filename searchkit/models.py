@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 # Create your models here.
+# TODO: Use pickled cleaned data with a char field.
 class SearchkitSearch(models.Model):
     name = models.CharField(_('Search name'), max_length=255)
     contenttype = models.ForeignKey(ContentType, on_delete=models.CASCADE, verbose_name=_('Model'))

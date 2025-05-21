@@ -5,6 +5,8 @@ from .searchkit import SearchkitFormSet
 
 
 # TODO: Does this work as model form?
+# TODO: Dynamically use a hidden contenttype field or a choices field. Then
+# reloading form on change of the choices field.
 class SearchkitSearchForm(forms.Form):
     """
     Represents a SearchkitSearch model. Using a SearchkitFormSet for the data
@@ -21,6 +23,7 @@ class SearchkitSearchForm(forms.Form):
 
     @property
     def media(self):
+        # TODO: Check if child classes inherit those media files.
         return self.formset.media
 
     def clean(self):
