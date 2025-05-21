@@ -6,6 +6,7 @@ from searchkit.searchkit import SearchkitFormSet
 class SearchkitFilter(SimpleListFilter):
     title = 'Searchkit Filter'
     parameter_name = 'search'
+    template = 'searchkit/filters/filter.html'
 
     def lookups(self, request, model_admin):
         # Fetch the last three objects from SearchkitSearch and return them as
