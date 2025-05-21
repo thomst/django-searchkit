@@ -55,7 +55,6 @@ class SearchkitFilterView(GetModelMixin, FormView):
     def get_form_kwargs(self):
         now = datetime.now().strftime("%Y-%m-%d %H:%M")
         kwargs = super().get_form_kwargs()
-        kwargs['hide_contenttype_field'] = True
         kwargs['initial'] = kwargs.get('initial', {})
         kwargs['initial']['name'] = f'Search for {self.model._meta.verbose_name} ({now})'
         kwargs['initial']['contenttype'] = ContentType.objects.get_for_model(self.model)

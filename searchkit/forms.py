@@ -17,17 +17,21 @@ class SearchkitSearchForm(forms.ModelForm):
     # We need a dummy field for data. Otherwise the formset data won't be
     # handled by the ModelAdmin.
     # TODO: This is doggy. But I don't know how to handle this better.
-    data = forms.CharField(widget=forms.HiddenInput(), required=False)
+    # data = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
         model = SearchkitSearch
-        fields = ['name', 'contenttype']
+        fields = ['name', 'contenttype', 'data']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Hide the contenttype field if an initial value is passed.
         if 'contenttype' in self.initial:
             self.fields['contenttype'].widget = forms.HiddenInput()
+        # If we have a formset we hide the data field.
+        if self.formset:
+            self.fields['data'].widget = forms.HiddenInput()
+            self.fields['data'].required = False
 
     @property
     def media(self):
@@ -52,12 +56,8 @@ class SearchkitSearchForm(forms.ModelForm):
         elif 'contenttype' in self.data:
             value = self.data.get(self.add_prefix('contenttype'))
             try:
-                contenttype_id = self.fields['contenttype'].clean(value)
+                return self.fields['contenttype'].clean(value).model_class()
             except forms.ValidationError:
-                return None
-            try:
-                return ContentType.objects.get(id=contenttype_id).model_class()
-            except ContentType.DoesNotExist:
                 return None
         else:
             contenttype_id = self.fields['contenttype'].choices[0][0]
