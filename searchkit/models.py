@@ -9,3 +9,6 @@ class SearchkitSearch(models.Model):
     contenttype = models.ForeignKey(ContentType, on_delete=models.CASCADE, verbose_name=_('Model'))
     data = models.JSONField(_('Raw data of a searchkit formset'))
     created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('name', 'contenttype')
