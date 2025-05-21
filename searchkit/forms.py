@@ -16,8 +16,6 @@ class SearchkitSearchForm(forms.ModelForm):
     """
     # We need a dummy field for data. Otherwise the formset data won't be
     # handled by the ModelAdmin.
-    # TODO: This is doggy. But I don't know how to handle this better.
-    # data = forms.CharField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
         model = SearchkitSearch
