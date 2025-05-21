@@ -31,7 +31,7 @@ class SearchkitSearchForm(forms.Form):
         if self.formset.is_valid():
             cleaned_data['data'] = self.formset.data
         else:
-            raise forms.ValidationError("Formset is not valid")
+            raise forms.ValidationError("Invalid filter rules. Please check the errors below.")
         return cleaned_data
 
     def __str__(self):
