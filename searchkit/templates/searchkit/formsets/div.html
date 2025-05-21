@@ -1,17 +1,25 @@
 <div id="searchkit_formset">
     {{ formset.management_form }}
     <h2>Filter Rules</h2>
+    <fieldset class="searchkit-formset">
     {% for form in formset %}
-        <div class="searchkit_form" data-index="{{ forloop.counter0 }}">
-            {{ form.as_div }}
+        <div class="searchkit_form form-row">
+            <div>
+                <div class="flex-container">
+                    {{ form.as_div }}
+                </div>
+            </div>
         </div>
-    {% endfor %}
-    {% if formset.forms|length > 1 %}
-        <div id="searchkit_remove_form">
-            <a href="#" class="button">Remove this filter rule</a>
+        {% endfor %}
+    </fieldset>
+    <div class="submit-row">
+        <div id="searchkit_add_form">
+            <a href="{% url 'searchkit_form' formset.app_label formset.model_name %}" class="input button">Add filter rule</a>
         </div>
-    {% endif %}
-    <div id="searchkit_add_form">
-        <a href="{% url 'searchkit_form' formset.app_label formset.model_name %}" class="button">Add a new filter rule</a>
+        {% if formset.forms|length > 1 %}
+            <div id="searchkit_remove_form">
+                <a href="#" class="input button">Remove last filter rule</a>
+            </div>
+        {% endif %}
     </div>
 </div>
