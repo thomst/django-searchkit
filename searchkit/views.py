@@ -4,10 +4,11 @@ from django.views.generic import View
 from .searchkit import SearchkitFormSet
 
 
-# TODO: What about security? Permission? Authentication?
+# FIXME: Check permissions and authentication.
+
 class SearchkitAjaxView(View):
     """
-    Dynamically reload the formset.
+    Reload the formset via ajax.
     """
     def get(self, request, app_label, model_name):
         model = apps.get_model(app_label=app_label, model_name=model_name)
