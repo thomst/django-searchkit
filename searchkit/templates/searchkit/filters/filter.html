@@ -3,10 +3,10 @@
   <summary>
     {% blocktranslate with filter_title=title %} By {{ filter_title }} {% endblocktranslate %}
   </summary>
+  <p>
+    <a class='addlink' href="{% url 'searchkit_filter' spec.app_label spec.model_name %}" title="{% trans "Create a new filter" %}">{% trans "New filter" %}</a>
+  </p>
   <ul>
-  <li>
-      <a href="{% url 'searchkit_filter' spec.app_label spec.model_name %}" title="{% trans "Create a new filter" %}">{% trans "New filter" %}</a>
-  </li>
   {% for choice in choices %}
     <li{% if choice.selected %} class="selected"{% endif %}>
     <a href="{{ choice.query_string|iriencode }}">{{ choice.display }}</a></li>
