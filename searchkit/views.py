@@ -2,10 +2,12 @@ from django.http import HttpResponse
 from django.http import HttpResponseNotFound
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.utils.functional import cached_property
 from django.shortcuts import render
 from django.apps import apps
-from django.contrib.contenttypes import ContentType
+from django.contrib.contenttypes.models import ContentType
 from django.views.generic import View
+from django.views.generic import FormView
 from .models import SearchkitSearch
 from .forms import SearchkitSearchForm
 from .searchkit import SearchkitFormSet
@@ -23,52 +25,38 @@ class SearchkitAjaxView(View):
         return HttpResponse(formset.render())
 
 
-class SearchkitFilterView(View):
-    """
-    Work with the SearchkitFilter.
-    """
-    def get(self, request, app_label, model_name):
+class SearchkitFilterView(FormView):
+    template_name = 'searchkit/filters/form.html'
+    form_class = SearchkitSearchForm
+
+    def get_model(self):
+        """
+        Get the model from the URL parameters.
+        """
+        app_label = self.kwargs['app_label']
+        model_name = self.kwargs['model_name']
         try:
-            model = apps.get_model(app_label=app_label, model_name=model_name)
+            return apps.get_model(app_label=app_label, model_name=model_name)
         except LookupError:
-            return HttpResponseNotFound(f'Page not found')
+            # FIXME: Use specific exception.
+            raise Exception(f'Model {app_label}.{model_name} not found')
 
-        search_form = SearchkitSearchForm()
-        formset = SearchkitFormSet(model)
+    def get_form_kwargs(self):
+        """Return the keyword arguments for instantiating the form."""
+        kwargs = super().get_form_kwargs()
+        kwargs['model'] = self.get_model()
+        return kwargs
 
-        return render(request, 'searchkit/filter/form.html', {
-            'search_form': search_form,
-            'formset': formset,
-        })
+    def form_valid(self, form):
+        # Save search data.
+        model = self.get_model()
+        search = SearchkitSearch(
+            name=form.cleaned_data['name'],
+            contenttype=ContentType.objects.get_for_model(model),
+            data=form.cleaned_data['data'],
+        )
+        search.save()
 
-    def post(self, request, app_label, model_name):
-        try:
-            model = apps.get_model(app_label=app_label, model_name=model_name)
-        except LookupError:
-            return HttpResponseNotFound(f'Page not found')
-
-        search_form = SearchkitSearchForm(request.POST)
-        formset = SearchkitFormSet(model, request.POST)
-
-        if search_form.is_valid() and formset.is_valid():
-
-            # Save search data.
-            # We save the raw data which has been validated and can be reuesed
-            # to instantiate the formset and retrieve the filter rules.
-            search = SearchkitSearch(
-                name=search_form.cleaned_data['name'],
-                contenttype=ContentType.objects.get_for_model(model),
-                data=formset.data,
-            )
-            search.save()
-
-            # Redirect back to the change list with the search applied.
-            change_list_url = reverse(f'admin:{app_label}_{model_name}_changelist')
-            return HttpResponseRedirect(f'{change_list_url}?search={search.id}')
-
-        else:
-            # If the form is not valid, render the form again with errors.
-            return render(request, 'searchkit/filter/form.html', {
-                    'search_form': search_form,
-                    'formset': formset,
-                })
+        # Redirect back to the change list with the search applied.
+        change_list_url = reverse(f'admin:{model._meta.app_label}_{model._meta.model_name}_changelist')
+        return HttpResponseRedirect(f'{change_list_url}?search={search.id}')
