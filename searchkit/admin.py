@@ -6,4 +6,4 @@ from .forms import SearchkitSearchForm
 @admin.register(SearchkitSearch)
 class SearchkitSearchAdmin(admin.ModelAdmin):
     form = SearchkitSearchForm
-    list_display = ('name', 'created_date')
+    list_display = ('name', 'contenttype', 'created_date')
