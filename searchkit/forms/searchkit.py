@@ -22,11 +22,14 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
     """
     def __init__(self, *args, **kwargs):
         self.model = kwargs.pop('model', None)
+        self.model_field = None
+        self.field_plan = None
+        self.operator = None
         super().__init__(*args, **kwargs)
         if self.model:
-            self._build_form()
+            self._build_form_fields()
 
-    def _build_form(self):
+    def _build_form_fields(self):
         self._add_field_name_field()
         field_name = self._preload_clean_data('field')
         self.model_field = self.model._meta.get_field(field_name)
