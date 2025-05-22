@@ -2,6 +2,7 @@ from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.models import ContentType
 from .models import SearchkitSearch
 from .forms import SearchkitFormSet
+from .forms.utils import get_filter_rules
 
 
 class SearchkitFilter(SimpleListFilter):
@@ -27,8 +28,5 @@ class SearchkitFilter(SimpleListFilter):
         # Filter the queryset based on the selected SearchkitSearch object
         if self.value():
             search = SearchkitSearch.objects.get(id=int(self.value()))
-            formset = SearchkitFormSet(search.contenttype.model_class(), search.data)
-
-            if formset.is_valid():  # Hopefully we only saved valid searches.
-                # Apply the filters from the formset to the queryset
-                return queryset.filter(**formset.get_filter_rules())
+            formset = SearchkitFormSet(model=search.contenttype.model_class(), data=search.data)
+            return queryset.filter(**get_filter_rules(formset))
