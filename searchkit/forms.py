@@ -4,6 +4,7 @@ from django.utils.functional import cached_property
 from django.forms.formsets import TOTAL_FORM_COUNT
 from .models import SearchkitSearch
 from .searchkit import SearchkitFormSet
+from .searchkit import CSS_CLASSES
 
 
 # TODO: Does this work as model form?
@@ -14,79 +15,35 @@ class SearchkitSearchForm(forms.ModelForm):
     Represents a SearchkitSearch model. Using a SearchkitFormSet for the data
     json field.
     """
-    # We need a dummy field for data. Otherwise the formset data won't be
-    # handled by the ModelAdmin.
-
     class Meta:
         model = SearchkitSearch
         fields = ['name', 'contenttype', 'data']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Hide the data field. We render the formset instead.
+        # Hide the data field. Finally we use the data of the formset.
         self.fields['data'].widget = forms.HiddenInput()
+        self.fields['data'].initial = "true"  # We need some valid initial data.
+        self.fields['contenttype'].widget = forms.HiddenInput()
 
     @property
     def media(self):
         # TODO: Check if child classes inherit those media files.
         return self.formset.media
 
-    def get_formset_model(self):
-        """
-        Try hard to get a model class related to the contenttype field.
-        """
-        if 'contenttype' in self.initial:
-            if isinstance(self.initial['contenttype'], ContentType):
-                return self.initial['contenttype'].model_class()
-            elif isinstance(self.initial['contenttype'], int):
-                try:
-                    return ContentType.objects.get(id=self.initial['contenttype']).model_class()
-                except ContentType.DoesNotExist:
-                    return None
-        elif hasattr(self, 'cleaned_data') and 'contenttype' in self.cleaned_data:
-            return self.cleaned_data['contenttype'].model_class()
-        elif 'contenttype' in self.data:
-            value = self.data.get(self.add_prefix('contenttype'))
-            try:
-                return self.fields['contenttype'].clean(value).model_class()
-            except forms.ValidationError:
-                return None
-        else:
-            contenttype_id = self.fields['contenttype'].choices[0][0]
-            try:
-                return ContentType.objects.get(id=contenttype_id).model_class()
-            except (ValueError, ContentType.DoesNotExist):
-                return None
-
-    def get_formset_data(self):
-        """
-        We do not want a bound formset with no management_form data. So we check
-        if a formset was rendered at all by looking for a total form field key.
-        """
-        if self.data and any(key.endswith(TOTAL_FORM_COUNT) for key in self.data.keys()):
-            return self.data
-        else:
-            return None
-
     @cached_property
     def formset(self):
         """
         A searchkit formset for the model.
         """
-        model = self.get_formset_model()
-        data = self.get_formset_data()
-        if model:
-            return SearchkitFormSet(model=model, data=data, prefix=self.prefix)
+        data = self.data or None
+        return SearchkitFormSet(data=data, prefix=self.prefix)
+
+    def is_valid(self):
+        return self.formset.is_valid() and super().is_valid()
 
     def clean(self):
-        """
-        Additionally validate the formset.
-        """
         cleaned_data = super().clean()
-        if not self.formset:
-            raise forms.ValidationError("No formset available. Please check the contenttype field.")
-        if self.formset.is_valid():
-            cleaned_data['data'] = self.formset.data
-        else:
-            raise forms.ValidationError("Invalid filter rules. Please correct the errors below.")
+        cleaned_data['contenttype'] = self.formset.contenttype_form.cleaned_data['contenttype']
+        cleaned_data['data'] = self.formset.data
         return cleaned_data

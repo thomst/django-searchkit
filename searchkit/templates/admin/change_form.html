@@ -1,11 +1,5 @@
 {% extends 'admin/change_form.html' %}
 {% block after_field_sets %}
     <h2>Filter Rules</h2>
-    {% if adminform.form.formset %}
-        {{ adminform.form.formset }}
-    {% else %}
-        <div id="searchkit_formset">
-            <p>Choose a content type first.</p>
-        </div>
-    {% endif %}
+    {{ adminform.form.formset }}
 {% endblock %}
