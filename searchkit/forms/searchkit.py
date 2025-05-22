@@ -98,8 +98,8 @@ class BaseSearchkitFormset(CSS_CLASSES, forms.BaseFormSet):
     """
     Formset holding all searchkit forms.
     """
-    template_name = "searchkit/formsets/div.html"
-    template_name_div = "searchkit/formsets/div.html"
+    template_name = "searchkit/searchkit.html"
+    template_name_div = "searchkit/searchkit.html"
     default_prefix = 'searchkit'
     form = SearchkitForm
     contenttype_form_class = ContentTypeForm

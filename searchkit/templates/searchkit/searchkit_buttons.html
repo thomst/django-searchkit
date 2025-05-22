@@ -1,0 +1,7 @@
+{% load searchkit %}
+<div class="submit-row">
+    <input type="submit" class="{% on_click_class %}" data-total-forms="{{ formset.total_form_count|add:"1" }}" value="Add filter rule">
+    {% if formset.forms|length > 1 %}
+        <input type="submit" class="{% on_click_class %}" data-total-forms="{{ formset.total_form_count|add:"-1" }}" value="Remove last filter rule">
+    {% endif %}
+</div>
