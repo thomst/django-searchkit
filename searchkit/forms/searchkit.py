@@ -47,32 +47,45 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
         return data
 
     def _preload_clean_data(self, field_name):
-        try:
-            return self.fields[field_name].clean(self.unprefixed_data[field_name])
-        except (KeyError, forms.ValidationError):
+        # Try the initial value first since it is already cleaned.
+        if self.initial and field_name in self.initial:
+            return self.initial[field_name]
+        # Otherwise look up the data dict.
+        elif field_name in self.unprefixed_data:
+            try:
+                # Do we have a valid value?
+                return self.fields[field_name].clean(self.unprefixed_data[field_name])
+            except forms.ValidationError:
+                pass
+        else:
+            # At last simply return the first option which will be the selected
+            # one.
             return self.fields[field_name].choices[0][0]
 
     def _add_field_name_field(self):
+        initial = self.initial.get('field')
         choices = list()
         for model_field in self.model._meta.fields:
             if any(issubclass(type(model_field), f) for f in SUPPORTED_FIELDS):
                 choices.append((model_field.name, model_field.verbose_name))
 
-        field = forms.ChoiceField(label=_('Model field'), choices=choices)
+        field = forms.ChoiceField(label=_('Model field'), choices=choices, initial=initial)
         field.widget.attrs.update({"class": CSS_CLASSES.reload_on_change_css_class})
         self.fields['field'] = field
 
     def _add_operator_field(self):
+        initial = self.initial.get('operator')
         choices = [(o, OPERATOR_DESCRIPTION[o]) for o in self.field_plan.keys()]
-        field = forms.ChoiceField(label=_('Operator'), choices=choices)
+        field = forms.ChoiceField(label=_('Operator'), choices=choices, initial=initial)
         field.widget.attrs.update({"class": CSS_CLASSES.reload_on_change_css_class})
         self.fields['operator'] = field
 
     def _add_value_field(self):
+        initial = self.initial.get('value')
         field_class = self.field_plan[self.operator][0]
         if hasattr(field_class, 'choices'):
             # FIXME: Model field do not nesseccarily has choices attribute.
-            field = field_class(choices=self.model_field.choices)
+            field = field_class(choices=self.model_field.choices, initial=initial)
         else:
             field = field_class()
         self.fields['value'] = field
@@ -111,11 +124,10 @@ class BaseSearchkitFormset(CSS_CLASSES, forms.BaseFormSet):
         self.contenttype_form = self.get_conttenttype_form(kwargs)
         self.model = self.get_model(kwargs)
         super().__init__(*args, **kwargs)
+        if self.initial:
+            self.extra = 0
 
     def get_conttenttype_form(self, kwargs):
-        """
-        Returns a content type form.
-        """
         ct_kwargs = dict()
         ct_kwargs['data'] = kwargs.get('data')
         ct_kwargs['prefix'] = kwargs.get('prefix')
@@ -124,7 +136,9 @@ class BaseSearchkitFormset(CSS_CLASSES, forms.BaseFormSet):
         return self.contenttype_form_class(**ct_kwargs)
 
     def get_model(self, kwargs):
-        if self.contenttype_form.is_valid():
+        if self.contenttype_form.initial:
+            return self.contenttype_form.initial['contenttype'].model_class()
+        elif self.contenttype_form.is_valid():
             return self.contenttype_form.cleaned_data['contenttype'].model_class()
 
     def get_form_kwargs(self, index):
