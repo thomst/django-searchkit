@@ -4,7 +4,7 @@ django.jQuery(document).ready(function () {
     function updateFormset() {
         const formset = django.jQuery('#searchkit_formset');
         const formData = django.jQuery('#searchkit_formset').closest('form').serialize();
-        const baseUrl = django.jQuery('#searchkit_add_form a').attr('href');
+        const baseUrl = formset.data('url');
         var url = `${baseUrl}?${formData}`;
 
         django.jQuery.ajax({
@@ -25,30 +25,22 @@ django.jQuery(document).ready(function () {
     }
 
     function addFormsetHandlers() {
+        const formset = django.jQuery('#searchkit_formset');
+        const onChangeClass = formset.data('on-change-class');
+        const onClickClass = formset.data('on-click-class');
         const totalFormsInput = django.jQuery('input[name$=TOTAL_FORMS]');
-        const forms = django.jQuery('.searchkit_form');
 
-        forms.each(function () {
-            const form = django.jQuery(this);
+        django.jQuery(`.${onChangeClass}`).each(function () {
+            django.jQuery(this).on('change', updateFormset);
+        });
 
-            // Update the formset when the form is changed
-            form.on('change', function () {
+        django.jQuery(`.${onClickClass}`).each(function () {
+            const totalFormsCount = django.jQuery(this).data('total-forms');
+            django.jQuery(this).on('click', function (e) {
+                e.preventDefault();
+                if (totalFormsCount) totalFormsInput.val(parseInt(totalFormsCount));
                 updateFormset();
             });
-        });
-
-        const addButton = django.jQuery('#searchkit_add_form a');
-        addButton.on('click', function (e) {
-            e.preventDefault();
-            totalFormsInput.val(parseInt(totalFormsInput.val()) + 1);
-            updateFormset();
-        });
-
-        const removeButton = django.jQuery('#searchkit_remove_form a');
-        removeButton.on('click', function (e) {
-            e.preventDefault();
-            totalFormsInput.val(parseInt(totalFormsInput.val()) - 1);
-            updateFormset();
         });
     }
 
