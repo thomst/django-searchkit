@@ -1,25 +1,38 @@
 {% load searchkit %}
-<div id="searchkit_formset" data-url="{% searchkit_url formset %}" data-on-change-class="{% on_change_class %}" data-on-click-class="{% on_click_class %}">
+<div id="searchkit_formset" data-url="{% url 'searchkit_form' %}" data-on-change-class="{% on_change_class %}" data-on-click-class="{% on_click_class %}">
     {{ formset.management_form }}
     <fieldset class="searchkit-formset">
-    {% for form in formset %}
-        {% block searchkit_form %}
-            <div class="searchkit_form form-row">
+        {% block searchkit_contenttype_form %}
+            <div class="searchkit_contenttype_form form-row">
                 <div>
                     <div class="flex-container">
-                        {{ form.as_div }}
+                        {{ formset.contenttype_form }}
                     </div>
                 </div>
             </div>
         {% endblock %}
-    {% endfor %}
     </fieldset>
-    {% block searchkit_form_buttons %}
-        <div class="submit-row">
-            <input type="submit" class="{% on_click_class %}" data-total-forms="{{ formset.total_form_count|add:"1" }}" value="Add filter rule">
-            {% if formset.forms|length > 1 %}
-                <input type="submit" class="{% on_click_class %}" data-total-forms="{{ formset.total_form_count|add:"-1" }}" value="Remove last filter rule">
-            {% endif %}
-        </div>
-    {% endblock %}
+    {% if formset.forms %}
+        <fieldset class="searchkit-formset">
+        {% for form in formset %}
+            {% block searchkit_form %}
+                <div class="searchkit_form form-row">
+                    <div>
+                        <div class="flex-container">
+                            {{ form.as_div }}
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        {% endfor %}
+        </fieldset>
+        {% block searchkit_form_buttons %}
+            <div class="submit-row">
+                <input type="submit" class="{% on_click_class %}" data-total-forms="{{ formset.total_form_count|add:"1" }}" value="Add filter rule">
+                {% if formset.forms|length > 1 %}
+                    <input type="submit" class="{% on_click_class %}" data-total-forms="{{ formset.total_form_count|add:"-1" }}" value="Remove last filter rule">
+                {% endif %}
+            </div>
+        {% endblock %}
+    {% endif %}
 </div>

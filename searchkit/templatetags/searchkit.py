@@ -21,11 +21,11 @@ def on_change_class():
     """
     Return css class for on change handler.
     """
-    return CSS_CLASSES['reload_on_change']
+    return CSS_CLASSES.reload_on_change_css_class
 
 @register.simple_tag
 def on_click_class():
     """
     Return css class for on click handler.
     """
-    return CSS_CLASSES['reload_on_click']
+    return CSS_CLASSES.reload_on_click_css_class
