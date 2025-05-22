@@ -183,6 +183,12 @@ FIELD_PLAN = OrderedDict((
 ))
 
 
+CSS_CLASSES = dict(
+    reload_on_change="searchkit-reload-on-change",
+    reload_on_click="searchkit-reload-on-click",
+)
+
+
 class SearchkitForm(forms.Form):
     """
     Searchkit form representing a model field lookup based on the field name,
@@ -228,11 +234,13 @@ class SearchkitForm(forms.Form):
                 choices.append((model_field.name, model_field.verbose_name))
 
         field = forms.ChoiceField(label=_('Model field'), choices=choices)
+        field.widget.attrs.update({"class": CSS_CLASSES['reload_on_change']})
         self.fields['field'] = field
 
     def _add_operator_field(self):
         choices = [(o, OPERATOR_DESCRIPTION[o]) for o in self.field_plan.keys()]
         field = forms.ChoiceField(label=_('Operator'), choices=choices)
+        field.widget.attrs.update({"class": CSS_CLASSES['reload_on_change']})
         self.fields['operator'] = field
 
     def _add_value_field(self):
