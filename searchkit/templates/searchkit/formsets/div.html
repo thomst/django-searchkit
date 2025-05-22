@@ -1,25 +1,25 @@
-<div id="searchkit_formset">
+{% load searchkit %}
+<div id="searchkit_formset" data-url="{% searchkit_url formset %}" data-on-change-class="{% on_change_class %}" data-on-click-class="{% on_click_class %}">
     {{ formset.management_form }}
-    <h2>Filter Rules</h2>
     <fieldset class="searchkit-formset">
     {% for form in formset %}
-        <div class="searchkit_form form-row">
-            <div>
-                <div class="flex-container">
-                    {{ form.as_div }}
+        {% block searchkit_form %}
+            <div class="searchkit_form form-row">
+                <div>
+                    <div class="flex-container">
+                        {{ form.as_div }}
+                    </div>
                 </div>
             </div>
-        </div>
-        {% endfor %}
+        {% endblock %}
+    {% endfor %}
     </fieldset>
-    <div class="submit-row">
-        <div id="searchkit_add_form">
-            <a href="{% url 'searchkit_form' formset.app_label formset.model_name %}" class="input button">Add filter rule</a>
+    {% block searchkit_form_buttons %}
+        <div class="submit-row">
+            <input type="submit" class="{% on_click_class %}" data-total-forms="{{ formset.total_form_count|add:"1" }}" value="Add filter rule">
+            {% if formset.forms|length > 1 %}
+                <input type="submit" class="{% on_click_class %}" data-total-forms="{{ formset.total_form_count|add:"-1" }}" value="Remove last filter rule">
+            {% endif %}
         </div>
-        {% if formset.forms|length > 1 %}
-            <div id="searchkit_remove_form">
-                <a href="#" class="input button">Remove last filter rule</a>
-            </div>
-        {% endif %}
-    </div>
+    {% endblock %}
 </div>
