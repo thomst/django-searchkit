@@ -31,8 +31,7 @@ class SearchkitSearchForm(forms.ModelForm):
         # TODO: Check if child classes inherit those media files.
         return self.formset.media
 
-    @cached_property
-    def formset_model(self):
+    def get_formset_model(self):
         """
         Try hard to get a model class related to the contenttype field.
         """
@@ -61,9 +60,8 @@ class SearchkitSearchForm(forms.ModelForm):
 
     def get_formset_data(self):
         """
-        Do we have any formset related data? Otherwise the formset was not
-        rendered yet. We do not want a bound formset with no management_form
-        data.
+        We do not want a bound formset with no management_form data. So we check
+        if a formset was rendered at all by looking for a total form field key.
         """
         if self.data and any(key.endswith(TOTAL_FORM_COUNT) for key in self.data.keys()):
             return self.data
@@ -75,9 +73,10 @@ class SearchkitSearchForm(forms.ModelForm):
         """
         A searchkit formset for the model.
         """
-        if self.formset_model:
-            data = self.get_formset_data()
-            return SearchkitFormSet(self.formset_model, data=data, prefix=self.prefix)
+        model = self.get_formset_model()
+        data = self.get_formset_data()
+        if model:
+            return SearchkitFormSet(model=model, data=data, prefix=self.prefix)
 
     def clean(self):
         """
@@ -91,12 +90,3 @@ class SearchkitSearchForm(forms.ModelForm):
         else:
             raise forms.ValidationError("Invalid filter rules. Please correct the errors below.")
         return cleaned_data
-
-    def __str__(self):
-        """
-        We simply add the rendered formset to the form.
-        """
-        if self.formset:
-            return super().__str__() + self.formset.render()
-        else:
-            return super().__str__()
