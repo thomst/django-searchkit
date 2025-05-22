@@ -282,16 +282,23 @@ class BaseSearchkitFormset(forms.BaseFormSet):
     template_name_div = "searchkit/formsets/div.html"
 
     def __init__(self, model, *args, **kwargs):
-        self.app_label = model._meta.app_label
-        self.model_name = model._meta.model_name
-        form_kwargs = kwargs.pop('form_kwargs', dict())
-        form_kwargs['model'] = model
-        super().__init__(*args, **kwargs, form_kwargs=form_kwargs)
+        self.model = model
+        super().__init__(*args, **kwargs)
+
+    def get_form_kwargs(self, index):
+        kwargs = self.form_kwargs.copy()
+        kwargs['model'] = self.model
+        return kwargs
+
+    def add_prefix(self, index):
+        return "%s-%s-%s" % (self.prefix, self.model._meta.model_name, index)
 
     @classmethod
     def get_default_prefix(cls):
         return 'searchkit'
 
+    # TODO: Should be a utils function that extracts filter rules from
+    # cleaned_data.
     def get_filter_rules(self):
         """
         Returns filter rules of all forms as list. Works after is_valid was
