@@ -1,6 +1,6 @@
 from django.template import Library
 from django.urls import reverse
-from ..searchkit import CSS_CLASSES
+from ..forms.utils import CSS_CLASSES
 
 
 register = Library()

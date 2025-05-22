@@ -1,15 +1,9 @@
 from django import forms
-from django.contrib.contenttypes.models import ContentType
 from django.utils.functional import cached_property
-from django.forms.formsets import TOTAL_FORM_COUNT
-from .models import SearchkitSearch
+from ..models import SearchkitSearch
 from .searchkit import SearchkitFormSet
-from .searchkit import CSS_CLASSES
 
 
-# TODO: Does this work as model form?
-# TODO: Dynamically use a hidden contenttype field or a choices field. Then
-# reloading form on change of the choices field.
 class SearchkitSearchForm(forms.ModelForm):
     """
     Represents a SearchkitSearch model. Using a SearchkitFormSet for the data

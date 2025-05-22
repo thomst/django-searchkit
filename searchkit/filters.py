@@ -1,7 +1,7 @@
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.models import ContentType
-from searchkit.models import SearchkitSearch
-from searchkit.searchkit import SearchkitFormSet
+from .models import SearchkitSearch
+from .forms import SearchkitFormSet
 
 
 class SearchkitFilter(SimpleListFilter):
