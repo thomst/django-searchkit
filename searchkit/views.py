@@ -1,18 +1,9 @@
-from datetime import datetime
 from django.utils.translation import gettext_lazy as _
 from django.http import HttpResponse
 from django.http import Http404
-from django.urls import reverse
-from django.http import HttpResponseRedirect
 from django.apps import apps
-from django.contrib.contenttypes.models import ContentType
-from django.utils.functional import cached_property
 from django.views.generic import View
-from django.views.generic import FormView
-from django.views.generic import CreateView
-from .models import SearchkitSearch
-from .forms import SearchkitSearchForm
-from .searchkit import SearchkitFormSet
+from .forms import SearchkitFormSet
 
 
 # FIXME: Check permissions and authentication.
@@ -29,7 +20,7 @@ class SearchkitAjaxView(View):
             try:
                 return apps.get_model(app_label=app_label, model_name=model_name)
             except LookupError:
-                raise Http404(f'Model {app_label}.{model_name} not found')
+                raise Http404(_('Model %s.%s not found') % (app_label, model_name))
         else:
             return None
 
