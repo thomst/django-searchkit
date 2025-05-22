@@ -28,5 +28,4 @@ class SearchkitFilter(SimpleListFilter):
         # Filter the queryset based on the selected SearchkitSearch object
         if self.value():
             search = SearchkitSearch.objects.get(id=int(self.value()))
-            formset = SearchkitFormSet(model=search.contenttype.model_class(), data=search.data)
-            return queryset.filter(**get_filter_rules(formset))
+            return queryset.filter(**search.get_filter_rules())

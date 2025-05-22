@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from picklefield.fields import PickledObjectField
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
@@ -14,3 +15,9 @@ class SearchkitSearch(models.Model):
 
     class Meta:
         unique_together = ('name', 'contenttype')
+
+    def get_filter_rules(self):
+        lookups = OrderedDict()
+        for data in self.data:
+            lookups[f'{data["field"]}__{data["operator"]}'] = data['value']
+        return lookups
