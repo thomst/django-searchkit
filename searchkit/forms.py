@@ -23,13 +23,8 @@ class SearchkitSearchForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Hide the contenttype field if an initial value is passed.
-        if 'contenttype' in self.initial:
-            self.fields['contenttype'].widget = forms.HiddenInput()
-        # If we have a formset we hide the data field.
-        if self.formset:
-            self.fields['data'].widget = forms.HiddenInput()
-            self.fields['data'].required = False
+        # Hide the data field. We render the formset instead.
+        self.fields['data'].widget = forms.HiddenInput()
 
     @property
     def media(self):
