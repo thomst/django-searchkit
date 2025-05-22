@@ -11,14 +11,10 @@ class SearchkitSearchForm(forms.ModelForm):
     """
     class Meta:
         model = SearchkitSearch
-        fields = ['name', 'contenttype', 'data']
+        fields = ['name']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Hide the data field. Finally we use the data of the formset.
-        self.fields['data'].widget = forms.HiddenInput()
-        self.fields['data'].initial = "true"  # We need some valid initial data.
-        self.fields['contenttype'].widget = forms.HiddenInput()
 
     @property
     def media(self):
@@ -30,14 +26,18 @@ class SearchkitSearchForm(forms.ModelForm):
         """
         A searchkit formset for the model.
         """
-        data = self.data or None
-        return SearchkitFormSet(data=data, prefix=self.prefix)
+        kwargs = dict()
+        kwargs['data'] = self.data or None
+        kwargs['prefix'] = self.prefix
+        if self.instance.pk:
+            kwargs['model'] = self.instance.contenttype.model_class()
+            kwargs['initial'] = self.instance.data
+        return SearchkitFormSet(**kwargs)
 
     def is_valid(self):
         return self.formset.is_valid() and super().is_valid()
 
     def clean(self):
-        cleaned_data = super().clean()
-        cleaned_data['contenttype'] = self.formset.contenttype_form.cleaned_data['contenttype']
-        cleaned_data['data'] = self.formset.data
-        return cleaned_data
+        self.instance.contenttype = self.formset.contenttype_form.cleaned_data['contenttype']
+        self.instance.data = self.formset.cleaned_data
+        return super().clean()
