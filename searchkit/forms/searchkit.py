@@ -19,16 +19,12 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
 
     See the FIELD_PLAN variable for the logic of building the form.
     """
-    def __init__(self, *args, **kwargs):
-        self.model = kwargs.pop('model', None)
+    def __init__(self, model, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = model
         self.model_field = None
         self.field_plan = None
         self.operator = None
-        super().__init__(*args, **kwargs)
-        if self.model:
-            self._build_form_fields()
-
-    def _build_form_fields(self):
         self._add_field_name_field()
         field_name = self._preload_clean_data('field')
         self.model_field = self.model._meta.get_field(field_name)
@@ -89,13 +85,6 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
             field = field_class()
         self.fields['value'] = field
 
-    class Media:
-        js = [
-            'admin/js/vendor/jquery/jquery.min.js',
-            'admin/js/jquery.init.js',
-            "searchkit/searchkit.js"
-        ]
-
 
 class ContentTypeForm(CSS_CLASSES, forms.Form):
     """
@@ -107,6 +96,13 @@ class ContentTypeForm(CSS_CLASSES, forms.Form):
         empty_label=_('Select a Model'),
         widget=forms.Select(attrs={"class": CSS_CLASSES.reload_on_change_css_class}),
     )
+
+    class Media:
+        js = [
+            'admin/js/vendor/jquery/jquery.min.js',
+            'admin/js/jquery.init.js',
+            "searchkit/searchkit.js"
+        ]
 
 
 class BaseSearchkitFormset(CSS_CLASSES, forms.BaseFormSet):
@@ -153,8 +149,17 @@ class BaseSearchkitFormset(CSS_CLASSES, forms.BaseFormSet):
     def get_default_prefix(cls):
         return cls.default_prefix
 
+    @cached_property
+    def forms(self):
+        # We won't render any forms if we got no model.
+        return super().forms if self.model else []
+
+    @property
+    def media(self):
+        return self.contenttype_form.media
+
     def is_valid(self):
-        return self.contenttype_form.is_valid() and super().is_valid()
+        return self.contenttype_form.is_valid() and self.forms and super().is_valid()
 
 
 SearchkitFormSet = forms.formset_factory(

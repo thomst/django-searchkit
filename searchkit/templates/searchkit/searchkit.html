@@ -5,7 +5,7 @@
     {% block searchkit_contenttype_form %}
         {% as_fieldset formset.contenttype_form %}
     {% endblock %}
-    {% if formset.forms.0.fields %}
+    {% if formset.forms %}
         {% for form in formset %}
             {% block searchkit_form %}
                 {% as_fieldset form name="Filter rule" prefix="searchkit" id_suffix=forloop.counter0 %}
