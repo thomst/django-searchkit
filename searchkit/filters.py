@@ -8,7 +8,7 @@ from .forms.utils import get_filter_rules
 class SearchkitFilter(SimpleListFilter):
     title = 'Searchkit Filter'
     parameter_name = 'search'
-    template = 'admin/searchkit_filter.html'
+    template = 'searchkit/searchkit_filter.html'
 
     def __init__(self, request, params, model, model_admin):
         # We need the app_label and model_name for the reverse url lookup in the
