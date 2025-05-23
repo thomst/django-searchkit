@@ -38,6 +38,8 @@ class SearchkitSearchForm(forms.ModelForm):
         return self.formset.is_valid() and super().is_valid()
 
     def clean(self):
-        self.instance.contenttype = self.formset.contenttype_form.cleaned_data['contenttype']
-        self.instance.data = self.formset.cleaned_data
+        if self.formset.contenttype_form.is_valid():
+            self.instance.contenttype = self.formset.contenttype_form.cleaned_data['contenttype']
+        if self.formset.is_valid():
+            self.instance.data = self.formset.cleaned_data
         return super().clean()
