@@ -4,7 +4,7 @@ from decimal import Decimal
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from example.models import ModelA, ModelB
+from example.models import ModelA, ModelB, CHARS_CHOICES, INTEGER_CHOICES
 
 
 class Command(BaseCommand):
@@ -29,7 +29,9 @@ class Command(BaseCommand):
         for i in range(10):
             model_a = ModelA.objects.create(
                 chars=f"ModelA_Chars_{i}",
+                chars_choices=random.choice([c[0] for c in CHARS_CHOICES]),
                 integer=random.randint(1, 100),
+                integer_choices=random.choice([c[0] for c in INTEGER_CHOICES]),
                 float=random.uniform(1.0, 100.0),
                 decimal=Decimal(f"{random.randint(1, 100)}.{random.randint(0, 99)}"),
                 date=timezone.now().date() - timedelta(days=random.randint(0, 365)),  # Use timezone.now()
