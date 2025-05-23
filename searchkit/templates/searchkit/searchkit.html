@@ -2,13 +2,17 @@
 {% comment %} Save some data attributes for the javascript code. {% endcomment %}
 <div id="searchkit_formset" data-url="{% url 'searchkit_form' %}" data-on-change-class="{% on_change_class %}" data-on-click-class="{% on_click_class %}">
     {{ formset.management_form }}
-    <fieldset class="searchkit-formset">
-        {% block searchkit_contenttype_form %}{% include "searchkit/searchkit_contenttype_form.html" %}{% endblock %}
-    </fieldset>
-        <fieldset class="searchkit-formset">
+    {% block searchkit_contenttype_form %}
+        {% as_fieldset formset.contenttype_form %}
+    {% endblock %}
+    {% if formset.forms.0.fields %}
         {% for form in formset %}
-            {% block searchkit_form %}{% include "searchkit/searchkit_form.html" %}{% endblock %}
+            {% block searchkit_form %}
+                {% as_fieldset form name="Filter rule" prefix="searchkit" id_suffix=forloop.counter0 %}
+            {% endblock %}
         {% endfor %}
-        </fieldset>
-        {% block searchkit_form_buttons %}{% include "searchkit/searchkit_buttons.html" %}{% endblock %}
+        {% block searchkit_form_buttons %}
+            {% include "searchkit/searchkit_buttons.html" %}
+        {% endblock %}
+    {% endif %}
 </div>
