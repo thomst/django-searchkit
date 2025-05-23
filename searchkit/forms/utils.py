@@ -32,7 +32,18 @@ SUPPORTED_FIELDS = [
 
 FIELD_PLAN = OrderedDict((
     (
-        lambda f: isinstance(f, models.CharField) and not f.choices,
+        lambda f: isinstance(f, models.CharField) and f.choices,
+        {
+            'exact': (forms.ChoiceField,),
+            'contains': (forms.CharField,),
+            'startswith': (forms.CharField,),
+            'endswith': (forms.CharField,),
+            'regex': (forms.CharField,),
+            'in': (forms.MultipleChoiceField,),
+        }
+    ),
+    (
+        lambda f: isinstance(f, models.CharField),
         {
             'exact': (forms.CharField,),
             'contains': (forms.CharField,),
@@ -42,13 +53,13 @@ FIELD_PLAN = OrderedDict((
         }
     ),
     (
-        lambda f: isinstance(f, models.CharField) and f.choices,
+        lambda f: isinstance(f, models.IntegerField) and f.choices,
         {
             'exact': (forms.ChoiceField,),
-            'contains': (forms.CharField,),
-            'startswith': (forms.CharField,),
-            'endswith': (forms.CharField,),
-            'regex': (forms.CharField,),
+            'contains': (forms.IntegerField,),
+            'startswith': (forms.IntegerField,),
+            'endswith': (forms.IntegerField,),
+            'regex': (forms.IntegerField,),
             'in': (forms.MultipleChoiceField,),
         }
     ),
@@ -61,7 +72,6 @@ FIELD_PLAN = OrderedDict((
             'lt': (forms.IntegerField,),
             'lte': (forms.IntegerField,),
             'range': (searchkit_fields.IntegerRangeField,),
-            'in': (forms.CharField,),
         }
     ),
     (
