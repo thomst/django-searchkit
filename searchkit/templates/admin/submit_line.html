@@ -1,0 +1,10 @@
+{% extends "admin/submit_line.html" %}
+{% load i18n admin_urls %}
+<div class="submit-row">
+{% block submit-row %}
+    {% if show_save and app_label == 'searchkit' %}
+        <input type="submit" value="{% translate 'Save and apply' %}" class="default" name="_save_and_apply">
+    {% endif %}
+    {{ block.super }}
+{% endblock %}
+</div>
