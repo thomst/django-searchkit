@@ -78,8 +78,7 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
     def _add_value_field(self):
         initial = self.initial.get('value')
         field_class = self.field_plan[self.operator][0]
-        if hasattr(field_class, 'choices'):
-            # FIXME: Model field do not nesseccarily has choices attribute.
+        if getattr(field_class, 'choices', None) and getattr(self.model_field, 'choices', None):
             field = field_class(choices=self.model_field.choices, initial=initial)
         else:
             field = field_class()
