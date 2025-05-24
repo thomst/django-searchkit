@@ -3,7 +3,12 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
 from django.contrib.contenttypes.models import ContentType
-from .utils import CSS_CLASSES, FIELD_PLAN, OPERATOR_DESCRIPTION, SUPPORTED_FIELDS
+from .utils import CSS_CLASSES, FIELD_PLAN, OPERATOR_DESCRIPTION
+from .utils import SUPPORTED_FIELDS, SUPPORTED_RELATIONS
+
+
+# FIXME: Make this a setting
+RELATION_DEPTH = 3
 
 
 class SearchkitForm(CSS_CLASSES, forms.Form):
@@ -26,8 +31,8 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
         self.field_plan = None
         self.operator = None
         self._add_field_name_field()
-        field_name = self._preload_clean_data('field')
-        self.model_field = self.model._meta.get_field(field_name)
+        lookup = self._preload_clean_data('field')
+        self.model_field = self._get_model_field(lookup)
         self.field_plan = next(iter([p for t, p in FIELD_PLAN.items() if t(self.model_field)]))
         self._add_operator_field()
         self.operator = self._preload_clean_data('operator')
@@ -40,6 +45,19 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
             if key.startswith(self.prefix):
                 data[key[len(self.prefix) + 1:]] = value
         return data
+
+    def _get_model_field(self, lookup):
+        path = lookup.split('__')
+        model = self.model
+        for index, field_name in enumerate(path, 1):
+            field = model._meta.get_field(field_name)
+            if index < len(path):
+                try:
+                    model = field.remote_field.model
+                except AttributeError:
+                    # FIXME: How to handle an invalid lookup path?
+                    raise
+        return field
 
     def _preload_clean_data(self, field_name):
         # Try the initial value first since it is already cleaned.
@@ -57,13 +75,24 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
             # one.
             return self.fields[field_name].choices[0][0]
 
+    def _get_model_field_choices(self, model, fields=[]):
+        choices = list()
+        for model_field in model._meta.fields:
+            if any(isinstance(model_field, f) for f in SUPPORTED_FIELDS):
+                lookup = '__'.join([f.name for f in [*fields, model_field]])
+                label = ' -> '.join(f.verbose_name for f in [*fields, model_field])
+                choices.append((lookup, label))
+        if len(fields) < RELATION_DEPTH:
+            for model_field in model._meta.fields:
+                if any(isinstance(model_field, f) for f in SUPPORTED_RELATIONS):
+                    related_model = model_field.remote_field.model
+                    fields = [model_field, *fields]
+                    choices += self._get_model_field_choices(related_model, fields)
+        return choices
+
     def _add_field_name_field(self):
         initial = self.initial.get('field')
-        choices = list()
-        for model_field in self.model._meta.fields:
-            if any(issubclass(type(model_field), f) for f in SUPPORTED_FIELDS):
-                choices.append((model_field.name, model_field.verbose_name))
-
+        choices = self._get_model_field_choices(self.model)
         field = forms.ChoiceField(label=_('Model field'), choices=choices, initial=initial)
         field.widget.attrs.update({"class": CSS_CLASSES.reload_on_change_css_class})
         self.fields['field'] = field
