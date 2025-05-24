@@ -21,6 +21,7 @@ OPERATOR_DESCRIPTION = {
 
 
 SUPPORTED_FIELDS = [
+    models.BooleanField,
     models.CharField,
     models.IntegerField,
     models.FloatField,
@@ -31,6 +32,12 @@ SUPPORTED_FIELDS = [
 
 
 FIELD_PLAN = OrderedDict((
+    (
+        lambda f: isinstance(f, models.BooleanField),
+        {
+            'exact': (forms.NullBooleanField,),
+        }
+    ),
     (
         lambda f: isinstance(f, models.CharField) and f.choices,
         {
