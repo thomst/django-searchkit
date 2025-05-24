@@ -3,12 +3,14 @@
 <div id="searchkit_formset" data-url="{% url 'searchkit_form' %}" data-on-change-class="{% on_change_class %}" data-on-click-class="{% on_click_class %}">
     {{ formset.management_form }}
     {% block searchkit_contenttype_form %}
-        {% as_fieldset formset.contenttype_form %}
+        {% as_fieldset formset.contenttype_form name="Choose a model for your filter rules" %}
     {% endblock %}
     {% if formset.forms %}
         {% for form in formset %}
             {% block searchkit_form %}
-                {% as_fieldset form name="Filter rule" prefix="searchkit" id_suffix=forloop.counter0 %}
+            {% with index=forloop.counter|slugify %}
+                {% as_fieldset form name="Filter rule "|add:index prefix="searchkit" id_suffix=forloop.counter0 %}
+            {% endwith %}
             {% endblock %}
         {% endfor %}
         {% block searchkit_form_buttons %}
