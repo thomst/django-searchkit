@@ -86,7 +86,7 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
             for model_field in model._meta.fields:
                 if any(isinstance(model_field, f) for f in SUPPORTED_RELATIONS):
                     related_model = model_field.remote_field.model
-                    fields = [model_field, *fields]
+                    fields = [*fields, model_field]
                     choices += self._get_model_field_choices(related_model, fields)
         return choices
 
