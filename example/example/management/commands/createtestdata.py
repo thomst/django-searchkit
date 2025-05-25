@@ -28,6 +28,7 @@ class Command(BaseCommand):
         model_a_instances = []
         for i in range(10):
             model_a = ModelA.objects.create(
+                boolean=random.choice([None, True, False]),
                 chars=f"ModelA_Chars_{i}",
                 chars_choices=random.choice([c[0] for c in CHARS_CHOICES]),
                 integer=random.randint(1, 100),
