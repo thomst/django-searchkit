@@ -32,7 +32,7 @@ else:
 setup(
     name="django-searchkit",
     version=get_version,
-    description="Deadly simple and easy to use money split app.",
+    description="Finally a real searchkit for django!",
     long_description=read("README.md"),
     long_description_content_type='text/markdown',
     author="Thomas Leichtfuß",
