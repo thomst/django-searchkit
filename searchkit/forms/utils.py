@@ -32,7 +32,6 @@ SUPPORTED_FIELDS = [
 SUPPORTED_RELATIONS = [
     models.ForeignKey,
     models.OneToOneField,
-    models.OneToOneRel,
 ]
 
 
