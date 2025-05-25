@@ -40,8 +40,9 @@ class Command(BaseCommand):
             model_a_instances.append(model_a)
 
         # Generate test data for ModelB
+        model_b_instances = []
         for i in range(10):
-            ModelB.objects.create(
+            model_b = ModelB.objects.create(
                 chars=f"ModelB_Chars_{i}",
                 integer=random.randint(1, 100),
                 float=random.uniform(1.0, 100.0),
@@ -50,5 +51,11 @@ class Command(BaseCommand):
                 datetime=timezone.now() - timedelta(days=random.randint(0, 365)),  # Use timezone.now()
                 model_a=random.choice(model_a_instances)
             )
+            model_b_instances.append(model_b)
+
+        # Add modela -> modelb relation.
+        for index, model_a in enumerate(model_a_instances):
+            model_a.model_b = model_b_instances[index]
+            model_a.save()
 
         self.stdout.write(self.style.SUCCESS("Test data created successfully!"))

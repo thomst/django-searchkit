@@ -25,6 +25,7 @@ class ModelA(models.Model):
     decimal = models.DecimalField(max_digits=5, decimal_places=2)
     date = models.DateField()
     datetime = models.DateTimeField()
+    model_b = models.OneToOneField('ModelB', on_delete=models.CASCADE, null=True)
 
 
 class ModelB(models.Model):
