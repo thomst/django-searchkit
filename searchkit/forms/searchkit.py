@@ -46,19 +46,6 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
                 data[key[len(self.prefix) + 1:]] = value
         return data
 
-    def _get_model_field(self, lookup):
-        path = lookup.split('__')
-        model = self.model
-        for index, field_name in enumerate(path, 1):
-            field = model._meta.get_field(field_name)
-            if index < len(path):
-                try:
-                    model = field.remote_field.model
-                except AttributeError:
-                    # FIXME: How to handle an invalid lookup path?
-                    raise
-        return field
-
     def _preload_clean_data(self, field_name):
         # Try the initial value first since it is already cleaned.
         if self.initial and field_name in self.initial:
@@ -74,6 +61,15 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
             # At last simply return the first option which will be the selected
             # one.
             return self.fields[field_name].choices[0][0]
+
+    def _get_model_field(self, lookup):
+        path = lookup.split('__')
+        model = self.model
+        for index, field_name in enumerate(path, 1):
+            field = model._meta.get_field(field_name)
+            if index < len(path):
+                model = field.remote_field.model
+        return field
 
     def _get_model_field_choices(self, model, fields=[]):
         choices = list()
