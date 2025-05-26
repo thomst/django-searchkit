@@ -149,7 +149,7 @@ class BaseSearchkitFormset(CSS_CLASSES, forms.BaseFormSet):
     def get_conttenttype_form(self, kwargs):
         ct_kwargs = dict()
         ct_kwargs['data'] = kwargs.get('data')
-        ct_kwargs['prefix'] = kwargs.get('prefix')
+        ct_kwargs['prefix'] = kwargs.get('prefix') or self.get_default_prefix()
         if model := kwargs.pop('model', None):
             ct_kwargs['initial'] = dict(contenttype=ContentType.objects.get_for_model(model))
         return self.contenttype_form_class(**ct_kwargs)
