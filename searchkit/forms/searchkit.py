@@ -142,6 +142,7 @@ class BaseSearchkitFormset(CSS_CLASSES, forms.BaseFormSet):
     def __init__(self, *args, **kwargs):
         self.contenttype_form = self.get_conttenttype_form(kwargs)
         self.model = self.get_model(kwargs)
+        kwargs.pop('model', None)
         super().__init__(*args, **kwargs)
         if self.initial:
             self.extra = 0
@@ -150,11 +151,13 @@ class BaseSearchkitFormset(CSS_CLASSES, forms.BaseFormSet):
         ct_kwargs = dict()
         ct_kwargs['data'] = kwargs.get('data')
         ct_kwargs['prefix'] = kwargs.get('prefix') or self.get_default_prefix()
-        if model := kwargs.pop('model', None):
+        if model := kwargs.get('model'):
             ct_kwargs['initial'] = dict(contenttype=ContentType.objects.get_for_model(model))
         return self.contenttype_form_class(**ct_kwargs)
 
     def get_model(self, kwargs):
+        if model := kwargs.get('model'):
+            return model
         if self.contenttype_form.initial:
             return self.contenttype_form.initial['contenttype'].model_class()
         elif self.contenttype_form.is_valid():
