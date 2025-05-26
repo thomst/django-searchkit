@@ -1,9 +1,12 @@
 from django.test import TestCase
+from django.contrib.contenttypes.models import ContentType
 from django import forms
 from example.models import ModelA
-from .searchkit import FIELD_PLAN
-from .searchkit import SearchkitForm
-from .searchkit import SearchkitFormSet
+from searchkit.forms.utils import FIELD_PLAN
+from searchkit.forms.utils import SUPPORTED_FIELDS
+from searchkit.forms.utils import SUPPORTED_RELATIONS
+from searchkit.forms import SearchkitForm
+from searchkit.forms import SearchkitFormSet
 
 
 INITIAL_DATA = [
@@ -41,13 +44,16 @@ INITIAL_DATA = [
 ]
 
 DEFAULT_PREFIX = SearchkitFormSet.get_default_prefix()
+INDEXED_PREFIX = SearchkitFormSet(model=ModelA).add_prefix(0)
 FORM_DATA = {
     f'{DEFAULT_PREFIX}-TOTAL_FORMS': '6',
-    f'{DEFAULT_PREFIX}-INITIAL_FORMS': '1'
+    f'{DEFAULT_PREFIX}-INITIAL_FORMS': '1',
+    f'{DEFAULT_PREFIX}-contenttype': f'{ContentType.objects.get_for_model(ModelA).pk}',
 }
-for i, data in enumerate(INITIAL_DATA):
+for i, data in enumerate(INITIAL_DATA, 0):
+    prefix = SearchkitFormSet(model=ModelA).add_prefix(i)
     for key, value in data.items():
-        FORM_DATA.update({f'{DEFAULT_PREFIX}-{i}-{key}': value})
+        FORM_DATA.update({f'{prefix}-{key}': value})
 
 
 class SearchkitFormTestCase(TestCase):
@@ -62,9 +68,19 @@ class SearchkitFormTestCase(TestCase):
         # Check choices of the model_field.
         form_model_field = form.fields['field']
         self.assertTrue(form_model_field.choices)
-        self.assertEqual(len(form_model_field.choices), len(ModelA._meta.fields))
+        options = [c[0] for c in form_model_field.choices]
         for model_field in ModelA._meta.fields:
-            self.assertIn(model_field.name, [c[0] for c in form_model_field.choices])
+            if isinstance(model_field, tuple(SUPPORTED_FIELDS)):
+                self.assertIn(model_field.name, options)
+
+        # Check choices for relational lookups.
+        for model_field in ModelA._meta.fields:
+            if isinstance(model_field, tuple(SUPPORTED_RELATIONS)):
+                remote_fields = model_field.remote_field.model._meta.fields
+                for remote_field in remote_fields:
+                    if isinstance(model_field, tuple(SUPPORTED_FIELDS)):
+                        lookup_path = f'{model_field.name}__{remote_field.name}'
+                        self.assertIn(lookup_path, options)
 
         # Check the field_plan choosen based on the model_field.
         field_plan = next(iter([p for t, p in FIELD_PLAN.items() if t(form.model_field)]))
@@ -73,27 +89,24 @@ class SearchkitFormTestCase(TestCase):
         # Check choices of the operator field based on the field_plan.
         operator_field = form.fields['operator']
         self.assertTrue(operator_field.choices)
-        self.assertEqual(len(form_model_field.choices), len(form.field_plan))
+        self.assertEqual(len(operator_field.choices), len(form.field_plan))
         for operator in form.field_plan.keys():
             self.assertIn(operator, [c[0] for c in operator_field.choices])
 
 
     def test_blank_searchkitform(self):
-        for index in range(3):
-            prefix = SearchkitFormSet(ModelA).add_prefix(index)
-            form = SearchkitForm(ModelA, prefix=prefix)
-            self.check_form(form)
+        form = SearchkitForm(ModelA, prefix=INDEXED_PREFIX)
+        self.check_form(form)
 
-            # Form should not be bound or valid.
-            self.assertFalse(form.is_bound)
-            self.assertFalse(form.is_valid())
+        # Form should not be bound or valid.
+        self.assertFalse(form.is_bound)
+        self.assertFalse(form.is_valid())
 
     def test_searchkitform_with_invalid_model_field_data(self):
-        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
-            f'{prefix}-field': 'foobar',
+            f'{INDEXED_PREFIX}-field': 'foobar',
         }
-        form = SearchkitForm(ModelA, data, prefix=prefix)
+        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
         self.check_form(form)
 
         # Form should be invalid.
@@ -104,23 +117,21 @@ class SearchkitFormTestCase(TestCase):
         self.assertFormError(form, 'field', errors)
 
     def test_searchkitform_with_valid_model_field_data(self):
-        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
-            f'{prefix}-field': 'integer',
+            f'{INDEXED_PREFIX}-field': 'integer',
         }
-        form = SearchkitForm(ModelA, data, prefix=prefix)
+        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
         self.check_form(form)
 
-        # Form should be invalid.
+        # Form should be invalid since no value data is provieded.
         self.assertFalse(form.is_valid())
 
     def test_searchkitform_with_invalid_operator_data(self):
-        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
-            f'{prefix}-field': 'integer',
-            f'{prefix}-operator': 'foobar',
+            f'{INDEXED_PREFIX}-field': 'integer',
+            f'{INDEXED_PREFIX}-operator': 'foobar',
         }
-        form = SearchkitForm(ModelA, data, prefix=prefix)
+        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
         self.check_form(form)
 
         # Form should be invalid.
@@ -131,42 +142,35 @@ class SearchkitFormTestCase(TestCase):
         self.assertFormError(form, 'operator', errors)
 
     def test_searchkitform_with_valid_operator_data(self):
-        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
-            f'{prefix}-field': 'integer',
-            f'{prefix}-operator': 'exact',
+            f'{INDEXED_PREFIX}-field': 'integer',
+            f'{INDEXED_PREFIX}-operator': 'exact',
         }
-        form = SearchkitForm(ModelA, data, prefix=prefix)
+        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
         self.check_form(form)
 
-        # Form should be invalid.
+        # Form should be invalid since no value data is provieded.
         self.assertFalse(form.is_valid())
 
     def test_searchkitform_with_valid_data(self):
-        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
-            f'{prefix}-field': 'integer',
-            f'{prefix}-operator': 'exact',
-            f'{prefix}-value': '123',
+            f'{INDEXED_PREFIX}-field': 'integer',
+            f'{INDEXED_PREFIX}-operator': 'exact',
+            f'{INDEXED_PREFIX}-value': '123',
         }
-        form = SearchkitForm(ModelA, data, prefix=prefix)
+        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
         self.check_form(form)
 
-        # Form should be valid, bound and complete
+        # Form should be valid.
         self.assertTrue(form.is_valid())
 
-        # Get filter rule and check if a lookup does not raises any error.
-        rule = form.get_filter_rule()
-        self.assertFalse(ModelA.objects.filter(**dict((rule,))))
-
     def test_searchkitform_with_invalid_data(self):
-        prefix = SearchkitFormSet(ModelA).add_prefix(0)
         data = {
-            f'{prefix}-field': 'integer',
-            f'{prefix}-operator': 'exact',
-            f'{prefix}-value': 'foobar',
+            f'{INDEXED_PREFIX}-field': 'integer',
+            f'{INDEXED_PREFIX}-operator': 'exact',
+            f'{INDEXED_PREFIX}-value': 'foobar',
         }
-        form = SearchkitForm(ModelA, data, prefix=prefix)
+        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
         self.check_form(form)
 
         # Form should be invalid.
@@ -176,22 +180,27 @@ class SearchkitFormTestCase(TestCase):
         errors = ['Enter a whole number.']
         self.assertFormError(form, 'value', errors)
 
-        # get_filter_rule should raise an error.
-        with self.assertRaises(forms.ValidationError):
-            form.get_filter_rule()
-
 
 class SearchkitFormSetTestCase(TestCase):
 
-    def test_searchkit_formset_with_valid_data(self):
-        formset = SearchkitFormSet(ModelA, FORM_DATA)
-        self.assertTrue(formset.is_valid())
+    def test_blank_searchkitform(self):
+        # Instantiating the formset neither with a model instance nor with model
+        # related data or initial data should result in a formset without forms,
+        # that is invalid and unbound.
+        formset = SearchkitFormSet()
+        self.assertFalse(formset.is_bound)
+        self.assertFalse(formset.is_valid())
 
-        # Just check if the filter rules are applicable. Result should be empty.
-        self.assertFalse(ModelA.objects.filter(**formset.get_filter_rules()))
+    def test_searchkit_formset_with_valid_data(self):
+        formset = SearchkitFormSet(FORM_DATA)
+        self.assertTrue(formset.is_valid())
 
     def test_searchkit_formset_with_incomplete_data(self):
         data = FORM_DATA.copy()
-        del data[f'{DEFAULT_PREFIX}-0-value']
-        formset = SearchkitFormSet(ModelA, data)
+        del data[f'{INDEXED_PREFIX}-value']
+        formset = SearchkitFormSet(data, model=ModelA)
         self.assertFalse(formset.is_valid())
+
+        # Check error message in html.
+        errors = ['This field is required.']
+        self.assertFormError(formset.forms[0], 'value', errors)
