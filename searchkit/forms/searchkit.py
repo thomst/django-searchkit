@@ -56,7 +56,7 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
                 # Do we have a valid value?
                 return self.fields[field_name].clean(self.unprefixed_data[field_name])
             except forms.ValidationError:
-                pass
+                return self.fields[field_name].choices[0][0]
         else:
             # At last simply return the first option which will be the selected
             # one.
