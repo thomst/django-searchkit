@@ -43,12 +43,12 @@ setup(
     packages=find_namespace_packages(exclude=["example"]),
     include_package_data=True,
     install_requires=[
-        "Django>=3.0",
+        "Django>=3.1",
+        "django-picklefield>=3.0",
     ],
     classifiers=[
         dev_status,
         "Framework :: Django",
-        "Framework :: Django :: 3.0",
         "Framework :: Django :: 3.1",
         "Framework :: Django :: 3.2",
         "Framework :: Django :: 4.0",
