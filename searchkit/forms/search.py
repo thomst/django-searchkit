@@ -13,9 +13,6 @@ class SearchkitSearchForm(forms.ModelForm):
         model = SearchkitSearch
         fields = ['name']
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     @property
     def media(self):
         # TODO: Check if child classes inherit those media files.
