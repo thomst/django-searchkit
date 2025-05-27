@@ -209,7 +209,7 @@ class SearchkitFormSetTestCase(CheckFormMixin, TestCase):
 
         # Check error message in html.
         errors = ['This field is required.']
-        self.assertFormError(formset.forms[0], 'value', errors)
+        self.assertFormSetError(formset, 0, 'value', errors)
 
     def test_searchkit_formset_with_initial_data(self):
         formset = SearchkitFormSet(initial=INITIAL_DATA, model=ModelA)
