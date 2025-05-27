@@ -5,21 +5,21 @@ from example.models import ModelA
 from searchkit.forms.utils import FIELD_PLAN
 from searchkit.forms.utils import SUPPORTED_FIELDS
 from searchkit.forms.utils import SUPPORTED_RELATIONS
+from searchkit.forms import SearchkitSearchForm
 from searchkit.forms import SearchkitForm
 from searchkit.forms import SearchkitFormSet
 
 
 INITIAL_DATA = [
     dict(
-        field='chars',
+        field='model_b__chars',
         operator='exact',
         value='anytext',
     ),
     dict(
         field='integer',
         operator='range',
-        value_0=1,
-        value_1=123,
+        value=[1, 123],
     ),
     dict(
         field='float',
@@ -43,12 +43,15 @@ INITIAL_DATA = [
     )
 ]
 
+add_prefix = lambda i: SearchkitFormSet(model=ModelA).add_prefix(i)
 DEFAULT_PREFIX = SearchkitFormSet.get_default_prefix()
-INDEXED_PREFIX = SearchkitFormSet(model=ModelA).add_prefix(0)
 FORM_DATA = {
-    f'{DEFAULT_PREFIX}-TOTAL_FORMS': '6',
-    f'{DEFAULT_PREFIX}-INITIAL_FORMS': '1',
+    'name': 'test search',                  # The name of the search.
+    f'{DEFAULT_PREFIX}-TOTAL_FORMS': '6',   # Data for the managment form.
+    f'{DEFAULT_PREFIX}-INITIAL_FORMS': '1', # Data for the managment form.
     f'{DEFAULT_PREFIX}-contenttype': f'{ContentType.objects.get_for_model(ModelA).pk}',
+    f'{add_prefix(1)}-value_0': '1',        # Data for the range operator.
+    f'{add_prefix(1)}-value_1': '123',      # Data for the range operator.
 }
 for i, data in enumerate(INITIAL_DATA, 0):
     prefix = SearchkitFormSet(model=ModelA).add_prefix(i)
@@ -56,8 +59,10 @@ for i, data in enumerate(INITIAL_DATA, 0):
         FORM_DATA.update({f'{prefix}-{key}': value})
 
 
-class SearchkitFormTestCase(TestCase):
-
+class CheckFormMixin:
+    """
+    Mixin to check the form fields and their choices.
+    """
     def check_form(self, form):
         # Three fields should be generated on instantiation.
         self.assertIn('field', form.fields)
@@ -94,8 +99,10 @@ class SearchkitFormTestCase(TestCase):
             self.assertIn(operator, [c[0] for c in operator_field.choices])
 
 
+class SearchkitFormTestCase(CheckFormMixin, TestCase):
+
     def test_blank_searchkitform(self):
-        form = SearchkitForm(ModelA, prefix=INDEXED_PREFIX)
+        form = SearchkitForm(ModelA, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should not be bound or valid.
@@ -104,9 +111,9 @@ class SearchkitFormTestCase(TestCase):
 
     def test_searchkitform_with_invalid_model_field_data(self):
         data = {
-            f'{INDEXED_PREFIX}-field': 'foobar',
+            f'{add_prefix(0)}-field': 'foobar',
         }
-        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
+        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be invalid.
@@ -118,9 +125,9 @@ class SearchkitFormTestCase(TestCase):
 
     def test_searchkitform_with_valid_model_field_data(self):
         data = {
-            f'{INDEXED_PREFIX}-field': 'integer',
+            f'{add_prefix(0)}-field': 'integer',
         }
-        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
+        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be invalid since no value data is provieded.
@@ -128,10 +135,10 @@ class SearchkitFormTestCase(TestCase):
 
     def test_searchkitform_with_invalid_operator_data(self):
         data = {
-            f'{INDEXED_PREFIX}-field': 'integer',
-            f'{INDEXED_PREFIX}-operator': 'foobar',
+            f'{add_prefix(0)}-field': 'integer',
+            f'{add_prefix(0)}-operator': 'foobar',
         }
-        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
+        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be invalid.
@@ -143,10 +150,10 @@ class SearchkitFormTestCase(TestCase):
 
     def test_searchkitform_with_valid_operator_data(self):
         data = {
-            f'{INDEXED_PREFIX}-field': 'integer',
-            f'{INDEXED_PREFIX}-operator': 'exact',
+            f'{add_prefix(0)}-field': 'integer',
+            f'{add_prefix(0)}-operator': 'exact',
         }
-        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
+        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be invalid since no value data is provieded.
@@ -154,11 +161,11 @@ class SearchkitFormTestCase(TestCase):
 
     def test_searchkitform_with_valid_data(self):
         data = {
-            f'{INDEXED_PREFIX}-field': 'integer',
-            f'{INDEXED_PREFIX}-operator': 'exact',
-            f'{INDEXED_PREFIX}-value': '123',
+            f'{add_prefix(0)}-field': 'integer',
+            f'{add_prefix(0)}-operator': 'exact',
+            f'{add_prefix(0)}-value': '123',
         }
-        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
+        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be valid.
@@ -166,11 +173,11 @@ class SearchkitFormTestCase(TestCase):
 
     def test_searchkitform_with_invalid_data(self):
         data = {
-            f'{INDEXED_PREFIX}-field': 'integer',
-            f'{INDEXED_PREFIX}-operator': 'exact',
-            f'{INDEXED_PREFIX}-value': 'foobar',
+            f'{add_prefix(0)}-field': 'integer',
+            f'{add_prefix(0)}-operator': 'exact',
+            f'{add_prefix(0)}-value': 'foobar',
         }
-        form = SearchkitForm(ModelA, data, prefix=INDEXED_PREFIX)
+        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be invalid.
@@ -181,8 +188,7 @@ class SearchkitFormTestCase(TestCase):
         self.assertFormError(form, 'value', errors)
 
 
-class SearchkitFormSetTestCase(TestCase):
-
+class SearchkitFormSetTestCase(CheckFormMixin, TestCase):
     def test_blank_searchkitform(self):
         # Instantiating the formset neither with a model instance nor with model
         # related data or initial data should result in a formset without forms,
@@ -195,12 +201,50 @@ class SearchkitFormSetTestCase(TestCase):
         formset = SearchkitFormSet(FORM_DATA)
         self.assertTrue(formset.is_valid())
 
-    def test_searchkit_formset_with_incomplete_data(self):
+    def test_searchkit_formset_with_invalid_data(self):
         data = FORM_DATA.copy()
-        del data[f'{INDEXED_PREFIX}-value']
+        del data[f'{add_prefix(0)}-value']
         formset = SearchkitFormSet(data, model=ModelA)
         self.assertFalse(formset.is_valid())
 
         # Check error message in html.
         errors = ['This field is required.']
         self.assertFormError(formset.forms[0], 'value', errors)
+
+    def test_searchkit_formset_with_initial_data(self):
+        formset = SearchkitFormSet(initial=INITIAL_DATA, model=ModelA)
+        self.assertFalse(formset.is_bound)
+        self.assertFalse(formset.is_valid())
+        self.assertEqual(len(formset.forms), len(INITIAL_DATA))
+        for i, form in enumerate(formset.forms):
+            self.assertEqual(form.initial, INITIAL_DATA[i])
+            self.check_form(form)
+
+
+class SearchkitSearchFormTestCase(TestCase):
+    def test_searchkit_search_form_without_data(self):
+        form = SearchkitSearchForm()
+        self.assertFalse(form.is_bound)
+        self.assertFalse(form.is_valid())
+        self.assertIsInstance(form.formset, SearchkitFormSet)
+        self.assertEqual(form.formset.model, None)
+
+    def test_searchkit_search_form_with_data(self):
+        form = SearchkitSearchForm(FORM_DATA)
+        self.assertTrue(form.is_bound)
+        self.assertTrue(form.is_valid())
+        self.assertIsInstance(form.formset, SearchkitFormSet)
+        self.assertEqual(form.formset.model, ModelA)
+        self.assertEqual(form.instance.data, form.formset.cleaned_data)
+
+        # Saving the instance works.
+        form.instance.save()
+        self.assertTrue(form.instance.pk)
+
+        # Using the instance data as filter rules works.
+        filter_rules = form.instance.get_filter_rules()
+        self.assertEqual(len(filter_rules), len(INITIAL_DATA))
+        for data in INITIAL_DATA:
+            self.assertIn(f"{data['field']}__{data['operator']}", filter_rules)
+        queryset = form.formset.model.objects.filter(**filter_rules)
+        self.assertTrue(queryset.model == ModelA)
