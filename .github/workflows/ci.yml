@@ -52,6 +52,7 @@ jobs:
         pip install coverage wheel
         pip install ${{ matrix.django-version }}
         pip install --editable ./
+        python example/manage.py migrate
 
     - name: Run Tests
       run: coverage run --source=searchkit/ example/manage.py test
