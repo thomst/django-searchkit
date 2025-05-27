@@ -44,7 +44,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "Django>=3.1",
-        "django-picklefield>=3.0",
+        "django-picklefield>=2.0",
     ],
     classifiers=[
         dev_status,
