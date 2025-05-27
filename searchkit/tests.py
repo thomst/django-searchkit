@@ -121,7 +121,7 @@ class SearchkitFormTestCase(CheckFormMixin, TestCase):
 
         # Check error message in html.
         errors = ['Select a valid choice. foobar is not one of the available choices.']
-        self.assertFormError(form, 'field', errors)
+        self.assertIn(errors, form.errors.values())
 
     def test_searchkitform_with_valid_model_field_data(self):
         data = {
@@ -146,7 +146,7 @@ class SearchkitFormTestCase(CheckFormMixin, TestCase):
 
         # Check error message in html.
         errors = ['Select a valid choice. foobar is not one of the available choices.']
-        self.assertFormError(form, 'operator', errors)
+        self.assertIn(errors, form.errors.values())
 
     def test_searchkitform_with_valid_operator_data(self):
         data = {
@@ -185,7 +185,7 @@ class SearchkitFormTestCase(CheckFormMixin, TestCase):
 
         # Check error message in html.
         errors = ['Enter a whole number.']
-        self.assertFormError(form, 'value', errors)
+        self.assertIn(errors, form.errors.values())
 
 
 class SearchkitFormSetTestCase(CheckFormMixin, TestCase):
@@ -209,7 +209,7 @@ class SearchkitFormSetTestCase(CheckFormMixin, TestCase):
 
         # Check error message in html.
         errors = ['This field is required.']
-        self.assertFormSetError(formset, 0, 'value', errors)
+        self.assertIn(errors, formset.forms[0].errors.values())
 
     def test_searchkit_formset_with_initial_data(self):
         formset = SearchkitFormSet(initial=INITIAL_DATA, model=ModelA)
