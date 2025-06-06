@@ -135,15 +135,3 @@ FIELD_PLAN = OrderedDict((
 class CSS_CLASSES:
     reload_on_change_css_class = "searchkit-reload-on-change"
     reload_on_click_css_class = "searchkit-reload-on-click"
-
-
-def get_filter_rules(formset):
-    """
-    Build filter rules out of the cleaned data of the formset.
-    :param formset: Formset to extract filter rules from.
-    :return: OrderedDict with filter rule pairs: field__operator: value
-    """
-    lookups = OrderedDict()
-    for data in formset.cleaned_data:
-        lookups[f'{data["field"]}__{data["operator"]}'] = data['value']
-    return lookups
