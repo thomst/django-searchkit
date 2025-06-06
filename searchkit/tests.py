@@ -1,13 +1,16 @@
 from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
-from django import forms
+from django.contrib.auth.models import User
+from django.urls import reverse
 from example.models import ModelA
+from example.management.commands.createtestdata import Command as CreateTestData
 from searchkit.forms.utils import FIELD_PLAN
 from searchkit.forms.utils import SUPPORTED_FIELDS
 from searchkit.forms.utils import SUPPORTED_RELATIONS
 from searchkit.forms import SearchkitSearchForm
 from searchkit.forms import SearchkitForm
 from searchkit.forms import SearchkitFormSet
+from searchkit.models import SearchkitSearch
 
 
 INITIAL_DATA = [
@@ -44,12 +47,13 @@ INITIAL_DATA = [
 ]
 
 add_prefix = lambda i: SearchkitFormSet(model=ModelA).add_prefix(i)
+contenttype = ContentType.objects.get_for_model(ModelA)
 DEFAULT_PREFIX = SearchkitFormSet.get_default_prefix()
 FORM_DATA = {
     'name': 'test search',                  # The name of the search.
     f'{DEFAULT_PREFIX}-TOTAL_FORMS': '6',   # Data for the managment form.
     f'{DEFAULT_PREFIX}-INITIAL_FORMS': '1', # Data for the managment form.
-    f'{DEFAULT_PREFIX}-contenttype': f'{ContentType.objects.get_for_model(ModelA).pk}',
+    f'{DEFAULT_PREFIX}-contenttype': f'{contenttype.pk}',  # Data for the contenttype form.
     f'{add_prefix(1)}-value_0': '1',        # Data for the range operator.
     f'{add_prefix(1)}-value_1': '123',      # Data for the range operator.
 }
@@ -248,3 +252,35 @@ class SearchkitSearchFormTestCase(TestCase):
             self.assertIn(f"{data['field']}__{data['operator']}", filter_rules)
         queryset = form.formset.model.objects.filter(**filter_rules)
         self.assertTrue(queryset.model == ModelA)
+
+
+class ExportTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        CreateTestData().handle()
+
+    def setUp(self):
+        admin = User.objects.get(username='admin')
+        self.client.force_login(admin)
+
+    def test_search_form(self):
+        url = reverse('admin:searchkit_searchkitsearch_add')
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'searchkit-contenttype', resp.content)
+
+    def test_add_search(self):
+        url = reverse('admin:searchkit_searchkitsearch_add')
+        resp = self.client.post(url, FORM_DATA, follow=True)
+        self.assertEqual(resp.status_code, 200)
+
+        # Did we have a search?
+        searches = SearchkitSearch.objects.all()
+        self.assertEqual(len(searches), 1)
+
+        # Will the search be listed in the admin filter?
+        url = reverse('admin:example_modela_changelist')
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        a_html = f'<a href="?search=1">{FORM_DATA["name"]}</a>'
+        self.assertInHTML(a_html, str(resp.content))
