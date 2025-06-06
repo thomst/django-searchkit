@@ -1,3 +1,4 @@
+from urllib.parse import urlencode
 from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
@@ -11,6 +12,7 @@ from searchkit.forms import SearchkitSearchForm
 from searchkit.forms import SearchkitForm
 from searchkit.forms import SearchkitFormSet
 from searchkit.models import SearchkitSearch
+from searchkit import __version__
 
 
 INITIAL_DATA = [
@@ -49,18 +51,26 @@ INITIAL_DATA = [
 add_prefix = lambda i: SearchkitFormSet(model=ModelA).add_prefix(i)
 contenttype = ContentType.objects.get_for_model(ModelA)
 DEFAULT_PREFIX = SearchkitFormSet.get_default_prefix()
-FORM_DATA = {
-    'name': 'test search',                  # The name of the search.
-    f'{DEFAULT_PREFIX}-TOTAL_FORMS': '6',   # Data for the managment form.
-    f'{DEFAULT_PREFIX}-INITIAL_FORMS': '1', # Data for the managment form.
-    f'{DEFAULT_PREFIX}-contenttype': f'{contenttype.pk}',  # Data for the contenttype form.
-    f'{add_prefix(1)}-value_0': '1',        # Data for the range operator.
-    f'{add_prefix(1)}-value_1': '123',      # Data for the range operator.
-}
-for i, data in enumerate(INITIAL_DATA, 0):
-    prefix = SearchkitFormSet(model=ModelA).add_prefix(i)
-    for key, value in data.items():
-        FORM_DATA.update({f'{prefix}-{key}': value})
+
+def get_form_data(initial_data=INITIAL_DATA):
+    count = len(initial_data)
+    data = {
+        'name': 'test search',                  # The name of the search.
+        f'{DEFAULT_PREFIX}-TOTAL_FORMS': f'{count}',   # Data for the managment form.
+        f'{DEFAULT_PREFIX}-INITIAL_FORMS': f'{count}', # Data for the managment form.
+        f'{DEFAULT_PREFIX}-contenttype': f'{contenttype.pk}',  # Data for the contenttype form.
+    }
+    for i, d in enumerate(initial_data):
+        prefix = SearchkitFormSet(model=ModelA).add_prefix(i)
+        for key, value in d.items():
+            if isinstance(value, list):
+                for i, v in enumerate(value):
+                    data.update({f'{prefix}-{key}_{i}': v})
+            else:
+                data.update({f'{prefix}-{key}': value})
+    return data
+
+FORM_DATA = get_form_data()
 
 
 class CheckFormMixin:
@@ -254,7 +264,7 @@ class SearchkitSearchFormTestCase(TestCase):
         self.assertTrue(queryset.model == ModelA)
 
 
-class ExportTest(TestCase):
+class AdminBackendTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         CreateTestData().handle()
@@ -271,16 +281,94 @@ class ExportTest(TestCase):
 
     def test_add_search(self):
         url = reverse('admin:searchkit_searchkitsearch_add')
-        resp = self.client.post(url, FORM_DATA, follow=True)
+        data = FORM_DATA.copy()
+        data['_save_and_apply'] = True
+        resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
 
         # Did we have a search?
         searches = SearchkitSearch.objects.all()
         self.assertEqual(len(searches), 1)
 
+        # Change it via backend.
+        url = reverse('admin:searchkit_searchkitsearch_change', args=(1,))
+        search_name = 'Changed name'
+        data['name'] = search_name
+        resp = self.client.post(url, data, follow=True)
+        self.assertEqual(resp.status_code, 200)
+
         # Will the search be listed in the admin filter?
         url = reverse('admin:example_modela_changelist')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        a_html = f'<a href="?search=1">{FORM_DATA["name"]}</a>'
+        a_html = f'<a href="?search=1">{search_name}</a>'
         self.assertInHTML(a_html, str(resp.content))
+
+
+class SearchViewTest(TestCase):
+
+    def setUp(self):
+        self.initial = [
+            dict(
+                field='integer',
+                operator='exact',
+                value=1,
+            )
+        ]
+        self.initial_range = [
+            dict(
+                field='integer',
+                operator='range',
+                value=[1,3],
+            )
+        ]
+
+    def test_search_view_invalid_data(self):
+        initial = self.initial.copy()
+        initial[0]['value'] = 'no integer'
+        data = get_form_data(initial)
+        url_params = urlencode(data)
+        base_url = reverse('searchkit_form')
+        url = f'{base_url}?{url_params}'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        html_error = '<ul class="errorlist"><li>Enter a whole number.</li></ul>'
+        self.assertInHTML(html_error, str(resp.content))
+
+    def test_search_view_missing_data(self):
+        initial = self.initial.copy()
+        del(initial[0]['value'])
+        data = get_form_data(initial)
+        url_params = urlencode(data)
+        base_url = reverse('searchkit_form')
+        url = f'{base_url}?{url_params}'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        html_error = '<ul class="errorlist"><li>This field is required.</li></ul>'
+        self.assertInHTML(html_error, str(resp.content))
+
+    def test_search_view_with_range_operator(self):
+        data = get_form_data(self.initial_range)
+        url_params = urlencode(data)
+        base_url = reverse('searchkit_form')
+        url = f'{base_url}?{url_params}'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        html = '<input type="number" name="searchkit-modela-0-value_1" value="3" id="id_searchkit-modela-0-value_1">'
+        self.assertInHTML(html, str(resp.content))
+
+    def test_search_view_with_model(self):
+        data = get_form_data(self.initial)
+        url_params = urlencode(data)
+        base_url = reverse('searchkit_form_model', args=('example', 'modela'))
+        url = f'{base_url}?{url_params}'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_search_view_with_invalid_model(self):
+        data = get_form_data(self.initial)
+        url_params = urlencode(data)
+        base_url = reverse('searchkit_form_model', args=('example', 'no_model'))
+        url = f'{base_url}?{url_params}'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
