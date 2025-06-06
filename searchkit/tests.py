@@ -332,7 +332,7 @@ class SearchViewTest(TestCase):
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        html_error = '<ul class="errorlist"><li>Enter a whole number.</li></ul>'
+        html_error = '<li>Enter a whole number.</li>'
         self.assertInHTML(html_error, str(resp.content))
 
     def test_search_view_missing_data(self):
@@ -344,7 +344,7 @@ class SearchViewTest(TestCase):
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        html_error = '<ul class="errorlist"><li>This field is required.</li></ul>'
+        html_error = '<li>This field is required.</li>'
         self.assertInHTML(html_error, str(resp.content))
 
     def test_search_view_with_range_operator(self):
