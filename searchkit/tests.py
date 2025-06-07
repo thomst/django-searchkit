@@ -11,7 +11,7 @@ from searchkit.forms.utils import SUPPORTED_RELATIONS
 from searchkit.forms import SearchkitSearchForm
 from searchkit.forms import SearchkitForm
 from searchkit.forms import SearchkitFormSet
-from searchkit.models import SearchkitSearch
+from searchkit.models import Search
 from searchkit import __version__
 
 
@@ -274,24 +274,24 @@ class AdminBackendTest(TestCase):
         self.client.force_login(admin)
 
     def test_search_form(self):
-        url = reverse('admin:searchkit_searchkitsearch_add')
+        url = reverse('admin:searchkit_search_add')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b'searchkit-contenttype', resp.content)
 
     def test_add_search(self):
-        url = reverse('admin:searchkit_searchkitsearch_add')
+        url = reverse('admin:searchkit_search_add')
         data = FORM_DATA.copy()
         data['_save_and_apply'] = True
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
 
         # Did we have a search?
-        searches = SearchkitSearch.objects.all()
+        searches = Search.objects.all()
         self.assertEqual(len(searches), 1)
 
         # Change it via backend.
-        url = reverse('admin:searchkit_searchkitsearch_change', args=(1,))
+        url = reverse('admin:searchkit_search_change', args=(1,))
         search_name = 'Changed name'
         data['name'] = search_name
         resp = self.client.post(url, data, follow=True)

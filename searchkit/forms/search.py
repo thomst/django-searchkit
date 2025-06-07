@@ -1,6 +1,6 @@
 from django import forms
 from django.utils.functional import cached_property
-from ..models import SearchkitSearch
+from ..models import Search
 from .searchkit import SearchkitFormSet
 
 
@@ -10,7 +10,7 @@ class SearchkitSearchForm(forms.ModelForm):
     json field.
     """
     class Meta:
-        model = SearchkitSearch
+        model = Search
         fields = ['name']
 
     @property

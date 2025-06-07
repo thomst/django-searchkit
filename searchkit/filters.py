@@ -1,6 +1,6 @@
 from django.contrib.admin import SimpleListFilter
 from django.contrib.contenttypes.models import ContentType
-from .models import SearchkitSearch
+from .models import Search
 
 
 class SearchkitFilter(SimpleListFilter):
@@ -19,11 +19,11 @@ class SearchkitFilter(SimpleListFilter):
         # Fetch the last three objects from SearchkitSearch and return them as
         # choices.
         ct = ContentType.objects.get_for_model(model_admin.model)
-        searches = SearchkitSearch.objects.filter(contenttype=ct).order_by('-created_date')[:3]
+        searches = Search.objects.filter(contenttype=ct).order_by('-created_date')[:3]
         return [(str(obj.id), obj.name) for obj in searches]
 
     def queryset(self, request, queryset):
         # Filter the queryset based on the selected SearchkitSearch object
         if self.value():
-            search = SearchkitSearch.objects.get(id=int(self.value()))
+            search = Search.objects.get(id=int(self.value()))
             return queryset.filter(**search.get_filter_rules())
