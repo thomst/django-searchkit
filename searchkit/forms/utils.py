@@ -1,8 +1,18 @@
+from modeltree import ModelTree as BaseModelTree
+from collections import OrderedDict
 from django.db import models
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from collections import OrderedDict
 from searchkit.forms import fields as searchkit_fields
+
+
+class ModelTree(BaseModelTree):
+    MAX_DEPTH = 3
+    FOLLOW_ACROSS_APPS = True
+    RELATION_TYPES = [
+        'one_to_one',
+        'many_to_one',
+    ]
 
 
 OPERATOR_DESCRIPTION = {
@@ -28,10 +38,6 @@ SUPPORTED_FIELDS = [
     models.DecimalField,
     models.DateField,
     models.DateTimeField,
-]
-SUPPORTED_RELATIONS = [
-    models.ForeignKey,
-    models.OneToOneField,
 ]
 
 

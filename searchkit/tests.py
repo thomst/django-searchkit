@@ -7,7 +7,7 @@ from example.models import ModelA
 from example.management.commands.createtestdata import Command as CreateTestData
 from searchkit.forms.utils import FIELD_PLAN
 from searchkit.forms.utils import SUPPORTED_FIELDS
-from searchkit.forms.utils import SUPPORTED_RELATIONS
+from searchkit.forms.utils import ModelTree
 from searchkit.forms import SearchkitSearchForm
 from searchkit.forms import SearchkitForm
 from searchkit.forms import SearchkitFormSet
@@ -84,22 +84,19 @@ class CheckFormMixin:
         self.assertIn('value', form.fields)
         self.assertEqual(len(form.fields), 3)
 
-        # Check choices of the model_field.
+        # Check field choices for the model.
         form_model_field = form.fields['field']
         self.assertTrue(form_model_field.choices)
         options = [c[0] for c in form_model_field.choices]
-        for model_field in ModelA._meta.fields:
-            if isinstance(model_field, tuple(SUPPORTED_FIELDS)):
-                self.assertIn(model_field.name, options)
-
-        # Check choices for relational lookups.
-        for model_field in ModelA._meta.fields:
-            if isinstance(model_field, tuple(SUPPORTED_RELATIONS)):
-                remote_fields = model_field.remote_field.model._meta.fields
-                for remote_field in remote_fields:
-                    if isinstance(model_field, tuple(SUPPORTED_FIELDS)):
-                        lookup_path = f'{model_field.name}__{remote_field.name}'
-                        self.assertIn(lookup_path, options)
+        tree = ModelTree(ModelA)
+        for node in tree.iterate():
+            for model_field in node.model._meta.fields:
+                if not any(isinstance(model_field, f) for f in SUPPORTED_FIELDS):
+                    continue
+                if node.is_root:
+                    self.assertIn(model_field.name, options)
+                else:
+                    self.assertIn(f'{node.field_path}__{model_field.name}', options)
 
         # Check the field_plan choosen based on the model_field.
         field_plan = next(iter([p for t, p in FIELD_PLAN.items() if t(form.model_field)]))

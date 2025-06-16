@@ -1,14 +1,10 @@
-from collections import OrderedDict
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
 from django.contrib.contenttypes.models import ContentType
 from .utils import CSS_CLASSES, FIELD_PLAN, OPERATOR_DESCRIPTION
-from .utils import SUPPORTED_FIELDS, SUPPORTED_RELATIONS
-
-
-# FIXME: Make this a setting
-RELATION_DEPTH = 3
+from .utils import SUPPORTED_FIELDS
+from .utils import ModelTree
 
 
 class SearchkitForm(CSS_CLASSES, forms.Form):
@@ -27,6 +23,7 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
     def __init__(self, model, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = model
+        self.model_tree = ModelTree(model)
         self.model_field = None
         self.field_plan = None
         self.operator = None
@@ -64,31 +61,35 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
 
     def _get_model_field(self, lookup):
         path = lookup.split('__')
-        model = self.model
-        for index, field_name in enumerate(path, 1):
-            field = model._meta.get_field(field_name)
-            if index < len(path):
-                model = field.remote_field.model
-        return field
+        field_name = path[-1]
+        if path[:-1]:
+            model = self.model_tree.get('__'.join(path[:-1])).model
+        else:
+            model = self.model
+        return model._meta.get_field(field_name)
 
-    def _get_model_field_choices(self, model, fields=[]):
+    def _get_model_field_choices(self):
         choices = list()
-        for model_field in model._meta.fields:
-            if any(isinstance(model_field, f) for f in SUPPORTED_FIELDS):
-                lookup = '__'.join([f.name for f in [*fields, model_field]])
-                label = ' -> '.join(f.verbose_name for f in [*fields, model_field])
+        label_path = list()
+        for node in self.model_tree.iterate():
+            label_path.append
+            for model_field in node.model._meta.fields:
+                if not any(isinstance(model_field, f) for f in SUPPORTED_FIELDS):
+                    continue
+                if node.is_root:
+                    lookup = model_field.name
+                    label = f'`{model_field.verbose_name}`'
+                else:
+                    lookup = f'{node.field_path}__{model_field.name}'
+                    get_field_name = lambda f: getattr(f, 'verbose_name', f.name)
+                    label_path = [f'`{get_field_name(n.field)}` => <{n.model._meta.verbose_name}>' for n in node.path[1:]]
+                    label = ".".join(label_path + [f'`{model_field.verbose_name}`'])
                 choices.append((lookup, label))
-        if len(fields) < RELATION_DEPTH:
-            for model_field in model._meta.fields:
-                if any(isinstance(model_field, f) for f in SUPPORTED_RELATIONS):
-                    related_model = model_field.remote_field.model
-                    fields = [*fields, model_field]
-                    choices += self._get_model_field_choices(related_model, fields)
         return choices
 
     def _add_field_name_field(self):
         initial = self.initial.get('field')
-        choices = self._get_model_field_choices(self.model)
+        choices = self._get_model_field_choices()
         field = forms.ChoiceField(label=_('Model field'), choices=choices, initial=initial)
         field.widget.attrs.update({"class": CSS_CLASSES.reload_on_change_css_class})
         self.fields['field'] = field
@@ -115,7 +116,7 @@ class ContentTypeForm(CSS_CLASSES, forms.Form):
     Form to select a content type.
     """
     contenttype = forms.ModelChoiceField(
-        queryset=ContentType.objects.all(),
+        queryset=ContentType.objects.all(),  # FIXME: Limit choices to models that can be filtered.
         label=_('Model'),
         empty_label=_('Select a Model'),
         widget=forms.Select(attrs={"class": CSS_CLASSES.reload_on_change_css_class}),
