@@ -2,13 +2,13 @@ from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .models import Search
-from .forms import SearchkitSearchForm
+from .forms import SearchForm
 from .filters import SearchkitFilter
 
 
 @admin.register(Search)
 class SearchkitSearchAdmin(admin.ModelAdmin):
-    form = SearchkitSearchForm
+    form = SearchForm
     list_display = ('name', 'contenttype', 'created_date')
 
     def get_url_for_applied_search(self, obj):

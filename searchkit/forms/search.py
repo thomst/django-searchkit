@@ -4,7 +4,7 @@ from ..models import Search
 from .searchkit import SearchkitFormSet
 
 
-class SearchkitSearchForm(forms.ModelForm):
+class SearchForm(forms.ModelForm):
     """
     Represents a SearchkitSearch model. Using a SearchkitFormSet for the data
     json field.

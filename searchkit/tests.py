@@ -8,7 +8,7 @@ from example.management.commands.createtestdata import Command as CreateTestData
 from searchkit.forms.utils import FIELD_PLAN
 from searchkit.forms.utils import SUPPORTED_FIELDS
 from searchkit.forms.utils import ModelTree
-from searchkit.forms import SearchkitSearchForm
+from searchkit.forms import SearchForm
 from searchkit.forms import SearchkitForm
 from searchkit.forms import SearchkitFormSet
 from searchkit.models import Search
@@ -234,14 +234,14 @@ class SearchkitFormSetTestCase(CheckFormMixin, TestCase):
 
 class SearchkitSearchFormTestCase(TestCase):
     def test_searchkit_search_form_without_data(self):
-        form = SearchkitSearchForm()
+        form = SearchForm()
         self.assertFalse(form.is_bound)
         self.assertFalse(form.is_valid())
         self.assertIsInstance(form.formset, SearchkitFormSet)
         self.assertEqual(form.formset.model, None)
 
     def test_searchkit_search_form_with_data(self):
-        form = SearchkitSearchForm(FORM_DATA)
+        form = SearchForm(FORM_DATA)
         self.assertTrue(form.is_bound)
         self.assertTrue(form.is_valid())
         self.assertIsInstance(form.formset, SearchkitFormSet)
