@@ -1,5 +1,6 @@
 from django import forms
 from django.utils.functional import cached_property
+from django.contrib.contenttypes.models import ContentType
 from ..models import Search
 from .searchkit import SearchkitFormSet
 
@@ -29,6 +30,12 @@ class SearchForm(forms.ModelForm):
         if self.instance.pk:
             kwargs['model'] = self.instance.contenttype.model_class()
             kwargs['initial'] = self.instance.data
+        elif 'app_label' in self.initial and 'model' in self.initial:
+            kwargs['model'] = ContentType.objects.get_by_natural_key(
+                app_label=self.initial['app_label'],
+                model=self.initial['model']).model_class()
+        elif 'contenttype_id' in self.initial:
+            kwargs['model'] = ContentType.objects.get(pk=self.initial['contenttype_id']).model_class()
         return SearchkitFormSet(**kwargs)
 
     def is_valid(self):
