@@ -45,6 +45,7 @@ setup(
     install_requires=[
         "Django>=4.0",
         "django-picklefield>=2.0",
+        "django-modeltree",
     ],
     classifiers=[
         dev_status,
