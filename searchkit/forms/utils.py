@@ -3,7 +3,7 @@ from collections import OrderedDict
 from django.db import models
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from searchkit.forms import fields as searchkit_fields
+from . import fields as  searchkit_fields
 
 
 class ModelTree(BaseModelTree):
