@@ -11,6 +11,8 @@ from searchkit.forms.utils import ModelTree
 from searchkit.forms import SearchForm
 from searchkit.forms import SearchkitForm
 from searchkit.forms import SearchkitFormSet
+from searchkit.forms import BaseSearchkitFormSet
+from searchkit.forms import searchkit_formset_factory
 from searchkit.models import Search
 from searchkit import __version__
 
@@ -223,7 +225,8 @@ class SearchkitFormSetTestCase(CheckFormMixin, TestCase):
         self.assertIn(errors, formset.forms[0].errors.values())
 
     def test_searchkit_formset_with_initial_data(self):
-        formset = SearchkitFormSet(initial=INITIAL_DATA, model=ModelA)
+        formset_class = searchkit_formset_factory(extra=0)
+        formset = formset_class(initial=INITIAL_DATA, model=ModelA)
         self.assertFalse(formset.is_bound)
         self.assertFalse(formset.is_valid())
         self.assertEqual(len(formset.forms), len(INITIAL_DATA))
@@ -237,14 +240,14 @@ class SearchkitSearchFormTestCase(TestCase):
         form = SearchForm()
         self.assertFalse(form.is_bound)
         self.assertFalse(form.is_valid())
-        self.assertIsInstance(form.formset, SearchkitFormSet)
+        self.assertIsInstance(form.formset, BaseSearchkitFormSet)
         self.assertEqual(form.formset.model, None)
 
     def test_searchkit_search_form_with_data(self):
         form = SearchForm(FORM_DATA)
         self.assertTrue(form.is_bound)
         self.assertTrue(form.is_valid())
-        self.assertIsInstance(form.formset, SearchkitFormSet)
+        self.assertIsInstance(form.formset, BaseSearchkitFormSet)
         self.assertEqual(form.formset.model, ModelA)
         self.assertEqual(form.instance.data, form.formset.cleaned_data)
 

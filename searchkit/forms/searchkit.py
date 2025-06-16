@@ -146,8 +146,6 @@ class BaseSearchkitFormSet(CSS_CLASSES, forms.BaseFormSet):
         self.contenttype_form = self.get_conttenttype_form()
         if not self.model and self.contenttype_form.is_valid():
             self.model = self.contenttype_form.cleaned_data.get('contenttype').model_class()
-        if self.initial:
-            self.extra = 0
 
     def get_conttenttype_form(self):
         kwargs = dict()
@@ -184,7 +182,12 @@ class BaseSearchkitFormSet(CSS_CLASSES, forms.BaseFormSet):
         return self.contenttype_form.is_valid() and self.forms and super().is_valid()
 
 
-SearchkitFormSet = forms.formset_factory(
+def searchkit_formset_factory(**kwargs):
+    return forms.formset_factory(
         form=SearchkitForm,
         formset=BaseSearchkitFormSet,
+        **kwargs
     )
+
+
+SearchkitFormSet = searchkit_formset_factory()

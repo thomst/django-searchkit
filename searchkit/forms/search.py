@@ -2,7 +2,7 @@ from django import forms
 from django.utils.functional import cached_property
 from django.contrib.contenttypes.models import ContentType
 from ..models import Search
-from .searchkit import SearchkitFormSet
+from .searchkit import searchkit_formset_factory
 
 
 class SearchForm(forms.ModelForm):
@@ -19,11 +19,14 @@ class SearchForm(forms.ModelForm):
         # TODO: Check if child classes inherit those media files.
         return self.formset.media
 
-    @cached_property
-    def formset(self):
-        """
-        A searchkit formset for the model.
-        """
+    def get_formset_class(self):
+        if self.instance.pk:
+            extra = 0
+        else:
+            extra = 1
+        return searchkit_formset_factory(extra=extra)
+
+    def get_formset_kwargs(self):
         kwargs = dict()
         kwargs['data'] = self.data or None
         kwargs['prefix'] = self.prefix
@@ -34,9 +37,14 @@ class SearchForm(forms.ModelForm):
             kwargs['model'] = ContentType.objects.get_by_natural_key(
                 app_label=self.initial['app_label'],
                 model=self.initial['model']).model_class()
-        elif 'contenttype_id' in self.initial:
-            kwargs['model'] = ContentType.objects.get(pk=self.initial['contenttype_id']).model_class()
-        return SearchkitFormSet(**kwargs)
+        return kwargs
+
+    @cached_property
+    def formset(self):
+        """
+        A searchkit formset for the model.
+        """
+        return self.get_formset_class()(**self.get_formset_kwargs())
 
     def is_valid(self):
         return self.formset.is_valid() and super().is_valid()
