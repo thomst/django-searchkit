@@ -9,10 +9,10 @@ class SearchkitFilter(SimpleListFilter):
     template = 'searchkit/searchkit_filter.html'
 
     def __init__(self, request, params, model, model_admin):
-        # We need the app_label and model_name for the reverse url lookup in the
-        # template.
+        # We need the app_label and model as get parameter for the new search
+        # link.
         self.app_label = model._meta.app_label
-        self.model_name = model._meta.model_name
+        self.model = model._meta.model_name
         super().__init__(request, params, model, model_admin)
 
     def lookups(self, request, model_admin):
