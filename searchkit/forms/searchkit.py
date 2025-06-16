@@ -130,7 +130,7 @@ class ContentTypeForm(CSS_CLASSES, forms.Form):
         ]
 
 
-class BaseSearchkitFormset(CSS_CLASSES, forms.BaseFormSet):
+class BaseSearchkitFormSet(CSS_CLASSES, forms.BaseFormSet):
     """
     Formset holding all searchkit forms.
     """
@@ -186,5 +186,5 @@ class BaseSearchkitFormset(CSS_CLASSES, forms.BaseFormSet):
 
 SearchkitFormSet = forms.formset_factory(
         form=SearchkitForm,
-        formset=BaseSearchkitFormset,
+        formset=BaseSearchkitFormSet,
     )
