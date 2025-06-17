@@ -9,12 +9,15 @@ from searchkit.forms.utils import FIELD_PLAN
 from searchkit.forms.utils import SUPPORTED_FIELDS
 from searchkit.forms.utils import ModelTree
 from searchkit.forms import SearchForm
-from searchkit.forms import SearchkitForm
-from searchkit.forms import SearchkitFormSet
+from searchkit.forms import BaseSearchkitForm
 from searchkit.forms import BaseSearchkitFormSet
 from searchkit.forms import searchkit_formset_factory
 from searchkit.models import Search
 from searchkit import __version__
+
+
+SearchkitFormSet = searchkit_formset_factory(model=ModelA)
+SearchkitForm = SearchkitFormSet.form
 
 
 INITIAL_DATA = [
@@ -50,7 +53,7 @@ INITIAL_DATA = [
     )
 ]
 
-add_prefix = lambda i: SearchkitFormSet(model=ModelA).add_prefix(i)
+add_prefix = lambda i: SearchkitFormSet().add_prefix(i)
 contenttype = ContentType.objects.get_for_model(ModelA)
 DEFAULT_PREFIX = SearchkitFormSet.get_default_prefix()
 
@@ -58,12 +61,12 @@ def get_form_data(initial_data=INITIAL_DATA):
     count = len(initial_data)
     data = {
         'name': 'test search',                  # The name of the search.
+        'contenttype': f'{contenttype.pk}',  # Data for the contenttype form.
         f'{DEFAULT_PREFIX}-TOTAL_FORMS': f'{count}',   # Data for the managment form.
         f'{DEFAULT_PREFIX}-INITIAL_FORMS': f'{count}', # Data for the managment form.
-        f'{DEFAULT_PREFIX}-contenttype': f'{contenttype.pk}',  # Data for the contenttype form.
     }
     for i, d in enumerate(initial_data):
-        prefix = SearchkitFormSet(model=ModelA).add_prefix(i)
+        prefix = SearchkitFormSet().add_prefix(i)
         for key, value in d.items():
             if isinstance(value, list):
                 for i, v in enumerate(value):
@@ -115,7 +118,7 @@ class CheckFormMixin:
 class SearchkitFormTestCase(CheckFormMixin, TestCase):
 
     def test_blank_searchkitform(self):
-        form = SearchkitForm(ModelA, prefix=add_prefix(0))
+        form = SearchkitForm(prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should not be bound or valid.
@@ -126,7 +129,7 @@ class SearchkitFormTestCase(CheckFormMixin, TestCase):
         data = {
             f'{add_prefix(0)}-field': 'foobar',
         }
-        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
+        form = SearchkitForm(data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be invalid.
@@ -140,7 +143,7 @@ class SearchkitFormTestCase(CheckFormMixin, TestCase):
         data = {
             f'{add_prefix(0)}-field': 'integer',
         }
-        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
+        form = SearchkitForm(data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be invalid since no value data is provieded.
@@ -151,7 +154,7 @@ class SearchkitFormTestCase(CheckFormMixin, TestCase):
             f'{add_prefix(0)}-field': 'integer',
             f'{add_prefix(0)}-operator': 'foobar',
         }
-        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
+        form = SearchkitForm(data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be invalid.
@@ -166,7 +169,7 @@ class SearchkitFormTestCase(CheckFormMixin, TestCase):
             f'{add_prefix(0)}-field': 'integer',
             f'{add_prefix(0)}-operator': 'exact',
         }
-        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
+        form = SearchkitForm(data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be invalid since no value data is provieded.
@@ -178,7 +181,7 @@ class SearchkitFormTestCase(CheckFormMixin, TestCase):
             f'{add_prefix(0)}-operator': 'exact',
             f'{add_prefix(0)}-value': '123',
         }
-        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
+        form = SearchkitForm(data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be valid.
@@ -190,7 +193,7 @@ class SearchkitFormTestCase(CheckFormMixin, TestCase):
             f'{add_prefix(0)}-operator': 'exact',
             f'{add_prefix(0)}-value': 'foobar',
         }
-        form = SearchkitForm(ModelA, data, prefix=add_prefix(0))
+        form = SearchkitForm(data, prefix=add_prefix(0))
         self.check_form(form)
 
         # Form should be invalid.
@@ -217,7 +220,7 @@ class SearchkitFormSetTestCase(CheckFormMixin, TestCase):
     def test_searchkit_formset_with_invalid_data(self):
         data = FORM_DATA.copy()
         del data[f'{add_prefix(0)}-value']
-        formset = SearchkitFormSet(data, model=ModelA)
+        formset = SearchkitFormSet(data)
         self.assertFalse(formset.is_valid())
 
         # Check error message in html.
@@ -225,8 +228,8 @@ class SearchkitFormSetTestCase(CheckFormMixin, TestCase):
         self.assertIn(errors, formset.forms[0].errors.values())
 
     def test_searchkit_formset_with_initial_data(self):
-        formset_class = searchkit_formset_factory(extra=0)
-        formset = formset_class(initial=INITIAL_DATA, model=ModelA)
+        formset_class = searchkit_formset_factory(model=ModelA, extra=0)
+        formset = formset_class(initial=INITIAL_DATA)
         self.assertFalse(formset.is_bound)
         self.assertFalse(formset.is_valid())
         self.assertEqual(len(formset.forms), len(INITIAL_DATA))
@@ -277,32 +280,42 @@ class AdminBackendTest(TestCase):
         url = reverse('admin:searchkit_search_add')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertIn(b'searchkit-contenttype', resp.content)
+        select = b'<select name="contenttype" class="searchkit-reload-on-change" data-total-forms="1" required id="id_contenttype">'
+        for snippet in select.split(b' '):
+            self.assertIn(snippet, resp.content)
+
+    def test_search_form_with_initial(self):
+        url = reverse('admin:searchkit_search_add') + '?contenttype=1'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        select = '<select name="contenttype" class="searchkit-reload-on-change" data-total-forms="1" required id="id_contenttype">'
+        for snippet in select.split(' '):
+            self.assertIn(snippet, str(resp.content))
+        self.assertIn('<option value="1" selected>', str(resp.content))
+        self.assertIn('name="searchkit-example-modela-0-field"', str(resp.content))
 
     def test_add_search(self):
+        # Create a search object via the admin backend.
         url = reverse('admin:searchkit_search_add')
         data = FORM_DATA.copy()
         data['_save_and_apply'] = True
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
-
-        # Did we have a search?
-        searches = Search.objects.all()
-        self.assertEqual(len(searches), 1)
+        self.assertEqual(len(Search.objects.all()), 1)
 
         # Change it via backend.
         url = reverse('admin:searchkit_search_change', args=(1,))
-        search_name = 'Changed name'
-        data['name'] = search_name
+        data['name'] = 'Changed name'
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(Search.objects.get(pk=1).name, data['name'])
 
         # Will the search be listed in the admin filter?
         url = reverse('admin:example_modela_changelist')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        a_html = f'<a href="?search=1">{search_name}</a>'
-        self.assertInHTML(a_html, str(resp.content))
+        self.assertIn('href="?search=1"', str(resp.content))
+        self.assertIn(data['name'], str(resp.content))
 
 
 class SearchViewTest(TestCase):
@@ -354,21 +367,23 @@ class SearchViewTest(TestCase):
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        html = '<input type="number" name="searchkit-modela-0-value_1" value="3" id="id_searchkit-modela-0-value_1">'
+        html = '<input type="number" name="searchkit-example-modela-0-value_1" value="3" id="id_searchkit-example-modela-0-value_1">'
         self.assertInHTML(html, str(resp.content))
 
     def test_search_view_with_model(self):
         data = get_form_data(self.initial)
+        data['contenttype'] = ContentType.objects.get_for_model(ModelA).pk
         url_params = urlencode(data)
-        base_url = reverse('searchkit_form_model', args=('example', 'modela'))
+        base_url = reverse('searchkit_form')
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
 
     def test_search_view_with_invalid_model(self):
         data = get_form_data(self.initial)
+        data['contenttype'] = 9999  # Non-existing content type.
         url_params = urlencode(data)
-        base_url = reverse('searchkit_form_model', args=('example', 'no_model'))
+        base_url = reverse('searchkit_form')
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(resp.status_code, 400)
