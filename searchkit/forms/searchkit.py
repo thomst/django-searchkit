@@ -139,6 +139,7 @@ class BaseSearchkitFormSet(CSS_CLASSES, forms.BaseFormSet):
     def add_prefix(self, index):
         return "%s-%s-%s-%s" % (self.prefix, self.model._meta.app_label, self.model._meta.model_name, index)
 
+    @classmethod
     def get_default_prefix(self):
         return "searchkit"
 
