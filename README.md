@@ -64,7 +64,5 @@ class MyModelAdmin(admin.ModelAdmin):
   saving it.
 - Coming from the search edit page the filtering should be done by an id__in url
   parameter, not by an search parameter as it is used by the searchkit filter.
-- Preselect the right model in the model field when coming from a models
-  changelist by the "Add filter" button.
 - Add a public field for searches and only offer public searches in the
   searchkit filter.
