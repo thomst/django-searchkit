@@ -31,10 +31,9 @@ class SearchForm(MediaMixin, forms.ModelForm):
 
     @cached_property
     def contenttype_form(self):
+        kwargs = dict(data=self.data or None, initial=self.initial or None)
         if self.instance.pk:
-            kwargs = dict(initial=dict(contenttype=self.instance.contenttype))
-        else:
-            kwargs = dict(data=self.data or None, initial=self.initial or None)
+            kwargs['initial'] = dict(contenttype=self.instance.contenttype)
         return ContentTypeForm(**kwargs)
 
     @cached_property
@@ -42,15 +41,13 @@ class SearchForm(MediaMixin, forms.ModelForm):
         """
         A searchkit formset for the model.
         """
-        if not self.searchkit_model:
-            extra = 1
-            kwargs = dict()
-        elif self.instance.pk:
-            extra = 0
-            kwargs = dict(initial=self.instance.data)
-        else:
-            extra = 1
-            kwargs = dict(data=self.data or None)
+        kwargs = dict()
+        extra = 0 if self.instance.pk else 1
+
+        if self.searchkit_model:
+            kwargs['data'] = self.data or None
+        if self.instance.pk:
+            kwargs['initial'] = self.instance.data
 
         formset = searchkit_formset_factory(model=self.searchkit_model, extra=extra)
         return formset(**kwargs)
