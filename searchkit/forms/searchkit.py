@@ -5,9 +5,25 @@ from django.contrib.contenttypes.models import ContentType
 from .utils import CSS_CLASSES, FIELD_PLAN, OPERATOR_DESCRIPTION
 from .utils import SUPPORTED_FIELDS
 from .utils import ModelTree
+from .utils import MediaMixin
 
 
-class SearchkitForm(CSS_CLASSES, forms.Form):
+class ContentTypeForm(forms.Form):
+    """
+    Form to select a content type.
+    """
+    contenttype = forms.ModelChoiceField(
+        queryset=ContentType.objects.all(),  # FIXME: Limit choices to models that can be filtered.
+        label=_('Model'),
+        empty_label=_('Select a Model'),
+        widget=forms.Select(attrs={
+            "class": CSS_CLASSES.reload_on_change_css_class,
+            "data-total-forms": 1,
+        }),
+    )
+
+
+class BaseSearchkitForm(MediaMixin, CSS_CLASSES, forms.Form):
     """
     Searchkit form representing a model field lookup based on the field name,
     the operator and one or two values.
@@ -20,10 +36,11 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
 
     See the FIELD_PLAN variable for the logic of building the form.
     """
-    def __init__(self, model, *args, **kwargs):
+    model = None  # Set by the formset factory.
+
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.model = model
-        self.model_tree = ModelTree(model)
+        self.model_tree = ModelTree(self.model)
         self.model_field = None
         self.field_plan = None
         self.operator = None
@@ -91,14 +108,14 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
         initial = self.initial.get('field')
         choices = self._get_model_field_choices()
         field = forms.ChoiceField(label=_('Model field'), choices=choices, initial=initial)
-        field.widget.attrs.update({"class": CSS_CLASSES.reload_on_change_css_class})
+        field.widget.attrs.update({"class": self.reload_on_change_css_class})
         self.fields['field'] = field
 
     def _add_operator_field(self):
         initial = self.initial.get('operator')
         choices = [(o, OPERATOR_DESCRIPTION[o]) for o in self.field_plan.keys()]
         field = forms.ChoiceField(label=_('Operator'), choices=choices, initial=initial)
-        field.widget.attrs.update({"class": CSS_CLASSES.reload_on_change_css_class})
+        field.widget.attrs.update({"class": self.reload_on_change_css_class})
         self.fields['operator'] = field
 
     def _add_value_field(self):
@@ -111,83 +128,26 @@ class SearchkitForm(CSS_CLASSES, forms.Form):
         self.fields['value'] = field
 
 
-class ContentTypeForm(CSS_CLASSES, forms.Form):
-    """
-    Form to select a content type.
-    """
-    contenttype = forms.ModelChoiceField(
-        queryset=ContentType.objects.all(),  # FIXME: Limit choices to models that can be filtered.
-        label=_('Model'),
-        empty_label=_('Select a Model'),
-        widget=forms.Select(attrs={"class": CSS_CLASSES.reload_on_change_css_class}),
-    )
-
-    class Media:
-        js = [
-            'admin/js/vendor/jquery/jquery.min.js',
-            'admin/js/jquery.init.js',
-            "searchkit/searchkit.js"
-        ]
-
-
 class BaseSearchkitFormSet(CSS_CLASSES, forms.BaseFormSet):
     """
     Formset holding all searchkit forms.
     """
     template_name = "searchkit/searchkit.html"
     template_name_div = "searchkit/searchkit.html"
-    default_prefix = 'searchkit'
-    form = SearchkitForm
-    contenttype_form_class = ContentTypeForm
-
-    def __init__(self, *args, **kwargs):
-        self.model = kwargs.pop('model', None)
-        super().__init__(*args, **kwargs)
-        self.contenttype_form = self.get_conttenttype_form()
-        if not self.model and self.contenttype_form.is_valid():
-            self.model = self.contenttype_form.cleaned_data.get('contenttype').model_class()
-
-    def get_conttenttype_form(self):
-        kwargs = dict()
-        kwargs['data'] = self.data or None
-        kwargs['prefix'] = self.prefix
-        if self.model:
-            contenttype = ContentType.objects.get_for_model(self.model)
-            kwargs['initial'] = dict(contenttype=contenttype)
-        return self.contenttype_form_class(**kwargs)
-
-    def get_form_kwargs(self, index):
-        kwargs = self.form_kwargs.copy()
-        kwargs['model'] = self.model
-        return kwargs
+    model = None  # Set by the formset factory.
 
     def add_prefix(self, index):
-        if self.model:
-            return "%s-%s-%s" % (self.prefix, self.model._meta.model_name, index)
+        return "%s-%s-%s-%s" % (self.prefix, self.model._meta.app_label, self.model._meta.model_name, index)
 
-    @classmethod
-    def get_default_prefix(cls):
-        return cls.default_prefix
-
-    @cached_property
-    def forms(self):
-        # We won't render any forms if we got no model.
-        return super().forms if self.model else []
-
-    @property
-    def media(self):
-        return self.contenttype_form.media
-
-    def is_valid(self):
-        return self.contenttype_form.is_valid() and self.forms and super().is_valid()
+    def get_default_prefix(self):
+        return "searchkit"
 
 
-def searchkit_formset_factory(**kwargs):
+def searchkit_formset_factory(model, **kwargs):
+    form = type('SearchkitForm', (BaseSearchkitForm,), dict(model=model))
+    formset = type('SearchkitFormSet', (BaseSearchkitFormSet,), dict(model=model))
     return forms.formset_factory(
-        form=SearchkitForm,
-        formset=BaseSearchkitFormSet,
+        form=form,
+        formset=formset,
         **kwargs
     )
-
-
-SearchkitFormSet = searchkit_formset_factory()

@@ -1,4 +1,6 @@
 {% extends 'admin/change_form.html' %}
+{% load searchkit %}
 {% block after_field_sets %}
+    {% as_fieldset adminform.form.contenttype_form name="Choose a model for your filter rules" %}
     {{ adminform.form.formset }}
 {% endblock %}

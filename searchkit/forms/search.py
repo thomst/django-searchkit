@@ -2,10 +2,12 @@ from django import forms
 from django.utils.functional import cached_property
 from django.contrib.contenttypes.models import ContentType
 from ..models import Search
+from .searchkit import ContentTypeForm
 from .searchkit import searchkit_formset_factory
+from .utils import MediaMixin
 
 
-class SearchForm(forms.ModelForm):
+class SearchForm(MediaMixin, forms.ModelForm):
     """
     Represents a SearchkitSearch model. Using a SearchkitFormSet for the data
     json field.
@@ -14,44 +16,51 @@ class SearchForm(forms.ModelForm):
         model = Search
         fields = ['name']
 
-    @property
-    def media(self):
-        # TODO: Check if child classes inherit those media files.
-        return self.formset.media
-
-    def get_formset_class(self):
+    @cached_property
+    def searchkit_model(self):
         if self.instance.pk:
-            extra = 0
+            return self.instance.contenttype.model_class()
+        elif self.contenttype_form.is_valid():
+            return self.contenttype_form.cleaned_data['contenttype'].model_class()
+        elif 'contenttype' in self.contenttype_form.initial:
+            value = self.contenttype_form.initial['contenttype']
+            try:
+                return self.contenttype_form.fields['contenttype'].clean(value).model_class()
+            except forms.ValidationError:
+                return None
+
+    @cached_property
+    def contenttype_form(self):
+        if self.instance.pk:
+            kwargs = dict(initial=dict(contenttype=self.instance.contenttype))
         else:
-            extra = 1
-        return searchkit_formset_factory(extra=extra)
-
-    def get_formset_kwargs(self):
-        kwargs = dict()
-        kwargs['data'] = self.data or None
-        kwargs['prefix'] = self.prefix
-        if self.instance.pk:
-            kwargs['model'] = self.instance.contenttype.model_class()
-            kwargs['initial'] = self.instance.data
-        elif 'app_label' in self.initial and 'model' in self.initial:
-            kwargs['model'] = ContentType.objects.get_by_natural_key(
-                app_label=self.initial['app_label'],
-                model=self.initial['model']).model_class()
-        return kwargs
+            kwargs = dict(data=self.data or None, initial=self.initial or None)
+        return ContentTypeForm(**kwargs)
 
     @cached_property
     def formset(self):
         """
         A searchkit formset for the model.
         """
-        return self.get_formset_class()(**self.get_formset_kwargs())
+        if not self.searchkit_model:
+            extra = 1
+            kwargs = dict()
+        elif self.instance.pk:
+            extra = 0
+            kwargs = dict(initial=self.instance.data)
+        else:
+            extra = 1
+            kwargs = dict(data=self.data or None)
+
+        formset = searchkit_formset_factory(model=self.searchkit_model, extra=extra)
+        return formset(**kwargs)
 
     def is_valid(self):
-        return self.formset.is_valid() and super().is_valid()
+        return self.formset.is_valid() and self.contenttype_form.is_valid and super().is_valid()
 
     def clean(self):
-        if self.formset.contenttype_form.is_valid():
-            self.instance.contenttype = self.formset.contenttype_form.cleaned_data['contenttype']
+        if self.contenttype_form.is_valid():
+            self.instance.contenttype = self.contenttype_form.cleaned_data['contenttype']
         if self.formset.is_valid():
             self.instance.data = self.formset.cleaned_data
         return super().clean()

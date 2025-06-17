@@ -4,7 +4,7 @@
     {% blocktranslate with filter_title=title %} By {{ filter_title }} {% endblocktranslate %}
   </summary>
   <p>
-    <a class='addlink' href="{% url 'admin:searchkit_search_add' %}?app_label={{ spec.app_label }}&model={{ spec.model }}" title="{% trans "Add searchkit filter" %}">{% trans "Add filter" %}</a>
+    <a class='addlink' href="{% url 'admin:searchkit_search_add' %}?contenttype={{ spec.contenttype.pk }}" title="{% trans "Add searchkit filter" %}">{% trans "Add filter" %}</a>
   </p>
   <ul>
   {% for choice in choices %}

@@ -141,3 +141,12 @@ FIELD_PLAN = OrderedDict((
 class CSS_CLASSES:
     reload_on_change_css_class = "searchkit-reload-on-change"
     reload_on_click_css_class = "searchkit-reload-on-click"
+
+
+class MediaMixin:
+    class Media:
+        js = [
+            'admin/js/vendor/jquery/jquery.min.js',
+            'admin/js/jquery.init.js',
+            "searchkit/searchkit.js"
+        ]

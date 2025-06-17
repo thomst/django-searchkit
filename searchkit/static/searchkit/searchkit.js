@@ -31,7 +31,12 @@ django.jQuery(document).ready(function () {
         const totalFormsInput = django.jQuery('input[name$=TOTAL_FORMS]');
 
         django.jQuery(`.${onChangeClass}`).each(function () {
-            django.jQuery(this).on('change', updateFormset);
+            const totalFormsCount = django.jQuery(this).data('total-forms');
+            django.jQuery(this).on('change', function (e) {
+                e.preventDefault();
+                if (totalFormsCount) totalFormsInput.val(parseInt(totalFormsCount));
+                updateFormset();
+            });
         });
 
         django.jQuery(`.${onClickClass}`).each(function () {
