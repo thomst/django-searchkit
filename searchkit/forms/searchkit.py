@@ -8,7 +8,7 @@ from .utils import ModelTree
 from .utils import MediaMixin
 
 
-class ContentTypeForm(forms.Form):
+class SearchkitModelForm(forms.Form):
     """
     Form to select a content type.
     """

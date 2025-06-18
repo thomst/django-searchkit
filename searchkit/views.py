@@ -4,7 +4,7 @@ from django.http import Http404, HttpResponseBadRequest
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
 from django.views.generic import View
-from .forms import ContentTypeForm
+from .forms import SearchkitModelForm
 from .forms import searchkit_formset_factory
 
 
@@ -14,7 +14,7 @@ class SearchkitAjaxView(View):
     Reload the formset via ajax.
     """
     def get(self, request, **kwargs):
-        contenttype_form = ContentTypeForm(data=self.request.GET)
+        contenttype_form = SearchkitModelForm(data=self.request.GET)
         if contenttype_form.is_valid():
             model = contenttype_form.cleaned_data['contenttype'].model_class()
             formset = searchkit_formset_factory(model=model)(data=request.GET)

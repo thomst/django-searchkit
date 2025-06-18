@@ -2,7 +2,7 @@ from django import forms
 from django.utils.functional import cached_property
 from django.contrib.contenttypes.models import ContentType
 from ..models import Search
-from .searchkit import ContentTypeForm
+from .searchkit import SearchkitModelForm
 from .searchkit import searchkit_formset_factory
 from .utils import MediaMixin
 
@@ -34,7 +34,7 @@ class SearchForm(MediaMixin, forms.ModelForm):
         kwargs = dict(data=self.data or None, initial=self.initial or None)
         if self.instance.pk:
             kwargs['initial'] = dict(contenttype=self.instance.contenttype)
-        return ContentTypeForm(**kwargs)
+        return SearchkitModelForm(**kwargs)
 
     @cached_property
     def formset(self):
