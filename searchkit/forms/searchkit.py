@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
 from django.contrib.contenttypes.models import ContentType
-from .utils import CSS_CLASSES, FIELD_PLAN, OPERATOR_DESCRIPTION
+from .utils import CssClassMixin, FIELD_PLAN, OPERATOR_DESCRIPTION
 from .utils import SUPPORTED_FIELDS
 from .utils import ModelTree
 from .utils import MediaMixin
@@ -17,13 +17,13 @@ class ContentTypeForm(forms.Form):
         label=_('Model'),
         empty_label=_('Select a Model'),
         widget=forms.Select(attrs={
-            "class": CSS_CLASSES.reload_on_change_css_class,
+            "class": CssClassMixin.reload_on_change_css_class,
             "data-total-forms": 1,
         }),
     )
 
 
-class BaseSearchkitForm(MediaMixin, CSS_CLASSES, forms.Form):
+class BaseSearchkitForm(MediaMixin, CssClassMixin, forms.Form):
     """
     Searchkit form representing a model field lookup based on the field name,
     the operator and one or two values.
@@ -128,7 +128,7 @@ class BaseSearchkitForm(MediaMixin, CSS_CLASSES, forms.Form):
         self.fields['value'] = field
 
 
-class BaseSearchkitFormSet(CSS_CLASSES, forms.BaseFormSet):
+class BaseSearchkitFormSet(CssClassMixin, forms.BaseFormSet):
     """
     Formset holding all searchkit forms.
     """

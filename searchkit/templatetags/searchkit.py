@@ -1,7 +1,5 @@
 from django.template import Library
-from django.urls import reverse
 from django.contrib.admin.helpers import Fieldset
-from ..forms.utils import CSS_CLASSES
 
 
 register = Library()
