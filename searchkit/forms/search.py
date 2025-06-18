@@ -41,14 +41,14 @@ class SearchForm(MediaMixin, forms.ModelForm):
         """
         A searchkit formset for the model.
         """
-        kwargs = dict()
+        if not self.searchkit_model:
+            kwargs = dict()
+        elif self.data:
+            kwargs = dict(data=self.data)
+        elif self.instance.pk:
+            kwargs = dict(initial=self.instance.data)
+
         extra = 0 if self.instance.pk else 1
-
-        if self.searchkit_model:
-            kwargs['data'] = self.data or None
-        if self.instance.pk:
-            kwargs['initial'] = self.instance.data
-
         formset = searchkit_formset_factory(model=self.searchkit_model, extra=extra)
         return formset(**kwargs)
 
