@@ -12,7 +12,7 @@ class SearchkitModelForm(forms.Form):
     """
     Form to select a content type.
     """
-    contenttype = forms.ModelChoiceField(
+    searchkit_model = forms.ModelChoiceField(
         queryset=ContentType.objects.all(),  # FIXME: Limit choices to models that can be filtered.
         label=_('Model'),
         empty_label=_('Select a Model'),

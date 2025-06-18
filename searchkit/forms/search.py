@@ -20,20 +20,20 @@ class SearchForm(MediaMixin, forms.ModelForm):
     def searchkit_model(self):
         if self.instance.pk:
             return self.instance.contenttype.model_class()
-        elif self.contenttype_form.is_valid():
-            return self.contenttype_form.cleaned_data['contenttype'].model_class()
-        elif 'contenttype' in self.contenttype_form.initial:
-            value = self.contenttype_form.initial['contenttype']
+        elif self.searchkit_model_form.is_valid():
+            return self.searchkit_model_form.cleaned_data['searchkit_model'].model_class()
+        elif 'searchkit_model' in self.searchkit_model_form.initial:
+            value = self.searchkit_model_form.initial['searchkit_model']
             try:
-                return self.contenttype_form.fields['contenttype'].clean(value).model_class()
+                return self.searchkit_model_form.fields['searchkit_model'].clean(value).model_class()
             except forms.ValidationError:
                 return None
 
     @cached_property
-    def contenttype_form(self):
+    def searchkit_model_form(self):
         kwargs = dict(data=self.data or None, initial=self.initial or None)
         if self.instance.pk:
-            kwargs['initial'] = dict(contenttype=self.instance.contenttype)
+            kwargs['initial'] = dict(searchkit_model=self.instance.contenttype)
         return SearchkitModelForm(**kwargs)
 
     @cached_property
@@ -53,11 +53,11 @@ class SearchForm(MediaMixin, forms.ModelForm):
         return formset(**kwargs)
 
     def is_valid(self):
-        return self.formset.is_valid() and self.contenttype_form.is_valid and super().is_valid()
+        return self.formset.is_valid() and self.searchkit_model_form.is_valid and super().is_valid()
 
     def clean(self):
-        if self.contenttype_form.is_valid():
-            self.instance.contenttype = self.contenttype_form.cleaned_data['contenttype']
+        if self.searchkit_model_form.is_valid():
+            self.instance.contenttype = self.searchkit_model_form.cleaned_data['searchkit_model']
         if self.formset.is_valid():
             self.instance.data = self.formset.cleaned_data
         return super().clean()

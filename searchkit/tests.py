@@ -61,7 +61,7 @@ def get_form_data(initial_data=INITIAL_DATA):
     count = len(initial_data)
     data = {
         'name': 'test search',                  # The name of the search.
-        'contenttype': f'{contenttype.pk}',  # Data for the contenttype form.
+        'searchkit_model': f'{contenttype.pk}',  # Data for the searchkit-model form.
         f'{DEFAULT_PREFIX}-TOTAL_FORMS': f'{count}',   # Data for the managment form.
         f'{DEFAULT_PREFIX}-INITIAL_FORMS': f'{count}', # Data for the managment form.
     }
@@ -280,15 +280,15 @@ class AdminBackendTest(TestCase):
         url = reverse('admin:searchkit_search_add')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        select = b'<select name="contenttype" class="searchkit-reload-on-change" data-total-forms="1" required id="id_contenttype">'
+        select = b'<select name="searchkit_model" class="searchkit-reload-on-change" data-total-forms="1" required id="id_searchkit_model">'
         for snippet in select.split(b' '):
             self.assertIn(snippet, resp.content)
 
     def test_search_form_with_initial(self):
-        url = reverse('admin:searchkit_search_add') + '?contenttype=1'
+        url = reverse('admin:searchkit_search_add') + '?searchkit_model=1'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        select = '<select name="contenttype" class="searchkit-reload-on-change" data-total-forms="1" required id="id_contenttype">'
+        select = '<select name="searchkit_model" class="searchkit-reload-on-change" data-total-forms="1" required id="id_searchkit_model">'
         for snippet in select.split(' '):
             self.assertIn(snippet, str(resp.content))
         self.assertIn('<option value="1" selected>', str(resp.content))
@@ -372,7 +372,7 @@ class SearchViewTest(TestCase):
 
     def test_search_view_with_model(self):
         data = get_form_data(self.initial)
-        data['contenttype'] = ContentType.objects.get_for_model(ModelA).pk
+        data['searchkit_model'] = ContentType.objects.get_for_model(ModelA).pk
         url_params = urlencode(data)
         base_url = reverse('searchkit_form')
         url = f'{base_url}?{url_params}'
@@ -381,7 +381,7 @@ class SearchViewTest(TestCase):
 
     def test_search_view_with_invalid_model(self):
         data = get_form_data(self.initial)
-        data['contenttype'] = 9999  # Non-existing content type.
+        data['searchkit_model'] = 9999  # Non-existing content type.
         url_params = urlencode(data)
         base_url = reverse('searchkit_form')
         url = f'{base_url}?{url_params}'

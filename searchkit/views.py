@@ -16,8 +16,8 @@ class SearchkitAjaxView(View):
     def get(self, request, **kwargs):
         contenttype_form = SearchkitModelForm(data=self.request.GET)
         if contenttype_form.is_valid():
-            model = contenttype_form.cleaned_data['contenttype'].model_class()
+            model = contenttype_form.cleaned_data['searchkit_model'].model_class()
             formset = searchkit_formset_factory(model=model)(data=request.GET)
             return HttpResponse(formset.render())
         else:
-            return HttpResponseBadRequest(_('Invalid contenttype form.'))
+            return HttpResponseBadRequest(_('Invalid searchkit-model-form.'))
