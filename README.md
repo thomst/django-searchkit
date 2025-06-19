@@ -51,18 +51,8 @@ class MyModelAdmin(admin.ModelAdmin):
 ## Usage
 
 1. Open the admin changelist of your Model.
-2. Click "Add filter" on the Searchkit filter.
-3. Choose the Model you want to filter.
+2. Click the "Add filter" button of the Searchkit filter.
+3. Give your Filter a name.
 4. Configure as many filter rules as you want.
-5. Click "Save and apply"
-
-
-## TODO
-
-- Limit the choices of the model field by models that should be searchable.
-- Add an apply button to the search edit page to be able to use a search without
-  saving it.
-- Coming from the search edit page the filtering should be done by an id__in url
-  parameter, not by an search parameter as it is used by the searchkit filter.
-- Add a public field for searches and only offer public searches in the
-  searchkit filter.
+5. Click "Save and apply".
+6. Reuse your filter whenever you want using the Searchkit filter section.
