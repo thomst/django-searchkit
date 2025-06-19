@@ -1,8 +1,12 @@
 from modeltree import ModelTree as BaseModelTree
 from collections import OrderedDict
+from django.apps import apps
+from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django import forms
 from django.utils.translation import gettext_lazy as _
+from ..filters import SearchkitFilter
 from . import fields as  searchkit_fields
 
 
@@ -150,3 +154,19 @@ class MediaMixin:
             'admin/js/jquery.init.js',
             "searchkit/searchkit.js"
         ]
+
+
+def is_searchable_model(model):
+    """
+    Check if the model is searchable by Searchkit.
+    """
+    return admin.site.is_registered(model) and SearchkitFilter in admin.site._registry[model].list_filter
+
+
+def get_searchable_models():
+    """
+    Return a queryset of searchable models.
+    """
+    models = [m for m in apps.get_models() if is_searchable_model(m)]
+    ids = [ContentType.objects.get_for_model(m).id for m in models]
+    return ContentType.objects.filter(pk__in=ids).order_by('app_label', 'model')

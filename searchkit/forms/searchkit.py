@@ -1,11 +1,11 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
-from django.contrib.contenttypes.models import ContentType
 from .utils import CssClassMixin, FIELD_PLAN, OPERATOR_DESCRIPTION
 from .utils import SUPPORTED_FIELDS
 from .utils import ModelTree
 from .utils import MediaMixin
+from .utils import get_searchable_models
 
 
 class SearchkitModelForm(forms.Form):
@@ -13,7 +13,7 @@ class SearchkitModelForm(forms.Form):
     Form to select a content type.
     """
     searchkit_model = forms.ModelChoiceField(
-        queryset=ContentType.objects.all(),  # FIXME: Limit choices to models that can be filtered.
+        queryset=get_searchable_models(),
         label=_('Model'),
         empty_label=_('Select a Model'),
         widget=forms.Select(attrs={
