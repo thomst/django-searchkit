@@ -14,8 +14,14 @@ class Search(models.Model):
     class Meta:
         unique_together = ('name', 'contenttype')
 
-    def get_filter_rules(self):
+    def as_lookups(self):
         lookups = OrderedDict()
         for data in self.data:
             lookups[f'{data["field"]}__{data["operator"]}'] = data['value']
         return lookups
+
+    def as_queryset(self):
+        """
+        Returns a filtered queryset for the model.
+        """
+        return self.contenttype.model_class().objects.filter(**self.as_lookups())

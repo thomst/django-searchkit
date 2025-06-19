@@ -24,4 +24,4 @@ class SearchkitFilter(SimpleListFilter):
         # Filter the queryset based on the selected SearchkitSearch object
         if self.value():
             search = Search.objects.get(id=int(self.value()))
-            return queryset.filter(**search.get_filter_rules())
+            return search.as_queryset()
