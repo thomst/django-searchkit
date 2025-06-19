@@ -259,11 +259,11 @@ class SearchkitSearchFormTestCase(TestCase):
         self.assertTrue(form.instance.pk)
 
         # Using the instance data as filter rules works.
-        filter_rules = form.instance.get_filter_rules()
+        filter_rules = form.instance.as_lookups()
         self.assertEqual(len(filter_rules), len(INITIAL_DATA))
         for data in INITIAL_DATA:
             self.assertIn(f"{data['field']}__{data['operator']}", filter_rules)
-        queryset = form.formset.model.objects.filter(**filter_rules)
+        queryset = form.instance.as_queryset()
         self.assertTrue(queryset.model == ModelA)
 
 
