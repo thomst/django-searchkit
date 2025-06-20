@@ -4,6 +4,7 @@ from django.apps import apps
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from django.db.utils import OperationalError
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from ..filters import SearchkitFilter
@@ -167,6 +168,11 @@ def get_searchable_models():
     """
     Return a queryset of searchable models.
     """
-    models = [m for m in apps.get_models() if is_searchable_model(m)]
-    ids = [ContentType.objects.get_for_model(m).id for m in models]
-    return ContentType.objects.filter(pk__in=ids).order_by('app_label', 'model')
+    # Before mirating the database we get an OperationalError when trying to
+    # access ContentType database table.
+    try:
+        models = [m for m in apps.get_models() if is_searchable_model(m)]
+        ids = [ContentType.objects.get_for_model(m).id for m in models]
+        return ContentType.objects.filter(pk__in=ids).order_by('app_label', 'model')
+    except OperationalError:
+        return ContentType.objects.all()
