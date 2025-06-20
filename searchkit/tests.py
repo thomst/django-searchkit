@@ -306,6 +306,9 @@ class AdminBackendTest(TestCase):
         # Change it via backend.
         url = reverse('admin:searchkit_search_change', args=(1,))
         data['name'] = 'Changed name'
+        data['searchkit-example-modela-0-field'] = 'boolean'
+        data['searchkit-example-modela-0-operator'] = 'exact'
+        data['searchkit-example-modela-0-value'] = 'true'
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Search.objects.get(pk=1).name, data['name'])
