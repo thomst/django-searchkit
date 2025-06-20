@@ -17,7 +17,7 @@ class SearchkitFilter(SimpleListFilter):
     def lookups(self, request, model_admin):
         # Fetch the last three objects from SearchkitSearch and return them as
         # choices.
-        searches = Search.objects.filter(model=self.searchkit_model).order_by('-created_date')[:3]
+        searches = Search.objects.filter(contenttype=self.searchkit_model).order_by('-created_date')[:3]
         return [(str(obj.id), obj.name) for obj in searches]
 
     def queryset(self, request, queryset):
