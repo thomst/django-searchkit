@@ -9,7 +9,7 @@ from searchkit.forms.utils import FIELD_PLAN
 from searchkit.forms.utils import SUPPORTED_FIELDS
 from searchkit.forms.utils import ModelTree
 from searchkit.forms import SearchForm
-from searchkit.forms import BaseSearchkitForm
+from searchkit.forms import SearchkitModelForm
 from searchkit.forms import BaseSearchkitFormSet
 from searchkit.forms import searchkit_formset_factory
 from searchkit.models import Search
@@ -265,6 +265,16 @@ class SearchkitSearchFormTestCase(TestCase):
             self.assertIn(f"{data['field']}__{data['operator']}", filter_rules)
         queryset = form.instance.as_queryset()
         self.assertTrue(queryset.model == ModelA)
+
+
+class SearchkitModelFormTestCase(TestCase):
+    def test_searchkit_model_form_choices(self):
+        form = SearchkitModelForm()
+        labels = [c[1] for c in form.fields['searchkit_model'].choices]
+        self.assertEqual(len(labels), 3)
+        self.assertIn('Select a Model', labels)
+        self.assertIn('Example | model a', labels)
+        self.assertIn('Example | model b', labels)
 
 
 class AdminBackendTest(TestCase):
