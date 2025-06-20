@@ -272,9 +272,9 @@ class SearchkitModelFormTestCase(TestCase):
         form = SearchkitModelForm()
         labels = [c[1] for c in form.fields['searchkit_model'].choices]
         self.assertEqual(len(labels), 3)
-        self.assertIn('Select a Model', labels)
-        self.assertIn('Example | model a', labels)
-        self.assertIn('Example | model b', labels)
+        self.assertEqual('select a model', labels[0].lower())
+        self.assertEqual('example | model a', labels[1].lower())
+        self.assertEqual('example | model b', labels[2].lower())
 
 
 class AdminBackendTest(TestCase):
