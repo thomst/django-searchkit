@@ -23,7 +23,7 @@ SearchkitForm = SearchkitFormSet.form
 INITIAL_DATA = [
     dict(
         field='model_b__chars',
-        operator='exact',
+        operator='contains',
         value='anytext',
     ),
     dict(
@@ -33,12 +33,12 @@ INITIAL_DATA = [
     ),
     dict(
         field='float',
-        operator='exact',
+        operator='gt',
         value='0.3',
     ),
     dict(
         field='decimal',
-        operator='exact',
+        operator='lte',
         value='1.23',
     ),
     dict(
