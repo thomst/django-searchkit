@@ -14,6 +14,9 @@ class SearchkitFilter(SimpleListFilter):
         self.searchkit_model = ContentType.objects.get_for_model(model)
         super().__init__(request, params, model, model_admin)
 
+    def has_output(self):
+        return True
+
     def lookups(self, request, model_admin):
         # Fetch the last three objects from SearchkitSearch and return them as
         # choices.
