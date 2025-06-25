@@ -14,9 +14,9 @@ class SearchkitAjaxView(View):
     Reload the formset via ajax.
     """
     def get(self, request, **kwargs):
-        contenttype_form = SearchkitModelForm(data=self.request.GET)
-        if contenttype_form.is_valid():
-            model = contenttype_form.cleaned_data['searchkit_model'].model_class()
+        model_form = SearchkitModelForm(data=self.request.GET)
+        if model_form.is_valid():
+            model = model_form.cleaned_data['searchkit_model'].model_class()
             formset = searchkit_formset_factory(model=model)(data=request.GET)
             return HttpResponse(formset.render())
         else:
