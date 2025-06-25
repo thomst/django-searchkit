@@ -19,9 +19,3 @@ class Search(models.Model):
         for data in self.data:
             lookups[f'{data["field"]}__{data["operator"]}'] = data['value']
         return lookups
-
-    def as_queryset(self):
-        """
-        Returns a filtered queryset for the model.
-        """
-        return self.contenttype.model_class().objects.filter(**self.as_lookups())

@@ -263,8 +263,6 @@ class SearchkitSearchFormTestCase(TestCase):
         self.assertEqual(len(filter_rules), len(INITIAL_DATA))
         for data in INITIAL_DATA:
             self.assertIn(f"{data['field']}__{data['operator']}", filter_rules)
-        queryset = form.instance.as_queryset()
-        self.assertTrue(queryset.model == ModelA)
 
 
 class SearchkitModelFormTestCase(TestCase):
