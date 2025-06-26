@@ -1,6 +1,5 @@
 from django import forms
 from django.utils.functional import cached_property
-from django.contrib.contenttypes.models import ContentType
 from ..models import Search
 from .searchkit import SearchkitModelForm
 from .searchkit import searchkit_formset_factory
