@@ -49,7 +49,7 @@ INITIAL_DATA = [
     dict(
         field='datetime',
         operator='exact',
-        value='2025-05-14 08:45',
+        value=['2025-05-14', '08:45'],
     )
 ]
 
