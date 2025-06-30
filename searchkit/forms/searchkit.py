@@ -119,13 +119,7 @@ class BaseSearchkitForm(MediaMixin, CssClassMixin, forms.Form):
         self.fields['operator'] = field
 
     def _add_value_field(self):
-        initial = self.initial.get('value')
-        field_class = self.field_plan[self.operator][0]
-        if getattr(field_class, 'choices', None) and getattr(self.model_field, 'choices', None):
-            field = field_class(choices=self.model_field.choices, initial=initial)
-        else:
-            field = field_class()
-        self.fields['value'] = field
+        self.fields['value'] = self.field_plan[self.operator](self.model_field)
 
 
 class BaseSearchkitFormSet(CssClassMixin, forms.BaseFormSet):

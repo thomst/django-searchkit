@@ -50,94 +50,95 @@ FIELD_PLAN = OrderedDict((
     (
         lambda f: isinstance(f, models.BooleanField),
         {
-            'exact': (forms.NullBooleanField,),
+            'exact': lambda f: forms.NullBooleanField() if f.null else forms.BooleanField(),
         }
     ),
     (
         lambda f: isinstance(f, models.CharField) and f.choices,
         {
-            'exact': (forms.ChoiceField,),
-            'contains': (forms.CharField,),
-            'startswith': (forms.CharField,),
-            'endswith': (forms.CharField,),
-            'regex': (forms.CharField,),
-            'in': (forms.MultipleChoiceField,),
+            'exact': lambda f: forms.ChoiceField(choices=f.choices),
+            'contains': lambda f: forms.CharField(),
+            'startswith': lambda f: forms.CharField(),
+            'endswith': lambda f: forms.CharField(),
+            'regex': lambda f: forms.CharField(),
+            'in': lambda f: forms.MultipleChoiceField(choices=f.choices),
         }
     ),
     (
         lambda f: isinstance(f, models.CharField),
         {
-            'exact': (forms.CharField,),
-            'contains': (forms.CharField,),
-            'startswith': (forms.CharField,),
-            'endswith': (forms.CharField,),
-            'regex': (forms.CharField,),
+            'exact': lambda f: forms.CharField(),
+            'contains': lambda f: forms.CharField(),
+            'startswith': lambda f: forms.CharField(),
+            'endswith': lambda f: forms.CharField(),
+            'regex': lambda f: forms.CharField(),
         }
     ),
     (
         lambda f: isinstance(f, models.IntegerField) and f.choices,
         {
-            'exact': (forms.ChoiceField,),
-            'contains': (forms.IntegerField,),
-            'startswith': (forms.IntegerField,),
-            'endswith': (forms.IntegerField,),
-            'regex': (forms.IntegerField,),
-            'in': (forms.MultipleChoiceField,),
+            'exact': lambda f: forms.ChoiceField(choices=f.choices),
+            'gt': lambda f: forms.IntegerField(),
+            'gte': lambda f: forms.IntegerField(),
+            'lt': lambda f: forms.IntegerField(),
+            'lte': lambda f: forms.IntegerField(),
+            'range': lambda f: searchkit_fields.IntegerRangeField(),
+            'in': lambda f: forms.MultipleChoiceField(choices=f.choices),
         }
     ),
     (
         lambda f: isinstance(f, models.IntegerField),
         {
-            'exact': (forms.IntegerField,),
-            'gt': (forms.IntegerField,),
-            'gte': (forms.IntegerField,),
-            'lt': (forms.IntegerField,),
-            'lte': (forms.IntegerField,),
-            'range': (searchkit_fields.IntegerRangeField,),
+            'exact': lambda f: forms.IntegerField(),
+            'gt': lambda f: forms.IntegerField(),
+            'gte': lambda f: forms.IntegerField(),
+            'lt': lambda f: forms.IntegerField(),
+            'lte': lambda f: forms.IntegerField(),
+            'range': lambda f: searchkit_fields.IntegerRangeField(),
         }
     ),
     (
         lambda f: isinstance(f, models.FloatField),
         {
-            'exact': (forms.FloatField,),
-            'gt': (forms.FloatField,),
-            'gte': (forms.FloatField,),
-            'lt': (forms.FloatField,),
-            'lte': (forms.FloatField,),
-            'range': (searchkit_fields.IntegerRangeField,),
+            'exact': lambda f: forms.FloatField(),
+            'gt': lambda f: forms.FloatField(),
+            'gte': lambda f: forms.FloatField(),
+            'lt': lambda f: forms.FloatField(),
+            'lte': lambda f: forms.FloatField(),
+            'range': lambda f: searchkit_fields.IntegerRangeField(),
         }
     ),
     (
         lambda f: isinstance(f, models.DecimalField),
         {
-            'exact': (forms.DecimalField,),
-            'gt': (forms.DecimalField,),
-            'gte': (forms.DecimalField,),
-            'lt': (forms.DecimalField,),
-            'lte': (forms.DecimalField,),
-            'range': (searchkit_fields.IntegerRangeField,),
+            'exact': lambda f: forms.DecimalField(),
+            'gt': lambda f: forms.DecimalField(),
+            'gte': lambda f: forms.DecimalField(),
+            'lt': lambda f: forms.DecimalField(),
+            'lte': lambda f: forms.DecimalField(),
+            'range': lambda f: searchkit_fields.IntegerRangeField(),
         }
     ),
     (
         lambda f: isinstance(f, models.DateTimeField),
         {
-            'exact': (forms.DateTimeField,),
-            'gt': (forms.DateTimeField,),
-            'gte': (forms.DateTimeField,),
-            'lt': (forms.DateTimeField,),
-            'lte': (forms.DateTimeField,),
-            'range': (searchkit_fields.DateTimeRangeField,),
+            'exact': lambda f: forms.DateTimeField(),
+            'gt': lambda f: forms.DateTimeField(),
+            'gte': lambda f: forms.DateTimeField(),
+            'lt': lambda f: forms.DateTimeField(),
+            'lte': lambda f: forms.DateTimeField(),
+            'range': lambda f: searchkit_fields.DateTimeRangeField(),
         }
     ),
     (
         lambda f: isinstance(f, models.DateField),
         {
-            'exact': (forms.DateField,),
-            'gt': (forms.DateField,),
-            'gte': (forms.DateField,),
-            'lt': (forms.DateField,),
-            'lte': (forms.DateField,),
-            'range': (searchkit_fields.DateRangeField,),
+            'exact': lambda f: forms.DateField(),
+            'gt': lambda f: forms.DateField(),
+            'gte': lambda f: forms.DateField(),
+            'lt': lambda f: forms.DateField(),
+            'lte': lambda f: forms.DateField(),
+            'range': lambda f: searchkit_fields.DateRangeField(),
         }
     ),
 ))
