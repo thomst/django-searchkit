@@ -105,16 +105,14 @@ class BaseSearchkitForm(MediaMixin, CssClassMixin, forms.Form):
         return choices
 
     def _add_field_name_field(self):
-        initial = self.initial.get('field')
         choices = self._get_model_field_choices()
-        field = forms.ChoiceField(label=_('Model field'), choices=choices, initial=initial)
+        field = forms.ChoiceField(label=_('Model field'), choices=choices)
         field.widget.attrs.update({"class": self.reload_on_change_css_class})
         self.fields['field'] = field
 
     def _add_operator_field(self):
-        initial = self.initial.get('operator')
         choices = [(o, OPERATOR_DESCRIPTION[o]) for o in self.field_plan.keys()]
-        field = forms.ChoiceField(label=_('Operator'), choices=choices, initial=initial)
+        field = forms.ChoiceField(label=_('Operator'), choices=choices)
         field.widget.attrs.update({"class": self.reload_on_change_css_class})
         self.fields['operator'] = field
 
