@@ -5,12 +5,14 @@ from django.utils.html import format_html
 from .models import Search
 from .forms import SearchForm
 from .filters import SearchkitFilter
+from .filters import SearchableModelFilter
 
 
 @admin.register(Search)
 class SearchkitSearchAdmin(admin.ModelAdmin):
     form = SearchForm
     list_display = ('name', 'contenttype', 'created_date', 'apply_search_view')
+    list_filter = (('contenttype', SearchableModelFilter),)
 
     def get_url_for_applied_search(self, obj):
         app_label = obj.contenttype.app_label

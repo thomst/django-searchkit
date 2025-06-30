@@ -1,9 +1,10 @@
-from django.contrib.admin import SimpleListFilter
+from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from .models import Search
+from .utils import is_searchable_model
 
 
-class SearchkitFilter(SimpleListFilter):
+class SearchkitFilter(admin.SimpleListFilter):
     title = 'Searchkit Filter'
     parameter_name = 'search'
     template = 'searchkit/searchkit_filter.html'
@@ -26,3 +27,10 @@ class SearchkitFilter(SimpleListFilter):
         if self.value():
             search = Search.objects.get(id=int(self.value()))
             return queryset.filter(**search.as_lookups())
+
+
+class SearchableModelFilter(admin.filters.RelatedFieldListFilter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        contenttypes = ContentType.objects.order_by('app_label', 'model')
+        self.lookup_choices = [(m.id, m) for m in contenttypes if is_searchable_model(m.model_class())]
