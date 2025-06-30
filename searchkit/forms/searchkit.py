@@ -12,8 +12,12 @@ class SearchkitModelForm(forms.Form):
     """
     Form to select a content type.
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['searchkit_model'].queryset = get_searchable_models()
+
     searchkit_model = forms.ModelChoiceField(
-        queryset=get_searchable_models(),
+        queryset=ContentType.objects.all(),
         label=_('Model'),
         empty_label=_('Select a Model'),
         widget=forms.Select(attrs={
