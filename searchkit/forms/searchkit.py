@@ -5,7 +5,7 @@ from .utils import CssClassMixin, FIELD_PLAN, OPERATOR_DESCRIPTION
 from .utils import SUPPORTED_FIELDS
 from .utils import ModelTree
 from .utils import MediaMixin
-from .utils import get_searchable_models
+from ..utils import is_searchable_model
 
 
 class SearchkitModelForm(forms.Form):
@@ -14,10 +14,13 @@ class SearchkitModelForm(forms.Form):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['searchkit_model'].queryset = get_searchable_models()
+        models = [m for m in apps.get_models() if is_searchable_model(m)]
+        ids = [ContentType.objects.get_for_model(m).id for m in models]
+        queryset = self.fields['searchkit_model'].queryset.filter(pk__in=ids)
+        self.fields['searchkit_model'].queryset = queryset
 
     searchkit_model = forms.ModelChoiceField(
-        queryset=ContentType.objects.all(),
+        queryset=ContentType.objects.all().order_by('app_label', 'model'),
         label=_('Model'),
         empty_label=_('Select a Model'),
         widget=forms.Select(attrs={
