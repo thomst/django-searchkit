@@ -118,22 +118,22 @@ FIELD_PLAN = OrderedDict((
     (
         lambda f: isinstance(f, models.DateTimeField),
         {
-            'exact': lambda f: forms.DateTimeField(),
-            'gt': lambda f: forms.DateTimeField(),
-            'gte': lambda f: forms.DateTimeField(),
-            'lt': lambda f: forms.DateTimeField(),
-            'lte': lambda f: forms.DateTimeField(),
+            'exact': lambda f: forms.SplitDateTimeField(widget=AdminSplitDateTime()),
+            'gt': lambda f: forms.SplitDateTimeField(widget=AdminSplitDateTime()),
+            'gte': lambda f: forms.SplitDateTimeField(widget=AdminSplitDateTime()),
+            'lt': lambda f: forms.SplitDateTimeField(widget=AdminSplitDateTime()),
+            'lte': lambda f: forms.SplitDateTimeField(widget=AdminSplitDateTime()),
             'range': lambda f: searchkit_fields.DateTimeRangeField(),
         }
     ),
     (
         lambda f: isinstance(f, models.DateField),
         {
-            'exact': lambda f: forms.DateField(),
-            'gt': lambda f: forms.DateField(),
-            'gte': lambda f: forms.DateField(),
-            'lt': lambda f: forms.DateField(),
-            'lte': lambda f: forms.DateField(),
+            'exact': lambda f: forms.DateField(widget=AdminDateWidget()),
+            'gt': lambda f: forms.DateField(widget=AdminDateWidget()),
+            'gte': lambda f: forms.DateField(widget=AdminDateWidget()),
+            'lt': lambda f: forms.DateField(widget=AdminDateWidget()),
+            'lte': lambda f: forms.DateField(widget=AdminDateWidget()),
             'range': lambda f: searchkit_fields.DateRangeField(),
         }
     ),

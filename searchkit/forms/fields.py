@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.admin import widgets
 from django.utils.translation import gettext_lazy as _
 
 
@@ -46,10 +47,10 @@ class IntegerRangeField(BaseRangeField):
 class DateRangeField(BaseRangeField):
     incomplete_message = _("Enter the first and the last date.")
     field_type = forms.DateField
-    widget_type = forms.DateInput
+    widget_type = widgets.AdminDateWidget
 
 
-class DateTimeRangeField(BaseRangeField):
+class DateTimeRangeField(DateRangeField):
     incomplete_message = _("Enter the first and the last datetime.")
-    field_type = forms.DateTimeField
-    widget_type = forms.DateTimeInput
+    field_type = forms.SplitDateTimeField
+    widget_type = widgets.AdminSplitDateTime

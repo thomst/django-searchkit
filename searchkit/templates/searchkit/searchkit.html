@@ -1,4 +1,4 @@
-{% load searchkit %}
+{% load searchkit static %}
 {% comment %} Save some data attributes for the javascript code.{% endcomment %}
 <div id="searchkit_formset" data-url="{% url 'searchkit_form' %}" data-on-change-class="{{ formset.reload_on_change_css_class }}" data-on-click-class="{{ formset.reload_on_click_css_class }}">
     {{ formset.management_form }}
@@ -15,3 +15,11 @@
         {% endblock %}
     {% endif %}
 </div>
+{% if formset.uses_date_widget %}
+    <script src="{% static 'admin/js/calendar.js' %}"></script>
+    <script src="{% static 'admin/js/admin/DateTimeShortcuts.js' %}"></script>
+    <script>
+        // Initialize only if the searchkit formset was updated via ajax.
+        if (document.readyState === "complete") DateTimeShortcuts.init();
+    </script>
+{% endif %}

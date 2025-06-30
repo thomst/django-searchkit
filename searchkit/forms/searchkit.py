@@ -1,10 +1,14 @@
 from django import forms
+from django.apps import apps
+from django.contrib.admin import widgets
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
 from .utils import CssClassMixin, FIELD_PLAN, OPERATOR_DESCRIPTION
 from .utils import SUPPORTED_FIELDS
 from .utils import ModelTree
 from .utils import MediaMixin
+from .fields import DateRangeField
 from ..utils import is_searchable_model
 
 
@@ -141,6 +145,26 @@ class BaseSearchkitFormSet(CssClassMixin, forms.BaseFormSet):
     @classmethod
     def get_default_prefix(self):
         return "searchkit"
+
+    @cached_property
+    def uses_date_widget(self):
+        """
+        Check if the form uses a date widget.
+        """
+        for form in self.forms:
+            for field in form.fields.values():
+                if isinstance(field.widget, (widgets.AdminDateWidget, widgets.AdminSplitDateTime)):
+                    return True
+                elif isinstance(field, DateRangeField):
+                    return True
+        return False
+
+    @cached_property
+    def forms(self):
+        if self.model:
+            return super().forms
+        else:
+            return []
 
 
 def searchkit_formset_factory(model, **kwargs):
