@@ -1,8 +1,6 @@
 from django.utils.translation import gettext_lazy as _
 from django.http import HttpResponse
-from django.http import Http404, HttpResponseBadRequest
-from django.apps import apps
-from django.contrib.contenttypes.models import ContentType
+from django.http import HttpResponseBadRequest
 from django.views.generic import View
 from .forms import SearchkitModelForm
 from .forms import searchkit_formset_factory
