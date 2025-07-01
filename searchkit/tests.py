@@ -6,9 +6,9 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from example.models import ModelA
 from example.management.commands.createtestdata import Command as CreateTestData
-from searchkit.forms.utils import FIELD_PLAN
-from searchkit.forms.utils import SUPPORTED_FIELDS
-from searchkit.forms.utils import ModelTree
+from searchkit.utils import FIELD_PLAN
+from searchkit.utils import SUPPORTED_FIELDS
+from searchkit.utils import ModelTree
 from searchkit.forms import SearchForm
 from searchkit.forms import SearchkitModelForm
 from searchkit.forms import BaseSearchkitFormSet
