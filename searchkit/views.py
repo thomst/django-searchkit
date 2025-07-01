@@ -1,21 +1,35 @@
+from rest_framework.views import APIView
+from rest_framework.exceptions import APIException
+from rest_framework.permissions import BasePermission
+from rest_framework.response import Response
 from django.utils.translation import gettext_lazy as _
-from django.http import HttpResponse
-from django.http import HttpResponseBadRequest
-from django.views.generic import View
 from .forms import SearchkitModelForm
 from .forms import searchkit_formset_factory
 
 
-# FIXME: Check permissions and authentication.
-class SearchkitAjaxView(View):
+class InvalidModelFormException(APIException):
+    status_code = 400
+    default_detail = _('Invalid searchkit model form.')
+    default_code = 'invalid_model_form'
+
+
+class SearchkitPermission(BasePermission):
+    def has_permission(self, request, view):
+        # Allow access only if the user has the 'view_search' permission.
+        return request.user.has_perm('searchkit.view_search')
+
+
+class SearchkitView(APIView):
     """
-    Reload the formset via ajax.
+    Update the searchkit formset via ajax.
     """
+    permission_classes = [SearchkitPermission]
+
     def get(self, request, **kwargs):
         model_form = SearchkitModelForm(data=self.request.GET)
         if model_form.is_valid():
             model = model_form.cleaned_data['searchkit_model'].model_class()
             formset = searchkit_formset_factory(model=model)(data=request.GET)
-            return HttpResponse(formset.render())
+            return Response(formset.render())
         else:
-            return HttpResponseBadRequest(_('Invalid searchkit-model-form.'))
+            raise InvalidModelFormException()
