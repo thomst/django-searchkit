@@ -1,3 +1,4 @@
+import os, sys
 from urllib.parse import urlencode
 from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
@@ -278,7 +279,8 @@ class SearchkitModelFormTestCase(TestCase):
 class AdminBackendTest(TestCase):
     @classmethod
     def setUpTestData(cls):
-        CreateTestData().handle()
+        with open(os.devnull, 'w') as sys.stdout:
+            CreateTestData().handle()
 
     def setUp(self):
         admin = User.objects.get(username='admin')
