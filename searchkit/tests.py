@@ -17,6 +17,11 @@ from searchkit.models import Search
 from searchkit import __version__
 
 
+# Check django version.
+import django
+print(f'DJANGO-VERSION: {django.VERSION}')
+
+
 SearchkitFormSet = searchkit_formset_factory(model=ModelA)
 SearchkitForm = SearchkitFormSet.form
 
@@ -331,9 +336,17 @@ class AdminBackendTest(TestCase):
         self.assertIn(data['name'], str(resp.content))
 
 
-class SearchViewTest(TestCase):
+class SearchkitViewTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        with open(os.devnull, 'w') as sys.stdout:
+            CreateTestData().handle()
 
     def setUp(self):
+        admin = User.objects.get(username='admin')
+        self.client.force_login(admin)
+
         self.initial = [
             dict(
                 field='integer',
@@ -349,7 +362,16 @@ class SearchViewTest(TestCase):
             )
         ]
 
-    def test_search_view_invalid_data(self):
+    def test_searchkit_view_with_anonymous_user(self):
+        self.client.logout()
+        data = get_form_data(self.initial)
+        url_params = urlencode(data)
+        base_url = reverse('searchkit_form')
+        url = f'{base_url}?{url_params}'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_searchkit_view_invalid_data(self):
         initial = self.initial.copy()
         initial[0]['value'] = 'no integer'
         data = get_form_data(initial)
@@ -361,7 +383,7 @@ class SearchViewTest(TestCase):
         html_error = '<li>Enter a whole number.</li>'
         self.assertInHTML(html_error, str(resp.content))
 
-    def test_search_view_missing_data(self):
+    def test_searchkit_view_missing_data(self):
         initial = self.initial.copy()
         del(initial[0]['value'])
         data = get_form_data(initial)
@@ -373,17 +395,17 @@ class SearchViewTest(TestCase):
         html_error = '<li>This field is required.</li>'
         self.assertInHTML(html_error, str(resp.content))
 
-    def test_search_view_with_range_operator(self):
+    def test_searchkit_view_with_range_operator(self):
         data = get_form_data(self.initial_range)
         url_params = urlencode(data)
         base_url = reverse('searchkit_form')
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        html = '<input type="number" name="searchkit-example-modela-0-value_1" value="3" id="id_searchkit-example-modela-0-value_1">'
-        self.assertInHTML(html, str(resp.content))
+        html = '<input type=\\"number\\" name=\\"searchkit-example-modela-0-value_1\\" value=\\"3\\" id=\\"id_searchkit-example-modela-0-value_1\\">'
+        self.assertInHTML(html, resp.content.decode('utf-8'))
 
-    def test_search_view_with_model(self):
+    def test_searchkit_view_with_model(self):
         data = get_form_data(self.initial)
         data['searchkit_model'] = ContentType.objects.get_for_model(ModelA).pk
         url_params = urlencode(data)
@@ -392,7 +414,7 @@ class SearchViewTest(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
 
-    def test_search_view_with_invalid_model(self):
+    def test_searchkit_view_with_invalid_model(self):
         data = get_form_data(self.initial)
         data['searchkit_model'] = 9999  # Non-existing content type.
         url_params = urlencode(data)
