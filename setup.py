@@ -44,7 +44,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "Django>=4.0",
-        "django-picklefield>=2.0",
+        "django-picklefield",
         "djangorestframework",
         "django-modeltree",
     ],
