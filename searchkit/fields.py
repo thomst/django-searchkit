@@ -38,6 +38,7 @@ class BaseRangeField(forms.MultiValueField):
         return data_list
 
 
+# TODO: Add range fields for FloatField and DecimalField.
 class IntegerRangeField(BaseRangeField):
     incomplete_message = _("Enter the first and the last number.")
     field_type = forms.IntegerField

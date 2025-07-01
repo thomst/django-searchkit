@@ -14,6 +14,7 @@ from .utils import MediaMixin
 from .utils import is_searchable_model
 
 
+# TODO: Check unique_together contraint for search name and content type.
 class SearchForm(MediaMixin, forms.ModelForm):
     """
     Represents a SearchkitSearch model. Using a SearchkitFormSet for the data
