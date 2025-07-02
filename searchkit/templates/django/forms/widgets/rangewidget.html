@@ -1,0 +1,13 @@
+{% with widget=widget.subwidgets.0 %}
+<div>
+    <label for="{{ widget.attrs.id }}">From:</label>
+    {% include widget.template_name %}
+</div>
+&nbsp;&nbsp;&nbsp;
+{% endwith %}
+{% with widget=widget.subwidgets.1 %}
+<div>
+    <label for="{{ widget.attrs.id }}">To:</label>
+    {% include widget.template_name %}
+</div>
+{% endwith %}

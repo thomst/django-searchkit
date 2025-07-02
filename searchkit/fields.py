@@ -4,8 +4,11 @@ from django.utils.translation import gettext_lazy as _
 
 
 class RangeWidget(forms.MultiWidget):
+    # FIXME: Overwriting the original MultiWidget template does not work for any
+    # reason.
+    template_name = "django/forms/widgets/rangewidget.html"
     def decompress(self, value):
-        """The value should be already a list."""
+        # For an empty value return a list with two None values.
         if value:
             return value
         else:
