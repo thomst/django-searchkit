@@ -115,7 +115,7 @@ FIELD_PLAN = OrderedDict((
             'gte': lambda f: forms.FloatField(),
             'lt': lambda f: forms.FloatField(),
             'lte': lambda f: forms.FloatField(),
-            'range': lambda f: searchkit_fields.IntegerRangeField(),
+            'range': lambda f: searchkit_fields.FloatRangeField(),
         }
     ),
     (
@@ -126,7 +126,7 @@ FIELD_PLAN = OrderedDict((
             'gte': lambda f: forms.DecimalField(),
             'lt': lambda f: forms.DecimalField(),
             'lte': lambda f: forms.DecimalField(),
-            'range': lambda f: searchkit_fields.IntegerRangeField(),
+            'range': lambda f: searchkit_fields.DecimalRangeField(),
         }
     ),
     (
