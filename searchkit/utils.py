@@ -40,7 +40,7 @@ OPERATOR_DESCRIPTION = {
     'gte': _('is greater than or equal'),
     'lt': _('is lower than'),
     'lte': _('is lower than or equal'),
-    'range': _('is between'),
+    'range': _('is within range'),
     'in': _('is one of'),
 }
 
