@@ -154,11 +154,6 @@ FIELD_PLAN = OrderedDict((
 ))
 
 
-class CssClassMixin:
-    reload_on_change_css_class = "searchkit-reload-on-change"
-    reload_on_click_css_class = "searchkit-reload-on-click"
-
-
 class MediaMixin:
     class Media:
         js = [

@@ -26,27 +26,17 @@ django.jQuery(document).ready(function () {
 
     function addFormsetHandlers() {
         const formset = django.jQuery('#searchkit_formset');
-        const onChangeClass = formset.data('on-change-class');
-        const onClickClass = formset.data('on-click-class');
+        const reloadCssClass = formset.data('reload-css-class');
         const totalFormsInput = django.jQuery('input[name$=TOTAL_FORMS]');
 
-        django.jQuery(`.${onChangeClass}`).each(function () {
+        django.jQuery(`.${reloadCssClass}`).each(function () {
             const totalFormsCount = django.jQuery(this).data('total-forms');
-            django.jQuery(this).on('change', function (e) {
-                e.preventDefault();
-                if (totalFormsCount) totalFormsInput.val(parseInt(totalFormsCount));
-                updateFormset();
-            });
-        });
-
-        django.jQuery(`.${onClickClass}`).each(function () {
-            const totalFormsCount = django.jQuery(this).data('total-forms');
-            django.jQuery(this).on('click', function (e) {
+            const reloadHandler = django.jQuery(this).data('reload-handler');
+            django.jQuery(this).on(reloadHandler, function (e) {
                 e.preventDefault();
                 if (totalFormsCount) totalFormsInput.val(parseInt(totalFormsCount));
                 updateFormset();
             });
         });
     }
-
 });

@@ -7,11 +7,15 @@ from django.contrib.contenttypes.models import ContentType
 from .models import Search
 from .fields import DateRangeField
 from .utils import MediaMixin
-from .utils import CssClassMixin, FIELD_PLAN, OPERATOR_DESCRIPTION
+from .utils import FIELD_PLAN
+from .utils import OPERATOR_DESCRIPTION
 from .utils import SUPPORTED_FIELDS
 from .utils import ModelTree
 from .utils import MediaMixin
 from .utils import is_searchable_model
+
+
+RELOAD_CSS_CLASS = "searchkit-reload"
 
 
 # TODO: Check unique_together contraint for search name and content type.
@@ -86,13 +90,14 @@ class SearchkitModelForm(forms.Form):
         label=_('Model'),
         empty_label=_('Select a Model'),
         widget=forms.Select(attrs={
-            "class": CssClassMixin.reload_on_change_css_class,
+            "class": RELOAD_CSS_CLASS,
+            "data-reload-handler": "change",
             "data-total-forms": 1,
         }),
     )
 
 
-class BaseSearchkitForm(MediaMixin, CssClassMixin, forms.Form):
+class BaseSearchkitForm(MediaMixin, forms.Form):
     """
     Searchkit form representing a model field lookup based on the field name,
     the operator and one or two values.
@@ -173,28 +178,35 @@ class BaseSearchkitForm(MediaMixin, CssClassMixin, forms.Form):
                 choices.append((lookup, label))
         return choices
 
+    def _get_html_attrs(self):
+        return {
+            "class": RELOAD_CSS_CLASS,
+            "data-reload-handler": "change",
+        }
+
     def _add_field_name_field(self):
         choices = self._get_model_field_choices()
         field = forms.ChoiceField(label=_('Model field'), choices=choices)
-        field.widget.attrs.update({"class": self.reload_on_change_css_class})
+        field.widget.attrs.update(self._get_html_attrs())
         self.fields['field'] = field
 
     def _add_operator_field(self):
         choices = [(o, OPERATOR_DESCRIPTION[o]) for o in self.field_plan.keys()]
         field = forms.ChoiceField(label=_('Operator'), choices=choices)
-        field.widget.attrs.update({"class": self.reload_on_change_css_class})
+        field.widget.attrs.update(self._get_html_attrs())
         self.fields['operator'] = field
 
     def _add_value_field(self):
         self.fields['value'] = self.field_plan[self.operator](self.model_field)
 
 
-class BaseSearchkitFormSet(CssClassMixin, forms.BaseFormSet):
+class BaseSearchkitFormSet(forms.BaseFormSet):
     """
     Formset holding all searchkit forms.
     """
     template_name = "searchkit/searchkit.html"
     template_name_div = "searchkit/searchkit.html"
+    reload_css_class = RELOAD_CSS_CLASS
     model = None  # Set by the formset factory.
 
     def add_prefix(self, index):

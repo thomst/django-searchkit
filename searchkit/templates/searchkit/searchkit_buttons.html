@@ -1,7 +1,7 @@
 {% load searchkit %}
 <div class="submit-row">
-    <input type="submit" class="{{ formset.reload_on_click_css_class }}" data-total-forms="{{ formset.total_form_count|add:"1" }}" value="Add filter rule">
+    <input type="submit" class="{{ formset.reload_css_class }}" data-reload-handler="click" data-total-forms="{{ formset.total_form_count|add:"1" }}" value="Add filter rule">
     {% if formset.forms|length > 1 %}
-        <input type="submit" class="{{ formset.reload_on_click_css_class }}" data-total-forms="{{ formset.total_form_count|add:"-1" }}" value="Remove last filter rule">
+        <input type="submit" class="{{ formset.reload_css_class }}" data-reload-handler="click" data-total-forms="{{ formset.total_form_count|add:"-1" }}" value="Remove last filter rule">
     {% endif %}
 </div>

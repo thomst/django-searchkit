@@ -1,6 +1,6 @@
 {% load searchkit static %}
 {% comment %} Save some data attributes for the javascript code.{% endcomment %}
-<div id="searchkit_formset" data-url="{% url 'searchkit_form' %}" data-on-change-class="{{ formset.reload_on_change_css_class }}" data-on-click-class="{{ formset.reload_on_click_css_class }}">
+<div id="searchkit_formset" data-url="{% url 'searchkit_form' %}" data-reload-css-class="{{ formset.reload_css_class }}">
     {{ formset.management_form }}
     {% if formset.model and formset.forms %}
         {% for form in formset %}
