@@ -15,8 +15,11 @@ class InvalidModelFormException(APIException):
 
 class SearchkitPermission(BasePermission):
     def has_permission(self, request, view):
-        # Allow access only if the user has the 'view_search' permission.
-        return request.user.has_perm('searchkit.view_search')
+        # Allow access only if the user has the 'add' or 'change' permissions.
+        return (
+            request.user.has_perm('searchkit.add_search')
+            or request.user.has_perm('searchkit.change_search')
+        )
 
 
 class SearchkitView(APIView):
