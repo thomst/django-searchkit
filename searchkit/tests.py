@@ -295,7 +295,7 @@ class AdminBackendTest(TestCase):
         url = reverse('admin:searchkit_search_add')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        select = b'<select name="searchkit_model" class="searchkit-reload-on-change" data-total-forms="1" required id="id_searchkit_model">'
+        select = b'<select name="searchkit_model" class="searchkit-reload" data-reload-handler="change" data-total-forms="1" required id="id_searchkit_model">'
         for snippet in select.split(b' '):
             self.assertIn(snippet, resp.content)
 
@@ -303,7 +303,7 @@ class AdminBackendTest(TestCase):
         url = reverse('admin:searchkit_search_add') + '?searchkit_model=1'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        select = '<select name="searchkit_model" class="searchkit-reload-on-change" data-total-forms="1" required id="id_searchkit_model">'
+        select = '<select name="searchkit_model" class="searchkit-reload" data-reload-handler="change" data-total-forms="1" required id="id_searchkit_model">'
         for snippet in select.split(' '):
             self.assertIn(snippet, str(resp.content))
         self.assertIn('<option value="1" selected>', str(resp.content))
