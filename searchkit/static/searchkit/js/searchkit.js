@@ -1,42 +1,47 @@
-django.jQuery(document).ready(function () {
+document.addEventListener("DOMContentLoaded", function () {
     addFormsetHandlers();
 
     function updateFormset() {
         const reloadEvent = new Event("searchkit:reloaded");
-        const formset = django.jQuery('#searchkit_formset');
-        const formData = django.jQuery('#searchkit_formset').closest('form').serialize();
-        const baseUrl = formset.data('url');
-        var url = `${baseUrl}?${formData}`;
+        const formset = document.getElementById('searchkit_formset');
+        const form = formset.closest('form');
+        const formData = new URLSearchParams(new FormData(form)).toString();
+        const baseUrl = formset.dataset.url;
+        const url = `${baseUrl}?${formData}`;
 
-        django.jQuery.ajax({
-            url: url,
-            type: 'GET',
-            success: function (response) {
-                // console.log('AJAX GET request successful:', response);
-                formset.replaceWith(response);
-                // We do not want error messages on formset updates. They are
-                // not relevant yet.
-                django.jQuery('#searchkit_formset').find('.errorlist').remove();
-                addFormsetHandlers();
-                window.dispatchEvent(reloadEvent);
-            },
-            error: function (error) {
-                console.error('AJAX GET request failed:', error);
-            }
+        // FIXME: Handle text/html content-type instead of json.
+        fetch(url, {
+            method: 'GET',
+            credentials: 'same-origin',
+        })
+        .then(response => response.json())
+        .then(html => {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = html.trim();
+            const newFormset = wrapper.firstChild;
+            formset.replaceWith(newFormset);
+            // Remove error messages. There not useful on reloading the formset.
+            newFormset.querySelectorAll('.errorlist').forEach(el => el.remove());
+            window.dispatchEvent(reloadEvent);
+            addFormsetHandlers();
+        })
+        .catch(error => {
+            console.error('AJAX GET request failed:', error);
         });
     }
 
     function addFormsetHandlers() {
-        const formset = django.jQuery('#searchkit_formset');
-        const reloadCssClass = formset.data('reload-css-class');
-        const totalFormsInput = django.jQuery('input[name$=TOTAL_FORMS]');
+        const formset = document.getElementById('searchkit_formset');
+        const reloadCssClass = formset.dataset.reloadCssClass;
+        const totalFormsInput = formset.closest('form').querySelector('input[name$="TOTAL_FORMS"]');
 
-        django.jQuery(`.${reloadCssClass}`).each(function () {
-            const totalFormsCount = django.jQuery(this).data('total-forms');
-            const reloadHandler = django.jQuery(this).data('reload-handler');
-            django.jQuery(this).on(reloadHandler, function (e) {
+        document.querySelectorAll(`.${reloadCssClass}`).forEach(function (el) {
+            const totalFormsCount = el.dataset.totalForms;
+            const reloadHandler = el.dataset.reloadHandler;
+
+            el.addEventListener(reloadHandler, function (e) {
                 e.preventDefault();
-                if (totalFormsCount) totalFormsInput.val(parseInt(totalFormsCount));
+                if (totalFormsCount) totalFormsInput.value = parseInt(totalFormsCount);
                 updateFormset();
             });
         });

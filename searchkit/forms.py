@@ -30,8 +30,6 @@ class SearchForm(forms.ModelForm):
         # We render all javascript code for widgets that might be used in the
         # formset.
         js = [
-            'admin/js/vendor/jquery/jquery.min.js',
-            'admin/js/jquery.init.js',
             "searchkit/js/searchkit.js",
             # Admin JS files for date and datetime widgets.
             "admin/js/calendar.js",
