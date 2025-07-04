@@ -5,7 +5,7 @@ from django.contrib.admin import widgets
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 from django import forms
-from . import fields as  searchkit_fields
+from . import fields as  skfields
 
 
 def is_searchable_model(model):
@@ -92,7 +92,7 @@ FIELD_PLAN = OrderedDict((
             'gte': lambda f: forms.IntegerField(),
             'lt': lambda f: forms.IntegerField(),
             'lte': lambda f: forms.IntegerField(),
-            'range': lambda f: searchkit_fields.IntegerRangeField(),
+            'range': lambda f: skfields.IntegerRangeField(),
             'in': lambda f: forms.MultipleChoiceField(choices=f.choices),
         }
     ),
@@ -104,7 +104,7 @@ FIELD_PLAN = OrderedDict((
             'gte': lambda f: forms.IntegerField(),
             'lt': lambda f: forms.IntegerField(),
             'lte': lambda f: forms.IntegerField(),
-            'range': lambda f: searchkit_fields.IntegerRangeField(),
+            'range': lambda f: skfields.IntegerRangeField(),
         }
     ),
     (
@@ -115,7 +115,7 @@ FIELD_PLAN = OrderedDict((
             'gte': lambda f: forms.FloatField(),
             'lt': lambda f: forms.FloatField(),
             'lte': lambda f: forms.FloatField(),
-            'range': lambda f: searchkit_fields.FloatRangeField(),
+            'range': lambda f: skfields.FloatRangeField(),
         }
     ),
     (
@@ -126,7 +126,7 @@ FIELD_PLAN = OrderedDict((
             'gte': lambda f: forms.DecimalField(),
             'lt': lambda f: forms.DecimalField(),
             'lte': lambda f: forms.DecimalField(),
-            'range': lambda f: searchkit_fields.DecimalRangeField(),
+            'range': lambda f: skfields.DecimalRangeField(),
         }
     ),
     (
@@ -137,7 +137,7 @@ FIELD_PLAN = OrderedDict((
             'gte': lambda f: forms.SplitDateTimeField(widget=widgets.AdminSplitDateTime()),
             'lt': lambda f: forms.SplitDateTimeField(widget=widgets.AdminSplitDateTime()),
             'lte': lambda f: forms.SplitDateTimeField(widget=widgets.AdminSplitDateTime()),
-            'range': lambda f: searchkit_fields.DateTimeRangeField(),
+            'range': lambda f: skfields.DateTimeRangeField(),
         }
     ),
     (
@@ -148,7 +148,7 @@ FIELD_PLAN = OrderedDict((
             'gte': lambda f: forms.DateField(widget=widgets.AdminDateWidget()),
             'lt': lambda f: forms.DateField(widget=widgets.AdminDateWidget()),
             'lte': lambda f: forms.DateField(widget=widgets.AdminDateWidget()),
-            'range': lambda f: searchkit_fields.DateRangeField(),
+            'range': lambda f: skfields.DateRangeField(),
         }
     ),
 ))
