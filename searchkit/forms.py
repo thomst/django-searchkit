@@ -6,12 +6,10 @@ from django.utils.functional import cached_property
 from django.contrib.contenttypes.models import ContentType
 from .models import Search
 from .fields import DateRangeField
-from .utils import MediaMixin
 from .utils import FIELD_PLAN
 from .utils import OPERATOR_DESCRIPTION
 from .utils import SUPPORTED_FIELDS
 from .utils import ModelTree
-from .utils import MediaMixin
 from .utils import is_searchable_model
 
 
@@ -19,7 +17,7 @@ RELOAD_CSS_CLASS = "searchkit-reload"
 
 
 # TODO: Check unique_together contraint for search name and content type.
-class SearchForm(MediaMixin, forms.ModelForm):
+class SearchForm(forms.ModelForm):
     """
     Represents a SearchkitSearch model. Using a SearchkitFormSet for the data
     json field.
@@ -27,6 +25,19 @@ class SearchForm(MediaMixin, forms.ModelForm):
     class Meta:
         model = Search
         fields = ['name']
+
+    class Media:
+        # We render all javascript code for widgets that might be used in the
+        # formset.
+        js = [
+            'admin/js/vendor/jquery/jquery.min.js',
+            'admin/js/jquery.init.js',
+            "searchkit/js/searchkit.js",
+            # Admin JS files for date and datetime widgets.
+            "admin/js/calendar.js",
+            "admin/js/admin/DateTimeShortcuts.js",
+            "searchkit/js/init_datetime_widgets.js",
+        ]
 
     @cached_property
     def searchkit_model(self):
@@ -97,7 +108,7 @@ class SearchkitModelForm(forms.Form):
     )
 
 
-class BaseSearchkitForm(MediaMixin, forms.Form):
+class BaseSearchkitForm(forms.Form):
     """
     Searchkit form representing a model field lookup based on the field name,
     the operator and one or two values.
@@ -215,19 +226,6 @@ class BaseSearchkitFormSet(forms.BaseFormSet):
     @classmethod
     def get_default_prefix(self):
         return "searchkit"
-
-    @cached_property
-    def uses_date_widget(self):
-        """
-        Check if the form uses a date widget.
-        """
-        for form in self.forms:
-            for field in form.fields.values():
-                if isinstance(field.widget, (widgets.AdminDateWidget, widgets.AdminSplitDateTime)):
-                    return True
-                elif isinstance(field, DateRangeField):
-                    return True
-        return False
 
     @cached_property
     def forms(self):

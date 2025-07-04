@@ -15,11 +15,3 @@
         {% endblock %}
     {% endif %}
 </div>
-{% if formset.uses_date_widget %}
-    <script src="{% static 'admin/js/calendar.js' %}"></script>
-    <script src="{% static 'admin/js/admin/DateTimeShortcuts.js' %}"></script>
-    <script>
-        // Initialize only if the searchkit formset was updated via ajax.
-        if (document.readyState === "complete") DateTimeShortcuts.init();
-    </script>
-{% endif %}

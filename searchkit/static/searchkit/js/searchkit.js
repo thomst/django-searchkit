@@ -2,6 +2,7 @@ django.jQuery(document).ready(function () {
     addFormsetHandlers();
 
     function updateFormset() {
+        const reloadEvent = new Event("searchkit:reloaded");
         const formset = django.jQuery('#searchkit_formset');
         const formData = django.jQuery('#searchkit_formset').closest('form').serialize();
         const baseUrl = formset.data('url');
@@ -17,6 +18,7 @@ django.jQuery(document).ready(function () {
                 // not relevant yet.
                 django.jQuery('#searchkit_formset').find('.errorlist').remove();
                 addFormsetHandlers();
+                window.dispatchEvent(reloadEvent);
             },
             error: function (error) {
                 console.error('AJAX GET request failed:', error);

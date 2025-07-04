@@ -152,12 +152,3 @@ FIELD_PLAN = OrderedDict((
         }
     ),
 ))
-
-
-class MediaMixin:
-    class Media:
-        js = [
-            'admin/js/vendor/jquery/jquery.min.js',
-            'admin/js/jquery.init.js',
-            "searchkit/searchkit.js"
-        ]
