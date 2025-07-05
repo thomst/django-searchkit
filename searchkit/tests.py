@@ -402,7 +402,7 @@ class SearchkitViewTest(TestCase):
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        html = '<input type=\\"number\\" name=\\"searchkit-example-modela-0-value_1\\" value=\\"3\\" id=\\"id_searchkit-example-modela-0-value_1\\">'
+        html = '<input type="number" name="searchkit-example-modela-0-value_1" value="3" id="id_searchkit-example-modela-0-value_1">'
         self.assertInHTML(html, resp.content.decode('utf-8'))
 
     def test_searchkit_view_with_model(self):
