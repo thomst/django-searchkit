@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
+from rest_framework.renderers import StaticHTMLRenderer
 from django.utils.translation import gettext_lazy as _
 from .forms import SearchkitModelForm
 from .forms import searchkit_formset_factory
@@ -27,6 +28,7 @@ class SearchkitView(APIView):
     Update the searchkit formset via ajax.
     """
     permission_classes = [SearchkitPermission]
+    renderer_classes = [StaticHTMLRenderer]
 
     def get(self, request, **kwargs):
         model_form = SearchkitModelForm(data=self.request.GET)

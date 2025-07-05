@@ -9,12 +9,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const baseUrl = formset.dataset.url;
         const url = `${baseUrl}?${formData}`;
 
-        // FIXME: Handle text/html content-type instead of json.
         fetch(url, {
             method: 'GET',
             credentials: 'same-origin',
+            headers: {'Accept': 'text/html'},
         })
-        .then(response => response.json())
+        .then(response => response.text())
         .then(html => {
             const wrapper = document.createElement('div');
             wrapper.innerHTML = html.trim();
