@@ -3,5 +3,5 @@ from .views import SearchkitView
 
 
 urlpatterns = [
-    path("searchkit/", SearchkitView.as_view(), name="searchkit_form"),
+    path("reload/", SearchkitView.as_view(), name="searchkit-reload"),
 ]

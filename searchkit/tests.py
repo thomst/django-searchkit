@@ -366,7 +366,7 @@ class SearchkitViewTest(TestCase):
         self.client.logout()
         data = get_form_data(self.initial)
         url_params = urlencode(data)
-        base_url = reverse('searchkit_form')
+        base_url = reverse('searchkit-reload')
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 403)
@@ -376,7 +376,7 @@ class SearchkitViewTest(TestCase):
         initial[0]['value'] = 'no integer'
         data = get_form_data(initial)
         url_params = urlencode(data)
-        base_url = reverse('searchkit_form')
+        base_url = reverse('searchkit-reload')
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
@@ -388,7 +388,7 @@ class SearchkitViewTest(TestCase):
         del(initial[0]['value'])
         data = get_form_data(initial)
         url_params = urlencode(data)
-        base_url = reverse('searchkit_form')
+        base_url = reverse('searchkit-reload')
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
@@ -398,7 +398,7 @@ class SearchkitViewTest(TestCase):
     def test_searchkit_view_with_range_operator(self):
         data = get_form_data(self.initial_range)
         url_params = urlencode(data)
-        base_url = reverse('searchkit_form')
+        base_url = reverse('searchkit-reload')
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
@@ -409,7 +409,7 @@ class SearchkitViewTest(TestCase):
         data = get_form_data(self.initial)
         data['searchkit_model'] = ContentType.objects.get_for_model(ModelA).pk
         url_params = urlencode(data)
-        base_url = reverse('searchkit_form')
+        base_url = reverse('searchkit-reload')
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
@@ -418,7 +418,7 @@ class SearchkitViewTest(TestCase):
         data = get_form_data(self.initial)
         data['searchkit_model'] = 9999  # Non-existing content type.
         url_params = urlencode(data)
-        base_url = reverse('searchkit_form')
+        base_url = reverse('searchkit-reload')
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 400)
