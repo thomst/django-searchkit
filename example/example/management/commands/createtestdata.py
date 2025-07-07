@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
         # Generate test data for ModelA
         model_a_instances = []
-        for i in range(10):
+        for i in range(1001):
             model_a = ModelA.objects.create(
                 boolean=random.choice([None, True, False]),
                 chars=f"ModelA_Chars_{i}",
@@ -42,7 +42,7 @@ class Command(BaseCommand):
 
         # Generate test data for ModelB
         model_b_instances = []
-        for i in range(10):
+        for i in range(501):
             model_b = ModelB.objects.create(
                 chars=f"ModelB_Chars_{i}",
                 integer=random.randint(1, 100),
