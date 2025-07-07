@@ -34,7 +34,8 @@ class SearchForm(forms.ModelForm):
             # Admin JS files for date and datetime widgets.
             "admin/js/calendar.js",
             "admin/js/admin/DateTimeShortcuts.js",
-            "searchkit/js/init_datetime_widgets.js",
+            # Searchkit basics and widget initialization.
+            "searchkit/js/widgets/datetime.js",
         ]
 
     @cached_property

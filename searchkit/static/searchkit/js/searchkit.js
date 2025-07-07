@@ -1,49 +1,63 @@
-document.addEventListener("DOMContentLoaded", function () {
-    addFormsetHandlers();
+"use strict";
 
-    function updateFormset() {
-        const reloadEvent = new Event("searchkit:reloaded");
-        const formset = document.getElementById('searchkit_formset');
-        const form = formset.closest('form');
-        const formData = new URLSearchParams(new FormData(form)).toString();
-        const baseUrl = formset.dataset.url;
-        const url = `${baseUrl}?${formData}`;
+{
 
-        fetch(url, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: {'Accept': 'text/html'},
-        })
-        .then(response => response.text())
-        .then(html => {
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = html.trim();
-            const newFormset = wrapper.firstChild;
-            formset.replaceWith(newFormset);
-            // Remove error messages. There not useful on reloading the formset.
-            newFormset.querySelectorAll('.errorlist').forEach(el => el.remove());
-            window.dispatchEvent(reloadEvent);
-            addFormsetHandlers();
-        })
-        .catch(error => {
-            console.error('AJAX GET request failed:', error);
-        });
-    }
+    // This script is used to reload the formset when the searchkit is reloaded.
 
-    function addFormsetHandlers() {
-        const formset = document.getElementById('searchkit_formset');
-        const reloadCssClass = formset.dataset.reloadCssClass;
-        const totalFormsInput = formset.closest('form').querySelector('input[name$="TOTAL_FORMS"]');
+    class SearchkitFormset {
 
-        document.querySelectorAll(`.${reloadCssClass}`).forEach(function (el) {
-            const totalFormsCount = el.dataset.totalForms;
-            const reloadHandler = el.dataset.reloadHandler;
+        constructor () {
+            this.formset = document.getElementById('searchkit_formset');
+            this.form = this.formset.closest('form');
+            this.baseUrl = this.formset.dataset.url;
+            this.reloadCssClass = this.formset.dataset.reloadCssClass;
+            this.totalFormsInput = this.form.querySelector('input[name$="TOTAL_FORMS"]');
 
-            el.addEventListener(reloadHandler, function (e) {
-                e.preventDefault();
-                if (totalFormsCount) totalFormsInput.value = parseInt(totalFormsCount);
-                updateFormset();
+            // Set event listener for reloading the formset.
+            this.form.querySelectorAll(`.${this.reloadCssClass}`).forEach((el) => {
+                const totalFormsCount = el.dataset.totalForms;
+                const reloadHandler = el.dataset.reloadHandler;
+
+                el.addEventListener(reloadHandler, (e) => {
+                    e.preventDefault();
+                    if (totalFormsCount) this.totalFormsInput.value = parseInt(totalFormsCount);
+                    this.reload();
+                });
             });
-        });
+        }
+
+        reload () {
+            const formData = new URLSearchParams(new FormData(this.form)).toString();
+            const url = `${this.baseUrl}?${formData}`;
+
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {'Accept': 'text/html'},
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Get dom element from html string.
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = html;
+                const formset = wrapper.firstChild;
+                // Remove error messages. They are not useful yet since we did
+                // no form submission.
+                formset.querySelectorAll('.errorlist').forEach(el => el.remove());
+                // Replace the formset dom element.
+                this.formset.replaceWith(formset);
+                // Reinitialize the formset object itself.
+                window.SearchkitFormset = new SearchkitFormset()
+                // Trigger reloaded event.
+                document.dispatchEvent(new Event("searchkit:reloaded"));
+            })
+            .catch(error => {
+                console.error('AJAX GET request failed:', error);
+            });
+        }
     }
-});
+
+    document.addEventListener("DOMContentLoaded", function () {
+        window.SearchkitFormset = new SearchkitFormset()
+    });
+}
