@@ -64,42 +64,20 @@ FIELD_PLAN = OrderedDict((
         }
     ),
     (
-        lambda f: isinstance(f, models.CharField) and f.choices,
-        {
-            'exact': lambda f: forms.ChoiceField(choices=f.choices),
-            'contains': lambda f: forms.CharField(),
-            'startswith': lambda f: forms.CharField(),
-            'endswith': lambda f: forms.CharField(),
-            'regex': lambda f: forms.CharField(),
-            'in': lambda f: forms.MultipleChoiceField(choices=f.choices),
-        }
-    ),
-    (
         lambda f: isinstance(f, models.CharField),
         {
-            'exact': lambda f: forms.CharField(),
+            'exact': lambda f: forms.ChoiceField(),
             'contains': lambda f: forms.CharField(),
             'startswith': lambda f: forms.CharField(),
             'endswith': lambda f: forms.CharField(),
             'regex': lambda f: forms.CharField(),
-        }
-    ),
-    (
-        lambda f: isinstance(f, models.IntegerField) and f.choices,
-        {
-            'exact': lambda f: forms.ChoiceField(choices=f.choices),
-            'gt': lambda f: forms.IntegerField(),
-            'gte': lambda f: forms.IntegerField(),
-            'lt': lambda f: forms.IntegerField(),
-            'lte': lambda f: forms.IntegerField(),
-            'range': lambda f: skfields.IntegerRangeField(),
-            'in': lambda f: forms.MultipleChoiceField(choices=f.choices),
+            'in': lambda f: forms.MultipleChoiceField(),
         }
     ),
     (
         lambda f: isinstance(f, models.IntegerField),
         {
-            'exact': lambda f: forms.IntegerField(),
+            'exact': lambda f: forms.IntegerField(choices=f.choices) if f.choices else forms.IntegerField(),
             'gt': lambda f: forms.IntegerField(),
             'gte': lambda f: forms.IntegerField(),
             'lt': lambda f: forms.IntegerField(),

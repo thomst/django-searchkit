@@ -1,11 +1,11 @@
 from django import forms
 from django.apps import apps
-from django.contrib.admin import widgets
+from django.urls import reverse
+from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.utils.functional import cached_property
 from django.contrib.contenttypes.models import ContentType
 from .models import Search
-from .fields import DateRangeField
 from .utils import FIELD_PLAN
 from .utils import OPERATOR_DESCRIPTION
 from .utils import SUPPORTED_FIELDS
@@ -14,6 +14,7 @@ from .utils import is_searchable_model
 
 
 RELOAD_CSS_CLASS = "searchkit-reload"
+SELECT2_CSS_CLASS = "searchkit-select2"
 
 
 # TODO: Check unique_together contraint for search name and content type.
@@ -27,16 +28,26 @@ class SearchForm(forms.ModelForm):
         fields = ['name']
 
     class Media:
-        # We render all javascript code for widgets that might be used in the
-        # formset.
+        # Include the basics and all we need for widgets that might be loaded
+        # dynamically.
         js = [
-            "searchkit/js/searchkit.js",
+            # jQuery.
+            'admin/js/vendor/jquery/jquery.min.js',
+            'admin/js/jquery.init.js',
+            # Select2 for choice and multichoice widgets.
+            'admin/js/vendor/select2/select2.full.min.js',
             # Admin JS files for date and datetime widgets.
             "admin/js/calendar.js",
             "admin/js/admin/DateTimeShortcuts.js",
             # Searchkit basics and widget initialization.
+            "searchkit/js/searchkit.js",
             "searchkit/js/widgets/datetime.js",
+            "searchkit/js/widgets/select2.js",
         ]
+        css = {
+            # Select2 css.
+            "screen": ['admin/css/vendor/select2/select2.min.css'],
+        }
 
     @cached_property
     def searchkit_model(self):
@@ -129,8 +140,8 @@ class BaseSearchkitForm(forms.Form):
         self.field_plan = None
         self.operator = None
         self._add_field_name_field()
-        lookup = self._preload_clean_data('field')
-        self.model_field = self._get_model_field(lookup)
+        self.field_lookup = self._preload_clean_data('field')
+        self.model_field = self._get_model_field(self.field_lookup)
         self.field_plan = next(iter([p for t, p in FIELD_PLAN.items() if t(self.model_field)]))
         self._add_operator_field()
         self.operator = self._preload_clean_data('operator')
@@ -206,8 +217,59 @@ class BaseSearchkitForm(forms.Form):
         field.widget.attrs.update(self._get_html_attrs())
         self.fields['operator'] = field
 
+    def _update_choices_for_value_field(self, form_field):
+        # If the model field has choices, we use them.
+        if self.model_field.choices:
+            choices = self.model_field.choices
+        # Otherwise we use the distinct values of the model field.
+        else:
+            values = self.model.objects.values_list(self.field_lookup, flat=True).distinct()
+            choices = [(v, v) for v in values]
+
+        # Setup the form field depending on the number of choices.
+        # Use a simple select field for less than 25.
+        if len(choices) < 25:
+            form_field.choices = choices
+
+        # Use a searchable select2 widget for less than 100.
+        elif len(choices) < 100:
+            form_field.choices = choices
+            form_field.widget.attrs.update({
+                "class": SELECT2_CSS_CLASS,
+                "data-placeholder": "search...",
+                })
+
+        # For everything above we use a select2 widget with an ajax source.
+        else:
+            # We need to add at least the initial values as choices.
+            if initial := self.initial.get('value', None):
+                initial = initial if isinstance(initial, list) else [initial]
+                form_field.choices = [(v, v) for v in initial]
+
+            # Setup the widget.
+            base_url = reverse('searchkit-autocomplete')
+            contenttype_id = ContentType.objects.get_for_model(self.model).id
+            url_params = {
+                'searchkit_model': contenttype_id,
+                'searchkit_field_lookup': self.field_lookup,
+            }
+            form_field.widget.attrs.update({
+                "class": SELECT2_CSS_CLASS,
+                "data-placeholder": "search...",
+                "data-width": "400px",
+                "data-ajax--dataType": 'json',
+                "data-ajax--delay": 250,
+                "data-ajax--url": f'{base_url}?{urlencode(url_params)}',
+
+            })
+        return form_field
+
     def _add_value_field(self):
-        self.fields['value'] = self.field_plan[self.operator](self.model_field)
+        form_field = self.field_plan[self.operator](self.model_field)
+        if isinstance(form_field, (forms.ChoiceField, forms.MultipleChoiceField)):
+            self.fields['value'] = self._update_choices_for_value_field(form_field)
+        else:
+            self.fields['value'] = form_field
 
 
 class BaseSearchkitFormSet(forms.BaseFormSet):
