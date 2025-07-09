@@ -258,12 +258,17 @@ class FieldPlan:
                 form_field = forms.ChoiceField(choices=self.model_field.choices)
 
             # TODO: Check the core code on how they use the defaults.
-            # For all other operators we use the field specific default of
-            # django's admin backend.
-            else:
-                defaults = FORMFIELD_FOR_DBFIELD_DEFAULTS.get(model_field_class, dict())
 
-                # Do we have a form class within the defaults?
+            # For all other operators we use the field specific default.
+            else:
+                # These django-admin default definition specifies widgets and
+                # form classes which are utilized by the django admin site. This
+                # way we get access to the famous calender widget of
+                # django-admin for date and datetime fields.
+                defaults = FORMFIELD_FOR_DBFIELD_DEFAULTS.get(model_field_class, dict()).copy()
+
+                # Do we have a form class within the defaults? (True for the
+                # split-date-time-field.)
                 klass = defaults.pop('form_class', None)
 
                 # If not try get the type of the formfield returned by the model
