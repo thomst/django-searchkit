@@ -246,13 +246,13 @@ class FieldPlan:
             # Use range fields for the range operator.
             if operator == 'range':
 
-                # We choose the fitting range field based on the class names.
+                # We choose the appropriate range field based on the class names.
                 test = lambda k: k.__name__.replace('Range', '') == model_field_class.__name__
                 try:
                     klass = [k for k in self.RANGE_FORM_FIELD_TYPES if test(k)][0]
 
-                # Some model fields like AutoField have no equivalent range field. Those
-                # are fine with the IntegerRangeField.
+                # Some model fields like AutoField have no equivalent range
+                # field. Those are fine with the IntegerRangeField.
                 except IndexError:
                     klass = skfields.IntegerRangeField
 
@@ -283,7 +283,7 @@ class FieldPlan:
                 klass = klass or type(_form_field) if _form_field else None
 
                 # Model fields as AutoField and BigAutoField return None for
-                # formfield(). So we use a IntegerField as backup.
+                # formfield(). So we use an IntegerField as backup.
                 klass = klass or forms.IntegerField
 
                 # Initialize the formfield.
