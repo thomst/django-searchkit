@@ -243,13 +243,20 @@ class FieldPlan:
 
         # Handle arithmentic based field types.
         elif isinstance(self.model_field, self.ARITHMETIC_FIELD_TYPES):
-            # Use range form fields for the range operator.
+            # Use range fields for the range operator.
             if operator == 'range':
-                for klass in self.RANGE_FORM_FIELD_TYPES:
-                    class_name = klass.__name__
-                    if model_field_class.__name__ == class_name.replace('Range', ''):
-                        form_field = klass()
-                        break
+
+                # We choose the fitting range field based on the class names.
+                test = lambda k: k.__name__.replace('Range', '') == model_field_class.__name__
+                try:
+                    klass = [k for k in self.RANGE_FORM_FIELD_TYPES if test(k)][0]
+
+                # Some model fields like AutoField have no equivalent range field. Those
+                # are fine with the IntegerRangeField.
+                except IndexError:
+                    klass = skfields.IntegerRangeField
+
+                form_field = klass()
 
             # For exact operator only use a choice field if the model field has
             # choices.
