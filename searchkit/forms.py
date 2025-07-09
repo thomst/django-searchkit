@@ -149,7 +149,6 @@ class FieldPlan:
 
     RANGE_FORM_FIELD_TYPES = (
         skfields.IntegerRangeField,
-        skfields.BigIntegerRangeField,
         skfields.DecimalRangeField,
         skfields.FloatRangeField,
         skfields.DateRangeField,

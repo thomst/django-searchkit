@@ -36,10 +36,6 @@ class IntegerRangeField(BaseRangeField):
     widget_type = forms.NumberInput
 
 
-class BigIntegerRangeField(IntegerRangeField):
-    pass
-
-
 class FloatRangeField(IntegerRangeField):
     field_type = forms.FloatField
 
