@@ -98,7 +98,7 @@ class AutocompleteView(APIView):
 
         if term := request.GET.get('term'):
             # FIXME: How to handle very big search results?
-            queryset = queryset.filter(**{f'{field.attname}__istartswith': term})
+            queryset = queryset.filter(**{f'{field.attname}__icontains': term})
             more = False
 
         else:
