@@ -13,22 +13,10 @@ from .forms import SearchkitModelForm
 from .forms import searchkit_formset_factory
 
 
-class InvalidModelFormException(APIException):
+class InvalidSearchkitModel(APIException):
     status_code = 400
-    default_detail = _('Invalid searchkit model form.')
-    default_code = 'invalid_model_form'
-
-
-class InvalidAutocompleteParameter(APIException):
-    status_code = 400
-    default_detail = _('Invalid autocomplete url parameter.')
-    default_code = 'invalid_autocomplete_parameter'
-
-
-class InvalidAutocompleteFieldLookup(InvalidAutocompleteParameter):
-    status_code = 400
-    default_detail = _('Invalid autocomplete field lookup: searchkit_field_lookup')
-    default_code = 'invalid_autocomplete_field_lookup'
+    default_detail = _('Invalid searchkit model.')
+    default_code = 'invalid_searchkit_model'
 
 
 class SearchkitPermission(BasePermission):
@@ -47,15 +35,14 @@ class SearchkitView(APIView):
     permission_classes = [SearchkitPermission]
     renderer_classes = [StaticHTMLRenderer]
 
-    def get_model(self, request):
+    def get(self, request, **kwargs):
+
         model_form = SearchkitModelForm(data=request.GET)
         if model_form.is_valid():
-            return model_form.cleaned_data['searchkit_model'].model_class()
+            model = model_form.cleaned_data['searchkit_model'].model_class()
         else:
-            raise InvalidModelFormException()
+            raise InvalidSearchkitModel(model_form.errors)
 
-    def get(self, request, **kwargs):
-        model = self.get_model(request)
         formset = searchkit_formset_factory(model=model)(data=request.GET)
         return Response(formset.render())
 
