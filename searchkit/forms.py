@@ -234,6 +234,7 @@ class FieldPlan:
             if operator in ['contains', 'startswith', 'endswith', 'regex']:
                 form_field = forms.CharField(widget=widgets.AdminTextInputWidget)
 
+            # FIXME: We might should use the model's choices if it has some.
             # Use a choice field for exact and in operators.
             elif operator in ['exact', 'in']:
                 if operator == 'exact':
@@ -277,7 +278,7 @@ class FieldPlan:
                 # split-date-time-field.)
                 klass = defaults.pop('form_class', None)
 
-                # If not try get the type of the formfield returned by the model
+                # Otherwise get the type of the formfield returned by the model
                 # field.
                 _form_field = self.model_field.formfield()
                 klass = klass or type(_form_field) if _form_field else None
