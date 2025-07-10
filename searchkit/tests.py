@@ -35,6 +35,11 @@ INITIAL_DATA = [
         value=123,
     ),
     dict(
+        field='id',
+        operator='range',
+        value=[123, 432],
+    ),
+    dict(
         field='boolean',
         operator='exact',
         value=True,
@@ -48,6 +53,11 @@ INITIAL_DATA = [
         field='chars_choices',
         operator='exact',
         value='one',
+    ),
+    dict(
+        field='text',
+        operator='contains',
+        value='xyz',
     ),
     dict(
         field='email',
@@ -103,7 +113,17 @@ INITIAL_DATA = [
         field='datetime',
         operator='exact',
         value=['2025-05-14', '08:45'],
-    )
+    ),
+    dict(
+        field='model_b__chars',
+        operator='exact',
+        value='ModelB chars 44',
+    ),
+    dict(
+        field='model_b__model_c__integer',
+        operator='gt',
+        value=4,
+    ),
 ]
 
 add_prefix = lambda i: SearchkitFormSet().add_prefix(i)
@@ -351,19 +371,18 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
         url = reverse('admin:searchkit_search_add')
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        select = b'<select name="searchkit_model" class="searchkit-reload" data-reload-handler="change" data-total-forms="1" required id="id_searchkit_model">'
-        for snippet in select.split(b' '):
-            self.assertIn(snippet, resp.content)
+        select = '<select name="searchkit_model" class="searchkit-reload" data-reload-handler="change" data-total-forms="1" required id="id_searchkit_model">'
+        for snippet in select.split(' '):
+            self.assertIn(snippet, str(resp.content))
 
     def test_search_form_with_initial(self):
-        model_id = ContentType.objects.get_for_model(ModelA).id
-        url = reverse('admin:searchkit_search_add') + f'?searchkit_model={model_id}'
+        url = reverse('admin:searchkit_search_add') + f'?searchkit_model={contenttype.id}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         select = '<select name="searchkit_model" class="searchkit-reload" data-reload-handler="change" data-total-forms="1" required id="id_searchkit_model">'
         for snippet in select.split(' '):
             self.assertIn(snippet, str(resp.content))
-        self.assertIn(f'<option value="{model_id}" selected>', str(resp.content))
+        self.assertIn(f'<option value="{contenttype.id}" selected>', str(resp.content))
         self.assertIn('name="searchkit-example-modela-0-field"', str(resp.content))
 
     def test_add_search(self):
@@ -375,8 +394,16 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(Search.objects.all()), 1)
 
-        # Change it via backend.
+        # Load the saved search.
         url = reverse('admin:searchkit_search_change', args=(1,))
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('<select name="searchkit_model"', str(resp.content))
+        self.assertIn(f'<option value="{contenttype.id}" selected>', str(resp.content))
+        self.assertIn('name="searchkit-example-modela-0-field"', str(resp.content))
+        self.assertIn('value="ModelA chars 1"', str(resp.content))
+
+        # Change it via admin backend.
         data['name'] = 'Changed name'
         data['searchkit-example-modela-0-field'] = 'boolean'
         data['searchkit-example-modela-0-operator'] = 'exact'
