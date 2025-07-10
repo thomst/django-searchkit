@@ -78,10 +78,11 @@ class AutocompleteView(APIView):
             msg = f"User {request.user} is not allowed to view {model_name}"
             raise PermissionDenied(msg)
 
-        # We use the original ordering. And we do not use distinct since we
-        # cannot be sure if the object manager done any initial ordering which
-        # interferes with the value we wanna use distinct for. (See the docs.)
+        # We use distinct together with an order by the field in question. This
+        # neutralizes all former order_by clauses which might add columns to the
+        # sql distinct statement. See the django docs for more details.
         queryset = model.objects.values_list(field.attname, flat=True)
+        queryset = queryset.order_by(field.attname).distinct()
 
         if term := request.GET.get('term'):
             # FIXME: How to handle very big search results?
@@ -96,12 +97,8 @@ class AutocompleteView(APIView):
             queryset = queryset[start:end]
             more = count > end
 
-        # To be sure we have distinct values we use dict.fromkeys() which
-        # prevents the ordering but removes duplicates at the same time.
-        values = list(dict.fromkeys(queryset))
-
         result = dict(
-            results=[dict(id=v, text=v) for v in values],
+            results=[dict(id=v, text=v) for v in queryset],
             pagination=dict(more=more),
         )
         return Response(result)
