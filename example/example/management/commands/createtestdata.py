@@ -57,6 +57,7 @@ class Command(BaseCommand):
                 boolean=random.choice([True, False, None]),
                 chars=f"ModelA chars {i}",
                 chars_choices=random.choice([c[0] for c in CHARS_CHOICES]),
+                text=''.join(random.choices(string.ascii_letters, k=1000)),
                 email=f"user{i}-{random_string}@example.com",
                 url=f"https://example.com/{random_string}/{i}",
                 uuid=uuid.uuid4(),

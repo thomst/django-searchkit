@@ -19,6 +19,7 @@ class ModelA(models.Model):
     boolean = models.BooleanField(null=True)
     chars = models.CharField(max_length=255)
     chars_choices = models.CharField(max_length=255, choices=CHARS_CHOICES)
+    text = models.TextField()
     email = models.EmailField()
     url = models.URLField()
     uuid = models.UUIDField()
