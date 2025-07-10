@@ -87,9 +87,11 @@ class Select2Mixin:
         lookup = self.model_field.attname
         queryset = self.model.objects.all()
         queryset = queryset.values_list(lookup, flat=True)
-        # We order by our field to neutralize former ordering.
+        # We order by our field to neutralize former ordering which might
+        # interfere with the sql distinct statement.
         queryset = queryset.order_by(lookup)
-        return queryset.distinct()
+        queryset = queryset.distinct()
+        return queryset
 
     def _set_queryset(self, queryset):
         self._queryset = None if queryset is None else queryset.all()
