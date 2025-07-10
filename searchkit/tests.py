@@ -128,14 +128,14 @@ INITIAL_DATA = [
 ]
 
 add_prefix = lambda i: SearchkitFormSet().add_prefix(i)
-contenttype = ContentType.objects.get_for_model(ModelA)
+MODELA_CT = ContentType.objects.get_for_model(ModelA)
 DEFAULT_PREFIX = SearchkitFormSet.get_default_prefix()
 
 def get_form_data(initial_data=INITIAL_DATA):
     count = len(initial_data)
     data = {
         'name': 'test search',                          # The name of the search.
-        'searchkit_model': f'{contenttype.pk}',         # Data for the searchkit-model form.
+        'searchkit_model': f'{MODELA_CT.pk}',         # Data for the searchkit-model form.
         f'{DEFAULT_PREFIX}-TOTAL_FORMS': f'{count}',    # Data for the managment form.
         f'{DEFAULT_PREFIX}-INITIAL_FORMS': f'{count}',  # Data for the managment form.
     }
@@ -377,13 +377,13 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
             self.assertIn(snippet, str(resp.content))
 
     def test_search_form_with_initial(self):
-        url = reverse('admin:searchkit_search_add') + f'?searchkit_model={contenttype.id}'
+        url = reverse('admin:searchkit_search_add') + f'?searchkit_model={MODELA_CT.id}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         select = '<select name="searchkit_model" class="searchkit-reload" data-reload-handler="change" data-total-forms="1" required id="id_searchkit_model">'
         for snippet in select.split(' '):
             self.assertIn(snippet, str(resp.content))
-        self.assertIn(f'<option value="{contenttype.id}" selected>', str(resp.content))
+        self.assertIn(f'<option value="{MODELA_CT.id}" selected>', str(resp.content))
         self.assertIn('name="searchkit-example-modela-0-field"', str(resp.content))
 
     def test_add_search(self):
@@ -400,7 +400,7 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn('<select name="searchkit_model"', str(resp.content))
-        self.assertIn(f'<option value="{contenttype.id}" selected>', str(resp.content))
+        self.assertIn(f'<option value="{MODELA_CT.id}" selected>', str(resp.content))
         self.assertIn('name="searchkit-example-modela-0-field"', str(resp.content))
         self.assertIn('value="ModelA chars 1"', str(resp.content))
 
