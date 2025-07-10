@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, json
 from pprint import pprint
 from decimal import Decimal
 from contextlib import contextmanager
@@ -16,6 +16,7 @@ from searchkit.forms import SearchkitModelForm
 from searchkit.forms import BaseSearchkitFormSet
 from searchkit.forms import searchkit_formset_factory
 from searchkit.models import Search
+from searchkit.views import AutocompleteView
 from searchkit import __version__
 
 
@@ -501,3 +502,67 @@ class SearchkitViewTest(CreateTestDataMixin, TestCase):
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 400)
+
+
+class Select2ViewTestCase(CreateTestDataMixin, TestCase):
+    def setUp(self):
+        admin = User.objects.get(username='admin')
+        self.client.force_login(admin)
+        self.url = reverse('searchkit-autocomplete')
+        self.data = {
+            'sk_autocomplete_app_label': ModelA._meta.app_label,
+            'sk_autocomplete_model_name': ModelA._meta.model_name,
+            'sk_autocomplete_field_name': 'chars',
+        }
+
+    def test_select2_view_with_anonymous_user(self):
+        self.client.logout()
+        data = self.data.copy()
+        url = f'{self.url}?{urlencode(self.data)}'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_select2_view_without_data(self):
+        resp = self.client.get(self.url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_select2_view_with_base_data(self):
+        url = f'{self.url}?{urlencode(self.data)}'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        result = json.loads(resp.content)
+        self.assertTrue('pagination' in result)
+        self.assertTrue(result['pagination']['more'])
+        self.assertTrue('results' in result)
+        self.assertEqual(len(result['results']), AutocompleteView.paginate_by)
+
+    def test_select2_view_with_paging(self):
+        data = self.data.copy()
+        data['page'] = 10
+        url = f'{self.url}?{urlencode(data)}'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        result = json.loads(resp.content)
+        self.assertTrue('pagination' in result)
+        self.assertTrue(result['pagination']['more'])
+        self.assertTrue('results' in result)
+        self.assertEqual(len(result['results']), AutocompleteView.paginate_by)
+
+    def test_select2_view_with_search_term(self):
+        data = self.data.copy()
+        data['term'] = 'Model'
+        url = f'{self.url}?{urlencode(data)}'
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        result = json.loads(resp.content)
+        self.assertTrue('pagination' in result)
+        self.assertFalse(result['pagination']['more'])
+        self.assertTrue('results' in result)
+        field_name = self.data['sk_autocomplete_field_name']
+        lookup = f'{field_name}__icontains'
+        queryset = ModelA.objects.order_by(lookup)
+        queryset = queryset.values_list(field_name)
+        queryset = queryset.filter(**{lookup:data['term']})
+        queryset = queryset.distinct()
+        self.assertEqual(len(result['results']), queryset.count())
+
