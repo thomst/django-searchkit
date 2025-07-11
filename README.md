@@ -11,15 +11,19 @@
 Finally there is a real searchkit application for django that integrates best
 with the django admin backend.
 
-You have tons of admin changelist filters and still you are not able to filter your items exactly as you need it?
-Or once and again you need a combination of several changelist filters and you are tired of waiting for each filter being applied one after the other?
-Or you just don't want to write a custom changlist filter for each special requirement of your customers.
+You have tons of admin changelist filters and still you are not able to filter
+your items exactly as you need it? Or once and again you need a combination of
+several changelist filters and you are tired of waiting for each filter being
+applied one after the other? Or you just don't want to write a custom changelist
+filter for each special requirement of your customers.
 
-Then django-searchkit is what you want. Give it a try.
+Then django-searchkit is for you. Give it a try. You get a nice and handy
+formset to build complex searches with as many filter rules as you want over all
+of your model fields or the fields of related models.
 
 
 ## Features
-- Build and apply complex searches using a dynamic form.
+- Build and apply complex searches using a dynamic formset.
 - Add as many filter rules as you want using django's various [field lookups](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#field-lookups).
 - Save and reuse your searches at any time by a handy admin changelist filter.
 
