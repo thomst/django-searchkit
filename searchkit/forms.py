@@ -207,7 +207,10 @@ class FieldPlan:
                 else:
                     lookup = f'{node.field_path}__{model_field.name}'
                     get_field_name = lambda f: getattr(f, 'verbose_name', f.name)
-                    label_path = [f'`{get_field_name(n.field)}` => <{n.model._meta.verbose_name}>' for n in node.path[1:]]
+                    label_path = [
+                        f'`{get_field_name(n.field)}` => <{n.model._meta.verbose_name}>'
+                        for n in node.path[1:]
+                        ]
                     label = ".".join(label_path + [f'`{model_field.verbose_name}`'])
 
                 # Append the choice.
