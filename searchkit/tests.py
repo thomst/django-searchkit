@@ -360,6 +360,7 @@ class SearchkitModelFormTestCase(TestCase):
         self.assertEqual('select a model', labels[0].lower())
         self.assertEqual('example | model a', labels[1].lower())
         self.assertEqual('example | model b', labels[2].lower())
+        self.assertEqual('example | model c', labels[3].lower())
 
 
 class AdminBackendTest(CreateTestDataMixin, TestCase):
