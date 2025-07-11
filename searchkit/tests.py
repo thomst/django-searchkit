@@ -356,7 +356,7 @@ class SearchkitModelFormTestCase(TestCase):
     def test_searchkit_model_form_choices(self):
         form = SearchkitModelForm()
         labels = [c[1] for c in form.fields['searchkit_model'].choices]
-        self.assertEqual(len(labels), 3)
+        self.assertEqual(len(labels), 4)
         self.assertEqual('select a model', labels[0].lower())
         self.assertEqual('example | model a', labels[1].lower())
         self.assertEqual('example | model b', labels[2].lower())
