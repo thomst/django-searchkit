@@ -242,12 +242,13 @@ class FieldPlan:
         # Create form field for character based field types.
         if isinstance(self.model_field, self.CHARACTER_FIELD_TYPES):
 
-            # This is our standard search term field.
+            # With these operators we use a standard search term field.
             if operator in ['contains', 'startswith', 'endswith', 'regex']:
                 form_field = forms.CharField(widget=widgets.AdminTextInputWidget)
 
-            # FIXME: We might should use the model's choices if it has some.
             # Use a choice field for exact and in operators.
+            # FIXME: We might should use a simple ChoiceField if the model's
+            # field have choices defined.
             elif operator in ['exact', 'in']:
                 if operator == 'exact':
                     form_field = skfields.Select2Field(self.model_field)
