@@ -6,7 +6,8 @@ from decimal import Decimal
 from django.utils import timezone
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from example.models import ModelA, ModelB, ModelC, CHARS_CHOICES, INTEGER_CHOICES
+from example.models import ModelA, ModelB, ModelC, ModelD
+from example.models import CHARS_CHOICES, INTEGER_CHOICES
 
 
 class Command(BaseCommand):
@@ -25,6 +26,16 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("Superuser 'admin' created successfully!"))
         else:
             self.stdout.write(self.style.WARNING("Superuser 'admin' already exists."))
+
+        # Create ModelC instances
+        modeld_list = []
+        for i in range(100):
+            modeld = ModelD.objects.create(
+                chars=f"ModelD chars {i}",
+                integer=random.randint(1, 100),
+                date=timezone.now().date() - timedelta(days=random.randint(0, 1000)),
+            )
+            modeld_list.append(modeld)
 
         # Create ModelC instances
         modelc_list = []
@@ -53,11 +64,14 @@ class Command(BaseCommand):
         modela_list = []
         for i in range(1000):
             random_string = ''.join(random.choices(string.ascii_letters, k=6))
+            random_choices = random.choices(string.ascii_letters, k=1000)
+            random_choices = [f'{c}\n' if i % 60 == 59 else c for i, c in enumerate(random_choices)]
+            random_text = ''.join(random_choices)
             model_a = ModelA.objects.create(
                 boolean=random.choice([True, False, None]),
                 chars=f"ModelA chars {i}",
                 chars_choices=random.choice([c[0] for c in CHARS_CHOICES]),
-                text=''.join(random.choices(string.ascii_letters, k=1000)),
+                text=random_text,
                 email=f"user{i}-{random_string}@example.com",
                 url=f"https://example.com/{random_string}/{i}",
                 uuid=uuid.uuid4(),
@@ -74,6 +88,12 @@ class Command(BaseCommand):
 
         random.shuffle(modela_list)
         random.shuffle(modelb_list)
+        random.shuffle(modeld_list)
+
+        for modela in modela_list:
+            modelds = random.choices(modeld_list, k=random.choice(range(5)))
+            modela.model_d.add(*modelds)
+
         while modelb_list:
             modela = modela_list.pop()
             modela.model_b = modelb_list.pop()

@@ -32,6 +32,7 @@ class ModelA(models.Model):
     time = models.TimeField()
     datetime = models.DateTimeField()
     model_b = models.OneToOneField('ModelB', on_delete=models.CASCADE, null=True)
+    model_d = models.ManyToManyField('ModelD')
 
 
 class ModelB(models.Model):
@@ -44,6 +45,12 @@ class ModelB(models.Model):
 
 
 class ModelC(models.Model):
+    chars = models.CharField(max_length=255)
+    integer = models.IntegerField()
+    date = models.DateField()
+
+
+class ModelD(models.Model):
     chars = models.CharField(max_length=255)
     integer = models.IntegerField()
     date = models.DateField()
