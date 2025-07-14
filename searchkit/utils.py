@@ -19,7 +19,3 @@ def is_searchable_model(model):
 class ModelTree(BaseModelTree):
     MAX_DEPTH = 3
     FOLLOW_ACROSS_APPS = True
-    RELATION_TYPES = [
-        'one_to_one',
-        'many_to_one',
-    ]
