@@ -117,8 +117,8 @@ INITIAL_DATA = [
     ),
     dict(
         field='model_b__chars',
-        operator='exact',
-        value='ModelB chars 44',
+        operator='isnull',
+        value=False,
     ),
     dict(
         field='model_b__model_c__integer',
