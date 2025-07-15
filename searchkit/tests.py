@@ -91,6 +91,7 @@ INITIAL_DATA = [
         value=3,
     ),
     dict(
+        exclude=True,
         field='float',
         operator='lte',
         value=10.02,
@@ -175,7 +176,7 @@ class CheckFormMixin:
         self.assertIn('field', form.fields)
         self.assertIn('operator', form.fields)
         self.assertIn('value', form.fields)
-        self.assertEqual(len(form.fields), 3)
+        self.assertEqual(len(form.fields), 4)
 
         # Check field choices for the model.
         form_model_field = form.fields['field']
@@ -346,10 +347,13 @@ class SearchkitSearchFormTestCase(CreateTestDataMixin, TestCase):
         self.assertTrue(form.instance.pk)
 
         # Using the instance data as filter rules works.
-        filter_rules = form.instance.as_lookups()
-        self.assertEqual(len(filter_rules), len(INITIAL_DATA))
+        includes, excludes = form.instance.as_lookups()
+        self.assertEqual(len(includes) + len(excludes), len(INITIAL_DATA))
         for data in INITIAL_DATA:
-            self.assertIn(f"{data['field']}__{data['operator']}", filter_rules)
+            if data.get('exclude'):
+                self.assertIn(f"{data['field']}__{data['operator']}", excludes)
+            else:
+                self.assertIn(f"{data['field']}__{data['operator']}", includes)
 
 
 class SearchkitModelFormTestCase(TestCase):
