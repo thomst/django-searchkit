@@ -119,6 +119,7 @@ class FieldPlan:
     """
 
     OPERATOR_DESCRIPTION = {
+        'isnull': _('is null'),
         'exact': _('is exact'),
         'contains': _('contains'),
         'startswith': _('starts with'),
@@ -131,6 +132,11 @@ class FieldPlan:
         'range': _('is within range'),
         'in': _('is one of'),
     }
+
+    TRUE_FALSE_CHOICES = (
+        (True, _('Yes')),
+        (False, _('No'))
+    )
 
     CHARACTER_FIELD_TYPES = (
         models.CharField,
@@ -244,13 +250,25 @@ class FieldPlan:
         elif isinstance(self.model_field, self.ARITHMETIC_FIELD_TYPES):
             operators = ['exact', 'gt', 'gte', 'lt', 'lte', 'range']
 
+        # Add an isnull lookup for model fields allowing null values. Exclude
+        # the BooleanField since it is handled by forms.NullBooleanField.
+        if self.model_field.null and not isinstance(self.model_field, models.BooleanField):
+            operators = [*operators, 'isnull']
+
         return [(None, [(o, self.OPERATOR_DESCRIPTION[o]) for o in operators])]
 
     def get_form_field(self, operator):
         model_field_class = type(self.model_field)
 
+        # Use a simple boolean form field for the isnull operator.
+        if operator == 'isnull':
+            form_field = forms.BooleanField(
+                required=False,
+                widget=forms.Select(choices=self.TRUE_FALSE_CHOICES),
+                )
+
         # Create form field for character based field types.
-        if isinstance(self.model_field, self.CHARACTER_FIELD_TYPES):
+        elif isinstance(self.model_field, self.CHARACTER_FIELD_TYPES):
 
             # With these operators we use a standard search term field.
             if operator in ['contains', 'startswith', 'endswith', 'regex']:
