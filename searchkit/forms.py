@@ -350,17 +350,18 @@ class FieldPlan:
 
 class BaseSearchkitForm(forms.Form):
     """
-    Searchkit form representing a model field lookup based on the field name,
-    the operator and one or two values.
+    Searchkit form representing a queryset filter rule.
 
-    The unbound form is composed of an index field (the count of the searchkit
-    form) and a choice field offering the names of the model fields.
+    Based on the model three fields are dynamically created:
+    * The "Model field" field with model field lookup paths as choices.
+    * The operator field with lookup types as choices.
+    * A value field which is created based on the model field and the operator.
 
-    The bound form is dynamically extended by the operator field or the operator and
-    the value field depending on the provided data
-
-    See the FIELD_PLAN variable for the logic of building the form.
+    Additionally there is an exclude boolean field which marks filter rules that
+    should be used to exclude objects from the search result.
     """
+    exclude = forms.BooleanField(required=False, label=_('Exclude from the result'))
+
     model = None  # Set by the formset factory.
     html_attrs = {
         "class": RELOAD_CSS_CLASS,

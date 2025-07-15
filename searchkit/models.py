@@ -15,7 +15,11 @@ class Search(models.Model):
         unique_together = ('name', 'contenttype')
 
     def as_lookups(self):
-        lookups = OrderedDict()
+        includes = OrderedDict()
+        excludes = OrderedDict()
         for data in self.data:
-            lookups[f'{data["field"]}__{data["operator"]}'] = data['value']
-        return lookups
+            if data['exclude']:
+                excludes[f'{data["field"]}__{data["operator"]}'] = data['value']
+            else:
+                includes[f'{data["field"]}__{data["operator"]}'] = data['value']
+        return includes, excludes

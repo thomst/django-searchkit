@@ -26,7 +26,8 @@ class SearchkitFilter(admin.SimpleListFilter):
         # Filter the queryset based on the selected SearchkitSearch object
         if self.value():
             search = Search.objects.get(id=int(self.value()))
-            return queryset.filter(**search.as_lookups())
+            includes, excludes = search.as_lookups()
+            return queryset.filter(**includes).exclude(**excludes)
 
 
 class SearchableModelFilter(admin.filters.RelatedFieldListFilter):
