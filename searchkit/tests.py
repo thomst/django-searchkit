@@ -180,7 +180,7 @@ class CheckFormMixin:
         # Check field choices for the model.
         form_model_field = form.fields['field']
         self.assertTrue(form_model_field.choices)
-        options = [c[0] for c in form_model_field.choices]
+        options = [c[0] for g in form_model_field.choices for c in g[1]]
         tree = ModelTree(ModelA)
         for node in tree.iterate():
             for model_field in node.model._meta.fields:

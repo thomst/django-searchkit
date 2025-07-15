@@ -187,34 +187,44 @@ class FieldPlan:
         return model._meta.get_field(path[-1])
 
     def get_field_lookup_choices(self):
-        choices = list()
+        # Not all fields have a verbose_name attribute.
+        get_field_name = lambda f: getattr(f, 'verbose_name', f.name)
+        relations = dict(
+            one_to_one='one-to-one',
+            many_to_one='many-to-one',
+            one_to_many='one-to-many',
+            many_to_many='many-to-many',
+        )
+        choices = []
 
         # Iterate the model tree...
         for node in self.model_tree.iterate():
-            # ... and the fields of each model.
+
+            # Create a new option group for each model.
+            if node.is_root:
+                opt_group = (None, [])
+            else:
+                relation = [s for r, s in relations.items() if getattr(node.field, r)][0]
+                group_label = ' -> '.join([f'`{get_field_name(n.field)}`' for n in node.path[1:]])
+                group_label += f' => {node.model._meta.app_label.title()} | {node.model._meta.verbose_name} ({relation})'
+                opt_group = (group_label, [])
+
+            # Loop the model fields to build the option group.
             for model_field in node.model._meta.fields:
 
                 # Skip unsupported fields.
                 if not isinstance(model_field, self.SUPPORTED_FIELD_TYPES):
                     continue
 
-                # Build lookup and label for the root model.
                 if node.is_root:
                     lookup = model_field.name
-                    label = f'`{model_field.verbose_name}`'
-
-                # Build lookup and label for related models.
                 else:
                     lookup = f'{node.field_path}__{model_field.name}'
-                    get_field_name = lambda f: getattr(f, 'verbose_name', f.name)
-                    label_path = [
-                        f'`{get_field_name(n.field)}` => <{n.model._meta.verbose_name}>'
-                        for n in node.path[1:]
-                        ]
-                    label = ".".join(label_path + [f'`{model_field.verbose_name}`'])
 
-                # Append the choice.
-                choices.append((lookup, label))
+                opt_group[1].append((lookup, model_field.verbose_name))
+
+            # Append the option group to the choices.
+            choices.append(opt_group)
 
         return choices
 
@@ -234,7 +244,7 @@ class FieldPlan:
         elif isinstance(self.model_field, self.ARITHMETIC_FIELD_TYPES):
             operators = ['exact', 'gt', 'gte', 'lt', 'lte', 'range']
 
-        return [(o, self.OPERATOR_DESCRIPTION[o]) for o in operators]
+        return [(None, [(o, self.OPERATOR_DESCRIPTION[o]) for o in operators])]
 
     def get_form_field(self, operator):
         model_field_class = type(self.model_field)
@@ -356,11 +366,12 @@ class BaseSearchkitForm(forms.Form):
                 # Do we have a valid value?
                 return self.fields[field_name].clean(self.unprefixed_data[field_name])
             except forms.ValidationError:
-                return self.fields[field_name].choices[0][0]
+                # Otherwise return the first option.
+                return self.fields[field_name].choices[0][1][0][0]
         else:
-            # At last simply return the first option which will be the selected
+            # At a default return the first option which will be the selected
             # one.
-            return self.fields[field_name].choices[0][0]
+            return  self.fields[field_name].choices[0][1][0][0]
 
     def _add_field_lookup_field(self):
         choices = self.field_plan.get_field_lookup_choices()
