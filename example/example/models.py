@@ -31,20 +31,21 @@ class ModelA(models.Model):
     date = models.DateField()
     time = models.TimeField()
     datetime = models.DateTimeField()
-    model_b = models.OneToOneField('ModelB', on_delete=models.CASCADE, null=True)
+    model_b = models.OneToOneField('ModelB', on_delete=models.CASCADE, null=True, blank=True)
     model_d = models.ManyToManyField('ModelD')
 
 
 class ModelB(models.Model):
-    chars = models.CharField(max_length=255)
-    integer = models.IntegerField()
-    decimal = models.DecimalField(max_digits=5, decimal_places=2)
-    date = models.DateField()
-    datetime = models.DateTimeField()
+    chars = models.CharField(max_length=255, null=True, blank=True)
+    integer = models.IntegerField(null=True, blank=True)
+    decimal = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
+    datetime = models.DateTimeField(null=True, blank=True)
     model_c = models.ForeignKey('ModelC', on_delete=models.CASCADE)
 
 
 class ModelC(models.Model):
+    boolean = models.BooleanField(null=False, default=True)
     chars = models.CharField(max_length=255)
     integer = models.IntegerField()
     date = models.DateField()

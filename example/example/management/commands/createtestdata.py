@@ -41,6 +41,7 @@ class Command(BaseCommand):
         modelc_list = []
         for i in range(10):
             modelc = ModelC.objects.create(
+                boolean=random.choice([False, True]),
                 chars=f"ModelC chars {i}",
                 integer=random.randint(1, 100),
                 date=timezone.now().date() - timedelta(days=random.randint(0, 1000)),
@@ -51,11 +52,11 @@ class Command(BaseCommand):
         modelb_list = []
         for i in range(500):
             modelb = ModelB.objects.create(
-                chars=f"ModelB chars {i}",
-                integer=random.randint(1, 1000),
-                decimal=Decimal(f"{random.uniform(1, 999):.2f}"),
-                date=timezone.now().date() - timedelta(days=random.randint(0, 1000)),
-                datetime=timezone.now() - timedelta(days=random.randint(0, 1000)),
+                chars=random.choice([f"ModelB chars {i}", None]),
+                integer=random.choice([random.randint(1, 1000), None]),
+                decimal=random.choice([Decimal(f"{random.uniform(1, 999):.2f}"), None]),
+                date=random.choice([timezone.now().date() - timedelta(days=random.randint(0, 1000)), None]),
+                datetime=random.choice([timezone.now() - timedelta(days=random.randint(0, 1000)), None]),
                 model_c=random.choice(modelc_list),
             )
             modelb_list.append(modelb)
