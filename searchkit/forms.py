@@ -251,7 +251,7 @@ class FieldPlan:
             operators = ['exact', 'gt', 'gte', 'lt', 'lte', 'range']
 
         # Add an isnull lookup for model fields allowing null values. Exclude
-        # the BooleanField since it is handled by forms.NullBooleanField.
+        # boolean fields since they are handled with a null boolean form field.
         if self.model_field.null and not isinstance(self.model_field, models.BooleanField):
             operators = [*operators, 'isnull']
 
