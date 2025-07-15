@@ -334,8 +334,16 @@ class FieldPlan:
         # Handle BooleanField
         elif isinstance(self.model_field, models.BooleanField):
             # The formfield method is aware of the null attribute and returns a
-            # boolean or null-boolean form field.
-            form_field = self.model_field.formfield()
+            # null-boolean form field.
+            if self.model_field.null:
+                form_field = self.model_field.formfield()
+
+            # Otherwise we use a Select widget with True and False.
+            else:
+                form_field = forms.BooleanField(
+                    required=False,
+                    widget=forms.Select(choices=self.TRUE_FALSE_CHOICES),
+                    )
 
         return form_field
 
