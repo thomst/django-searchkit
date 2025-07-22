@@ -211,10 +211,25 @@ class FieldPlan:
                 opt_group = (group_label, [])
 
             # Loop the model fields to build the option group.
-            for model_field in node.model._meta.fields:
+            for model_field in node.model._meta.get_fields():
 
-                # Skip unsupported fields.
-                if not isinstance(model_field, self.SUPPORTED_FIELD_TYPES):
+                # Skip unsupported fields that are no relational fields.
+                if (
+                    not model_field.is_relation
+                    and not isinstance(model_field, self.SUPPORTED_FIELD_TYPES)
+                ):
+                    continue
+
+                # Skip relational fields that could not be null.
+                elif (
+                    model_field.is_relation
+                    and (model_field.one_to_one or model_field.one_to_many)
+                    and not model_field.null
+                ):
+                    continue
+
+                # Prevent reversion of relational fields.
+                elif model_field.is_relation and model_field.remote_field == node.field:
                     continue
 
                 if node.is_root:
@@ -247,11 +262,21 @@ class FieldPlan:
         elif isinstance(self.model_field, self.ARITHMETIC_FIELD_TYPES):
             operators = ['exact', 'gt', 'gte', 'lt', 'lte', 'range']
 
-        # Add an isnull lookup for model fields allowing null values. Exclude
-        # boolean fields since they are handled with a null boolean form field.
-        if self.model_field.null and not isinstance(self.model_field, models.BooleanField):
+        elif self.model_field.is_relation:
+            operators = ['isnull']
+
+        # Add an isnull lookup for model fields allowing null values.
+        # Exclude relational fields since they already have an isnull operator.
+        # Exclude boolean fields since they are handled with a null boolean form
+        # field.
+        if (
+            self.model_field.null
+            and not self.model_field.is_relation
+            and not isinstance(self.model_field, models.BooleanField)
+        ):
             operators = [*operators, 'isnull']
 
+        # Use an option group to be consistent with the field lookup choices.
         return [(None, [(o, self.OPERATOR_DESCRIPTION[o]) for o in operators])]
 
     def get_form_field(self, operator):
