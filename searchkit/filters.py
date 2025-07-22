@@ -27,7 +27,8 @@ class SearchkitFilter(admin.SimpleListFilter):
         if self.value():
             search = Search.objects.get(id=int(self.value()))
             includes, excludes = search.as_lookups()
-            return queryset.filter(**includes).exclude(**excludes)
+            # We use distinct since we might filter over many-to-many relations.
+            return queryset.filter(**includes).exclude(**excludes).distinct()
         else:
             return queryset
 
