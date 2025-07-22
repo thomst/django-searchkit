@@ -206,7 +206,7 @@ class FieldPlan:
             else:
                 relations = ['one_to_one', 'many_to_one', 'one_to_many', 'many_to_many']
                 relation = [r.replace('_', '-') for r in relations if getattr(node.field, r)][0]
-                group_label = ' -> '.join([f'`{get_field_name(n.field)}`' for n in node.path[1:]])
+                group_label = ' . '.join([get_field_name(n.field) for n in node.path[1:]])
                 group_label += f' => {node.model._meta.app_label.title()} | {node.model._meta.verbose_name} ({relation})'
                 opt_group = (group_label, [])
 
@@ -219,10 +219,12 @@ class FieldPlan:
 
                 if node.is_root:
                     lookup = model_field.name
+                    label = get_field_name(model_field)
                 else:
                     lookup = f'{node.field_path}__{model_field.name}'
+                    label = ' . '.join([get_field_name(n.field) for n in node.path[1:]] + [get_field_name(model_field)])
 
-                opt_group[1].append((lookup, model_field.verbose_name))
+                opt_group[1].append((lookup, label))
 
             # Append the option group to the choices.
             choices.append(opt_group)
