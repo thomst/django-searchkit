@@ -195,12 +195,6 @@ class FieldPlan:
     def get_field_lookup_choices(self):
         # Not all fields have a verbose_name attribute.
         get_field_name = lambda f: getattr(f, 'verbose_name', f.name)
-        relations = dict(
-            one_to_one='one-to-one',
-            many_to_one='many-to-one',
-            one_to_many='one-to-many',
-            many_to_many='many-to-many',
-        )
         choices = []
 
         # Iterate the model tree...
@@ -210,7 +204,8 @@ class FieldPlan:
             if node.is_root:
                 opt_group = (None, [])
             else:
-                relation = [s for r, s in relations.items() if getattr(node.field, r)][0]
+                relations = ['one_to_one', 'many_to_one', 'one_to_many', 'many_to_many']
+                relation = [r.replace('_', '-') for r in relations if getattr(node.field, r)][0]
                 group_label = ' -> '.join([f'`{get_field_name(n.field)}`' for n in node.path[1:]])
                 group_label += f' => {node.model._meta.app_label.title()} | {node.model._meta.verbose_name} ({relation})'
                 opt_group = (group_label, [])
