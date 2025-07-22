@@ -63,7 +63,7 @@ class MyModelAdmin(admin.ModelAdmin):
 ## Usage
 
 1. Open the admin changelist of your Model.
-2. Click the "Add filter" button of the Searchkit filter.
+2. Click the "Add search" button of the Searchkit filter.
 3. Give your Filter a name.
 4. Configure as many filter rules as you want.
 5. Click "Save and apply".
