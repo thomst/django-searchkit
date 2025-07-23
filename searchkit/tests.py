@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.urls import reverse
-from example.models import ModelA
+from example.models import ModelA, ModelB
 from example.management.commands.createtestdata import Command as CreateTestData
 from searchkit.forms import FieldPlan
 from searchkit.utils import ModelTree
@@ -132,24 +132,29 @@ add_prefix = lambda i: SearchkitFormSet().add_prefix(i)
 MODELA_CT = ContentType.objects.get_for_model(ModelA)
 DEFAULT_PREFIX = SearchkitFormSet.get_default_prefix()
 
-def get_form_data(initial_data=INITIAL_DATA):
-    count = len(initial_data)
+def get_form_data(initial_data=INITIAL_DATA, max=None):
+    count = max or len(initial_data)
     data = {
         'name': 'test search',                          # The name of the search.
         'searchkit_model': f'{MODELA_CT.pk}',         # Data for the searchkit-model form.
         f'{DEFAULT_PREFIX}-TOTAL_FORMS': f'{count}',    # Data for the managment form.
         f'{DEFAULT_PREFIX}-INITIAL_FORMS': f'{count}',  # Data for the managment form.
     }
-    for i, idata in enumerate(initial_data):
+    for i, item_data in enumerate(initial_data):
         prefix = SearchkitFormSet().add_prefix(i)
-        for key, value in idata.items():
+        for key, value in item_data.items():
             # Create multiple value fields for range operators or the datetime
             # field. Exclude the in operator since it expects a list as value.
-            if isinstance(value, list) and idata['operator'] != 'in':
+            if isinstance(value, list) and item_data['operator'] != 'in':
                 data.update({f'{prefix}-{key}_{0}': value[0]})
                 data.update({f'{prefix}-{key}_{1}': value[1]})
             else:
                 data.update({f'{prefix}-{key}': value})
+
+        # Break if max is set and reached.
+        if max and i + 1 >= max:
+            break
+
     return data
 
 FORM_DATA = get_form_data()
@@ -424,6 +429,28 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn('href="?search=1"', str(resp.content))
         self.assertIn(data['name'], str(resp.content))
+
+    def test_change_search(self):
+        # Create a search object via the admin backend.
+        url = reverse('admin:searchkit_search_add')
+        data = get_form_data(INITIAL_DATA, max=1)
+        data['_save_and_apply'] = True
+        resp = self.client.post(url, data, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(Search.objects.all()), 1)
+
+        # Change it via admin backend using a different model.
+        url = reverse('admin:searchkit_search_change', args=(1,))
+        data = get_form_data([], max=1)
+        data['name'] = 'Using ModelB'
+        data['searchkit_model'] = ContentType.objects.get_for_model(ModelB).pk
+        data['searchkit-example-modelb-0-field'] = 'chars'
+        data['searchkit-example-modelb-0-operator'] = 'contains'
+        data['searchkit-example-modelb-0-value'] = 'abc'
+        resp = self.client.post(url, data, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn('was changed successfully', str(resp.content))
+        self.assertEqual(Search.objects.get(pk=1).name, data['name'])
 
 
 class SearchkitViewTest(CreateTestDataMixin, TestCase):
