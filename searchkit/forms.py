@@ -33,13 +33,13 @@ class SearchForm(forms.ModelForm):
     @cached_property
     def searchkit_model(self):
         # Try hard to get a model to work with.
-        # Do we have an instance? Then use its model.
-        if self.instance.pk:
-            return self.instance.contenttype.model_class()
-
-        # Otherwise check if we have a valid searchkit model form.
-        elif self.searchkit_model_form.is_valid():
+        # First we look for a valid searchkit-model form.
+        if self.searchkit_model_form.is_valid():
             return self.searchkit_model_form.cleaned_data['searchkit_model'].model_class()
+
+        # Second we use the search instance if it exists.
+        elif self.instance.pk:
+            return self.instance.contenttype.model_class()
 
         # At least check initials for a searchkit model value and use our model
         # form to validate it.
@@ -54,9 +54,13 @@ class SearchForm(forms.ModelForm):
 
     @cached_property
     def searchkit_model_form(self):
-        kwargs = dict(data=self.data or None, initial=self.initial or None)
-        if self.instance.pk:
+        kwargs = dict()
+        if self.data:
+            kwargs['data'] = self.data
+        elif self.instance.pk:
             kwargs['initial'] = dict(searchkit_model=self.instance.contenttype)
+        elif self.initial:
+            kwargs['initial'] = dict(searchkit_model=self.initial.get('searchkit_model'))
         return SearchkitModelForm(**kwargs)
 
     @cached_property
