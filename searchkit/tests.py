@@ -18,6 +18,7 @@ from searchkit.forms import searchkit_formset_factory
 from searchkit.models import Search
 from searchkit.views import AutocompleteView
 from searchkit import __version__
+from django.db.models import Q
 
 
 # Check django version.
@@ -181,7 +182,13 @@ class CheckFormMixin:
         self.assertIn('field', form.fields)
         self.assertIn('operator', form.fields)
         self.assertIn('value', form.fields)
-        self.assertEqual(len(form.fields), 4)
+        self.assertEqual(len(form.fields), 3)
+
+        # Check logic form.
+        self.assertTrue(form.logic_form)
+        self.assertIn('negation', form.logic_form.fields)
+        self.assertIn('logical_operator', form.logic_form.fields)
+        self.assertEqual(len(form.logic_form.fields), 2)
 
         # Check field choices for the model.
         form_model_field = form.fields['field']
@@ -351,15 +358,13 @@ class SearchkitSearchFormTestCase(CreateTestDataMixin, TestCase):
         form.instance.save()
         self.assertTrue(form.instance.pk)
 
-        # Using the instance data as filter rules works.
-        includes, excludes = form.instance.as_lookups()
-        self.assertEqual(len(includes) + len(excludes), len(INITIAL_DATA))
+        # Check the Q object of a search instance.
+        q = form.instance.as_q()
+        self.assertIsInstance(q, Q)
+        self.assertEqual(len(q), len(INITIAL_DATA))
+        lookups = [d[0] for d in q.children]
         for data in INITIAL_DATA:
-            if data.get('exclude'):
-                self.assertIn(f"{data['field']}__{data['operator']}", excludes)
-            else:
-                self.assertIn(f"{data['field']}__{data['operator']}", includes)
-
+            self.assertIn(f'{data["field"]}__{data["operator"]}', lookups)
 
 class SearchkitModelFormTestCase(TestCase):
     def test_searchkit_model_form_choices(self):
