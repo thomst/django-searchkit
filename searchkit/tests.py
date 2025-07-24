@@ -42,11 +42,15 @@ INITIAL_DATA = [
         value=[123, 432],
     ),
     dict(
+        negation=True,
+        logical_operator='or',
         field='boolean',
         operator='exact',
         value=True,
     ),
     dict(
+        negation=True,
+        logical_operator='or',
         field='chars',
         operator='in',
         value=['ModelA chars 1', 'ModelA chars 2'],
@@ -92,7 +96,6 @@ INITIAL_DATA = [
         value=3,
     ),
     dict(
-        exclude=True,
         field='float',
         operator='lte',
         value=10.02,
@@ -361,8 +364,19 @@ class SearchkitSearchFormTestCase(CreateTestDataMixin, TestCase):
         # Check the Q object of a search instance.
         q = form.instance.as_q()
         self.assertIsInstance(q, Q)
-        self.assertEqual(len(q), len(INITIAL_DATA))
-        lookups = [d[0] for d in q.children]
+        self.assertTrue(len(q) > 0)
+
+        # Get field lookups from the q object and check them against the initial
+        # data.
+        def get_field_lookups(q):
+            lookups = []
+            for child in q.children:
+                if hasattr(child, 'children'):  # It's a nested Q object
+                    lookups.extend(get_field_lookups(child))
+                elif isinstance(child, tuple):  # It's a field lookup
+                    lookups.append(child[0])
+            return lookups
+        lookups = get_field_lookups(q)
         for data in INITIAL_DATA:
             self.assertIn(f'{data["field"]}__{data["operator"]}', lookups)
 
