@@ -384,6 +384,7 @@ class LogicalStructureForm(forms.Form):
             ('or', _('OR (disjunction)')),
             ('xor', _('XOR (exclusive disjunction)')),
         ],
+        required=False,
         label=_('Combine by'),
         help_text=_('Logical operator to combine this filter rule with the last one.'),
     )
@@ -427,7 +428,8 @@ class BaseSearchkitForm(forms.Form):
         # Add the logic form data to the cleaned data.
         cleaned_data = super().clean()
         if self.logic_form.is_valid():
-            cleaned_data.update(self.logic_form.cleaned_data)
+            cleaned_data['logical_operator'] = self.logic_form.cleaned_data['logical_operator'] or 'and'
+            cleaned_data['negation'] = self.logic_form.cleaned_data['negation'] or False
         return cleaned_data
 
     @cached_property
