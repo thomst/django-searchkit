@@ -5,9 +5,9 @@
     {% if formset.model and formset.forms %}
         {% for form in formset %}
             {% block searchkit_form %}
-            {% with index=forloop.counter|slugify %}
-                {% as_fieldset form name="Filter rule "|add:index prefix="searchkit" id_suffix=forloop.counter0 %}
-            {% endwith %}
+                {% with index_str=forloop.counter|slugify index=forloop.counter index0=forloop.counter0 %}
+                    {% as_fieldset form "Filter rule "|add:index_str id_prefix=index0 id_suffix=index %}
+                {% endwith %}
             {% endblock %}
         {% endfor %}
         {% block searchkit_form_buttons %}
