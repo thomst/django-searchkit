@@ -13,6 +13,9 @@
             this.reloadCssClass = this.formset.dataset.reloadCssClass;
             this.totalFormsInput = this.form.querySelector('input[name$="TOTAL_FORMS"]');
 
+            // Hide the logical operator field for the first filter rule.
+            this.formset.querySelector('.field-logical_operator').style.display = 'none';
+
             // Set event listener for reloading the formset.
             this.form.querySelectorAll(`.${this.reloadCssClass}`).forEach((el) => {
                 const totalFormsCount = el.dataset.totalForms;

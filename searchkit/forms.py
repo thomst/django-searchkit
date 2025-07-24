@@ -374,6 +374,26 @@ class FieldPlan:
         return form_field
 
 
+class LogicalStructureForm(forms.Form):
+    """
+    This form represents elements of the logic structure of a search.
+    """
+    logical_operator = forms.ChoiceField(
+        choices=[
+            ('and', _('AND (conjunction)')),
+            ('or', _('OR (disjunction)')),
+            ('xor', _('XOR (exclusive disjunction)')),
+        ],
+        label=_('Combine by'),
+        help_text=_('Logical operator to combine this filter rule with the last one.'),
+    )
+    negation = forms.BooleanField(
+        required=False,
+        label=_('Use negation'),
+        help_text=_('Negate this filter rule using a NOT statement in sql.'),
+    )
+
+
 class BaseSearchkitForm(forms.Form):
     """
     Searchkit form representing a queryset filter rule.
@@ -386,8 +406,6 @@ class BaseSearchkitForm(forms.Form):
     Additionally there is an exclude boolean field which marks filter rules that
     should be used to exclude objects from the search result.
     """
-    exclude = forms.BooleanField(required=False, label=_('Exclude from the result'))
-
     model = None  # Set by the formset factory.
     html_attrs = {
         "class": RELOAD_CSS_CLASS,
@@ -400,6 +418,31 @@ class BaseSearchkitForm(forms.Form):
         self._add_field_lookup_field()
         self._add_operator_field()
         self._add_value_field()
+
+    def is_valid(self):
+        # Valid if the form itself and the logic form is valid.
+        return super().is_valid() and self.logic_form.is_valid()
+
+    def clean(self):
+        # Add the logic form data to the cleaned data.
+        cleaned_data = super().clean()
+        if self.logic_form.is_valid():
+            cleaned_data.update(self.logic_form.cleaned_data)
+        return cleaned_data
+
+    @cached_property
+    def logic_form(self):
+        """
+        Returns a form for the logical structure of a search.
+        """
+        kwargs = dict(prefix=self.prefix)
+        if self.data:
+            kwargs['data'] = self.data
+        elif self.initial:
+            kwargs['initial'] = self.initial
+
+        # Return a new instance of the logical structure form.
+        return LogicalStructureForm(**kwargs)
 
     @cached_property
     def unprefixed_data(self):

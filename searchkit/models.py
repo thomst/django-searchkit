@@ -3,6 +3,7 @@ from picklefield.fields import PickledObjectField
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
+from django.db.models import Q
 
 
 class Search(models.Model):
@@ -14,12 +15,19 @@ class Search(models.Model):
     class Meta:
         unique_together = ('name', 'contenttype')
 
-    def as_lookups(self):
-        includes = OrderedDict()
-        excludes = OrderedDict()
+    def as_q(self):
+        """
+        Build a Q object from the serialized data.
+        """
+        q = Q()
         for data in self.data:
-            if data['exclude']:
-                excludes[f'{data["field"]}__{data["operator"]}'] = data['value']
-            else:
-                includes[f'{data["field"]}__{data["operator"]}'] = data['value']
-        return includes, excludes
+            new_q = Q(**{f'{data["field"]}__{data["operator"]}': data['value']})
+            if data['negation']:
+                new_q = ~new_q
+            if data['logical_operator'] == 'and':
+                q &= new_q
+            elif data['logical_operator'] == 'or':
+                q |= new_q
+            elif data['logical_operator'] == 'xor':
+                q ^= new_q
+        return q
