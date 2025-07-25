@@ -378,6 +378,10 @@ class LogicalStructureForm(forms.Form):
     """
     This form represents elements of the logic structure of a search.
     """
+    collapsed = forms.BooleanField(
+        required=False,
+        widget=forms.HiddenInput,
+    )
     logical_operator = forms.ChoiceField(
         choices=[
             ('and', _('AND (conjunction)')),
@@ -521,6 +525,7 @@ class BaseSearchkitFormSet(forms.BaseFormSet):
         # Basic searchkit media.
         media = forms.Media(js=[
             "searchkit/js/searchkit.js",
+            "searchkit/js/logicform.js",
             "searchkit/js/widgets/datetime.js",
             "searchkit/js/widgets/select2.js",
         ])
