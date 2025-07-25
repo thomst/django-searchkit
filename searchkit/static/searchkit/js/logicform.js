@@ -10,7 +10,6 @@
             this.index = index;
             this.fieldset = fieldset;
             this.h2 = this.fieldset.querySelector('h2');
-            this.h2Content = this.h2.textContent;
             this.toggle = this.fieldset.querySelector('summary');
             this.collapsedInput = this.fieldset.querySelector('.field-collapsed input[type="hidden"]');
             this.logicalOperatorInput = this.fieldset.querySelector('.field-logical_operator select');
@@ -56,12 +55,9 @@
             });
         }
         updateHeading() {
-            // Update the header using operator and negation values.
-            let operator = this.logicalOperatorInput ? this.logicalOperatorInput.value.toUpperCase() : '';
-            operator = operator ? `...${operator}` : '';
-            let negation = this.negationInput.checked ? 'NOT' : '';
-            negation = operator ? ` ${negation}...` : `${negation}...`;
-            this.h2.textContent = `${operator}${negation}`;
+            let header = this.index === 0 ? 'WHERE' : `... ${this.logicalOperatorInput.value.toUpperCase()}`;
+            header += this.negationInput.checked ? ' NOT ...' : ' ...';
+            this.h2.textContent = header;
         }
     }
 
