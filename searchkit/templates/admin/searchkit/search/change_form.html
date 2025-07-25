@@ -1,6 +1,6 @@
 {% extends 'admin/change_form.html' %}
 {% load searchkit %}
 {% block after_field_sets %}
-    {% as_fieldset adminform.form.searchkit_model_form "Which model is your search for?" prefix="searchkit_model" %}
+    {% as_fieldset adminform.form.searchkit_model_form "Search model" prefix="searchkit_model" %}
     {{ adminform.form.formset }}
 {% endblock %}
