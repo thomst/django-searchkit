@@ -378,6 +378,8 @@ class LogicalStructureForm(forms.Form):
     """
     This form represents elements of the logic structure of a search.
     """
+    # TODO: Put this field in the management form of the searchkit formset as a
+    # multi-select field with the ids of the collapsible fieldsets as options.
     collapsed = forms.BooleanField(
         required=False,
         widget=forms.HiddenInput,
