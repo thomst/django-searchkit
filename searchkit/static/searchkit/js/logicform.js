@@ -15,6 +15,15 @@
             this.logicalOperatorInput = this.fieldset.querySelector('.field-logical_operator select');
             this.negationInput = this.fieldset.querySelector('.field-negation input[type="checkbox"]');
 
+            // For backward compatibility we backported the fieldset template to
+            // use details and summary HTML elements for Django <5.1. We also
+            // need some adjustments to the CSS.
+            const bgcolor = window.getComputedStyle(this.h2).getPropertyValue('background-color');
+            this.toggle.style.backgroundColor = bgcolor;
+            this.toggle.style.padding = '8px';
+            this.toggle.style.cursor = 'pointer';
+            this.h2.style.display = 'inline';
+
             // Remove the logical operator field for the first filter rule.
             if (this.index === 0) {
                 this.fieldset.querySelector('.field-logical_operator').remove();
