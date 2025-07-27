@@ -7,8 +7,7 @@ from django.contrib.admin.helpers import Fieldset
 # rendering collapsible fieldsets using the details and summary HTML elements.
 # Overwriting the fieldset template and adding the `is_collapsible` property we
 # ensure to be backward compatible.
-if not hasattr(Fieldset, 'is_collapsible'):
-    Fieldset.is_collapsible = property(lambda self: 'collapse' in self.classes)
+Fieldset.is_collapsible = property(lambda self: 'collapse' in self.classes)
 
 
 register = Library()

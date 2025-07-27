@@ -6,8 +6,8 @@
         {% for form in formset %}
             {% block searchkit_form %}
                 {% with index_str=forloop.counter|slugify index=forloop.counter %}
-                    {% as_fieldset form.logic_form "Filter rule "|add:index_str prefix="searchkit_logic" index=index classes="searchkit_logicform collapse" %}
-                    {% as_fieldset form index=index %}
+                    {% as_fieldset form.logic_form "Logic for filter rule "|add:index_str index=index classes="searchkit_logic collapse" %}
+                    {% as_fieldset form "Filter rule "|add:index_str index=index classes="searchkit_rule collapse" %}
                 {% endwith %}
             {% endblock %}
         {% endfor %}

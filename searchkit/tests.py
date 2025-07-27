@@ -191,7 +191,7 @@ class CheckFormMixin:
         self.assertTrue(form.logic_form)
         self.assertIn('negation', form.logic_form.fields)
         self.assertIn('logical_operator', form.logic_form.fields)
-        self.assertEqual(len(form.logic_form.fields), 3)
+        self.assertEqual(len(form.logic_form.fields), 2)
 
         # Check field choices for the model.
         form_model_field = form.fields['field']

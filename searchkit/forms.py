@@ -378,12 +378,6 @@ class LogicalStructureForm(forms.Form):
     """
     This form represents elements of the logic structure of a search.
     """
-    # TODO: Put this field in the management form of the searchkit formset as a
-    # multi-select field with the ids of the collapsible fieldsets as options.
-    collapsed = forms.BooleanField(
-        required=False,
-        widget=forms.HiddenInput,
-    )
     logical_operator = forms.ChoiceField(
         choices=[
             ('and', _('AND (conjunction)')),
@@ -527,7 +521,7 @@ class BaseSearchkitFormSet(forms.BaseFormSet):
         # Basic searchkit media.
         media = forms.Media(js=[
             "searchkit/js/searchkit.js",
-            "searchkit/js/logicform.js",
+            "searchkit/js/widgets/fieldset.js",
             "searchkit/js/widgets/datetime.js",
             "searchkit/js/widgets/select2.js",
         ])
@@ -546,6 +540,16 @@ class BaseSearchkitFormSet(forms.BaseFormSet):
             sk_total_form_count=self.total_form_count,
         )
         return context
+
+    @cached_property
+    def management_form(self):
+        form = super().management_form
+        # Add uncollapsed fieldsets input to the management form.
+        form.fields['UNCOLLAPSED'] = forms.CharField(
+            required=False,
+            widget=forms.HiddenInput,
+        )
+        return form
 
 
 def searchkit_formset_factory(model, **kwargs):
