@@ -11,6 +11,7 @@
             this.index = index;
             this.id = `id-${index}-${type}`;
             this.fieldset = fieldset;
+            this.details = this.fieldset.querySelector('details');
             this.h2 = this.fieldset.querySelector('h2');
             this.toggle = this.fieldset.querySelector('summary');
             this.uncollapsedInput = document.querySelector('input[name$="UNCOLLAPSED"]');
@@ -92,6 +93,16 @@
                     this.updateHeading();
                 });
             });
+
+            // Open fieldsets with unset value fields.
+            if (!this.details.open) {
+                for (let el of this.valueInputs.values()) {
+                    if (!el.value) {
+                        this.toggle.click();
+                        break;
+                    }
+                }
+            }
         }
 
         updateHeading() {
