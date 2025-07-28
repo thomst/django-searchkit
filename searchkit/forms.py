@@ -540,16 +540,6 @@ class BaseSearchkitFormSet(forms.BaseFormSet):
         )
         return context
 
-    @cached_property
-    def management_form(self):
-        form = super().management_form
-        # Add uncollapsed fieldsets input to the management form.
-        form.fields['UNCOLLAPSED'] = forms.CharField(
-            required=False,
-            widget=forms.HiddenInput,
-        )
-        return form
-
 
 def searchkit_formset_factory(model, **kwargs):
     form = type('SearchkitForm', (BaseSearchkitForm,), dict(model=model))

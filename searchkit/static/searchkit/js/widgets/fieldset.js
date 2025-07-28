@@ -5,17 +5,17 @@
 {
     class BaseFieldset {
 
-        static fieldsetType = null;
-
-        constructor (fieldset, index, type) {
+        constructor (fieldset, index) {
             this.index = index;
-            this.id = `id-${index}-${type}`;
             this.fieldset = fieldset;
-            this.details = this.fieldset.querySelector('details');
             this.h2 = this.fieldset.querySelector('h2');
+            this.id = this.h2.id;
+            this.details = this.fieldset.querySelector('details');
             this.toggle = this.fieldset.querySelector('summary');
-            this.uncollapsedInput = document.querySelector('input[name$="UNCOLLAPSED"]');
+            if (this.toggle) this.initCollapsible();
+        }
 
+        initCollapsible() {
             // For backward compatibility we backported the fieldset template to
             // use details and summary HTML elements for Django <5.1. We also
             // need some adjustments to the CSS.
@@ -27,22 +27,18 @@
                 this.h2.style.display = 'inline';
             }
 
-            // Logic form fieldsets are collapsed by default. Uncollapse them if
-            // their id found within uncollapsedInput value.
-            if (this.uncollapsedInput.value.includes(this.id)) {
-                // Uncollapse by triggering a click event on the toggle element.
+            // Track the fieldset and its collapse state.
+            window.searchkitFieldsets[this.id] = window.searchkitFieldsets[this.id] || false;
+
+            // Uncollapse the fieldset if it was previously opened.
+            if (window.searchkitFieldsets[this.id]) {
                 this.toggle.click();
             }
 
-            // Set event listener for the toggle element to update the
-            // uncollapsedInput value.
+            // Set event listener for the toggle element to update the collapse
+            // state.
             this.toggle.addEventListener('click', (e) => {
-                // Track open fieldsets in the uncollapsedInput value.
-                if (this.uncollapsedInput.value.includes(this.id)) {
-                    this.uncollapsedInput.value = this.uncollapsedInput.value.replace(this.id, '');
-                } else {
-                    this.uncollapsedInput.value += ` ${this.id}`;
-                }
+                window.searchkitFieldsets[this.id] = !window.searchkitFieldsets[this.id];
             });
         }
     }
@@ -51,9 +47,10 @@
     class LogicFormFieldset extends BaseFieldset {
 
         constructor (fieldset, index) {
-            super(fieldset, index, 'logic');
+            super(fieldset, index);
             this.logicalOperatorInput = this.fieldset.querySelector('.field-logical_operator select');
             this.negationInput = this.fieldset.querySelector('.field-negation input[type="checkbox"]');
+            this.updateHeading();
 
             // Remove the logical operator field for the first filter rule.
             if (this.index === 0) {
@@ -82,10 +79,11 @@
     class FilterRuleFieldset extends BaseFieldset {
 
         constructor (fieldset, index) {
-            super(fieldset, index, 'rule');
+            super(fieldset, index);
             this.fieldLookupSelect = this.fieldset.querySelector('.field-field select');
             this.operatorSelect = this.fieldset.querySelector('.field-operator select');
             this.valueInputs = this.fieldset.querySelectorAll('.field-value input, .field-value select');
+            this.updateHeading();
 
             // Set event listener for the value fields to update the heading text.
             this.valueInputs.forEach((el, index) => {
@@ -93,16 +91,6 @@
                     this.updateHeading();
                 });
             });
-
-            // Open fieldsets with unset value fields.
-            if (!this.details.open) {
-                for (let el of this.valueInputs.values()) {
-                    if (!el.value) {
-                        this.toggle.click();
-                        break;
-                    }
-                }
-            }
         }
 
         updateHeading() {
@@ -124,22 +112,33 @@
                 const value4 = this.valueInputs[1].value || '???';
                 value = `"${value1} ${value2}" and "${value3} ${value4}"`;
             }
-            const header = `\`${lookup}\` | ${operator} | ${value}`;
+            const header = `\`${lookup}\`  |  ${operator}  |  ${value}`;
             this.h2.textContent = header;
         }
     }
 
     function initFieldsets() {
-        document.querySelectorAll('fieldset.searchkit_logic.collapse').forEach((fieldset, index) => {
-            const logic_form = new LogicFormFieldset(fieldset, index);
-            logic_form.updateHeading();
-        });
-        document.querySelectorAll('fieldset.searchkit_rule.collapse').forEach((fieldset, index) => {
-            const logic_form = new FilterRuleFieldset(fieldset, index);
-            logic_form.updateHeading();
+        document.querySelectorAll('fieldset.searchkit').forEach((el, index) => {
+            if (el.classList.contains('filter-logic')) {
+                new LogicFormFieldset(el, index);
+            } else if (el.classList.contains('filter-rule')) {
+                new FilterRuleFieldset(el, index);
+            }
         });
     }
 
+    function initFieldsetsOnReload() {
+        const fieldsets = { ...window.searchkitFieldsets };
+        initFieldsets();
+        // If a filter rule was added we open the last filter-rule fieldset.
+        if (Object.keys(window.searchkitFieldsets).length > Object.keys(fieldsets).length) {
+            const lastFieldset = [...document.querySelectorAll('fieldset.searchkit.filter-rule')].pop();
+            lastFieldset.querySelector('summary').click();
+        }
+    }
+
+    // Fieldsets are tracked by their ids within a global object.
+    window.searchkitFieldsets = {};
     document.addEventListener("DOMContentLoaded", initFieldsets);
-    document.addEventListener("searchkit:reloaded", initFieldsets);
+    document.addEventListener("searchkit:reloaded", initFieldsetsOnReload);
 }
