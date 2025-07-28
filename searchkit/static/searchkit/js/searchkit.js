@@ -41,9 +41,6 @@
                 const wrapper = document.createElement('div');
                 wrapper.innerHTML = html;
                 const formset = wrapper.firstChild;
-                // Remove error messages. They are not useful yet since we did
-                // no form submission.
-                formset.querySelectorAll('.errorlist').forEach(el => el.remove());
                 // Replace the formset dom element.
                 this.formset.replaceWith(formset);
                 // Reinitialize the formset object itself.

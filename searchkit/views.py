@@ -43,6 +43,10 @@ class SearchkitView(APIView):
             raise InvalidSearchkitModel(model_form.errors)
 
         formset = searchkit_formset_factory(model=model)(data=request.GET)
+        # We reset all errors of the forms since this is no submission but a
+        # reload. (Errors are unavoidable when rebuilding the operator field.)
+        for form in formset.forms:
+            form._errors = dict()
         return Response(formset.render())
 
 
