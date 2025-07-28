@@ -86,34 +86,31 @@
             this.updateHeading();
 
             // Set event listener for the value fields to update the heading text.
-            this.valueInputs.forEach((el, index) => {
-                el.addEventListener('change', () => {
-                    this.updateHeading();
-                });
+            this.valueInputs.forEach((el) => {
+                el.addEventListener('change', () => {this.updateHeading()});
+                // We also need focusout event listeners for the datetime widgets.
+                el.addEventListener('focusout', () => {this.updateHeading()});
             });
         }
 
         updateHeading() {
+            console.log('updateHeading', this.fieldLookupSelect, this.operatorSelect, this.valueInputs);
             const lookup = this.fieldLookupSelect.options[this.fieldLookupSelect.selectedIndex].innerHTML;
             const operator_value = this.operatorSelect.value;
             const operator = this.operatorSelect.options[this.operatorSelect.selectedIndex].innerHTML;
-            let value = '';
-            if (this.valueInputs.length === 1) {
-                value = `"${this.valueInputs[0].value}"` || '???';
-            } else if (this.valueInputs.length === 2) {
-                const value1 = this.valueInputs[0].value || '???';
-                const value2 = this.valueInputs[1].value || '???';
-                const between = operator_value === 'range' ? '" and "' : ' ';
-                value = `"${value1}${between}${value2}"`;
-            } else if (this.valueInputs.length === 4) {
-                const value1 = this.valueInputs[0].value || '???';
-                const value2 = this.valueInputs[1].value || '???';
-                const value3 = this.valueInputs[0].value || '???';
-                const value4 = this.valueInputs[1].value || '???';
-                value = `"${value1} ${value2}" and "${value3} ${value4}"`;
+            const _values = Array.from(this.valueInputs).map(input => input.value);
+            const values = Array.from(_values).map(value => !!value ? value : '???')
+
+            let value;
+            if (values.length === 1) {
+                value = values[0];
+            } else if (values.length === 2) {
+                const between = operator_value === 'range' ? ' and ' : ' ';
+                value = `${values[0]}${between}${values[1]}`;
+            } else if (values.length === 4) {
+                value = `${values[0]} ${values[1]} and ${values[2]} ${values[3]}`;
             }
-            const header = `\`${lookup}\`  |  ${operator}  |  ${value}`;
-            this.h2.textContent = header;
+            this.h2.textContent = `\`${lookup}\` | ${operator} | ${value}`;
         }
     }
 
