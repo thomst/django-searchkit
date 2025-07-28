@@ -6,7 +6,6 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.renderers import StaticHTMLRenderer
 from django.apps import apps
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import FieldError
 from django.core.exceptions import FieldDoesNotExist
 from django.core.exceptions import PermissionDenied
 from .forms import SearchkitModelForm
