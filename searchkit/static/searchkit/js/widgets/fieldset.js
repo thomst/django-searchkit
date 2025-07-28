@@ -94,7 +94,6 @@
         }
 
         updateHeading() {
-            console.log('updateHeading', this.fieldLookupSelect, this.operatorSelect, this.valueInputs);
             const lookup = this.fieldLookupSelect.options[this.fieldLookupSelect.selectedIndex].innerHTML;
             const operator_value = this.operatorSelect.value;
             const operator = this.operatorSelect.options[this.operatorSelect.selectedIndex].innerHTML;
