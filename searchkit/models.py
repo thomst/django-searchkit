@@ -22,12 +22,19 @@ class Search(models.Model):
         q = Q()
         for data in self.data:
             new_q = Q(**{f'{data["field"]}__{data["operator"]}': data['value']})
-            if data['negation']:
+
+            # Negate the new Q object if negation is set.
+            if data.get('negation'):
                 new_q = ~new_q
-            if data['logical_operator'] == 'and':
+
+            # Combine the new Q object with the existing one using the logical
+            # operator or 'and' by default.
+            operator = data.get('logical_operator') or 'and'
+            if operator == 'and':
                 q &= new_q
-            elif data['logical_operator'] == 'or':
+            elif operator == 'or':
                 q |= new_q
-            elif data['logical_operator'] == 'xor':
+            elif operator == 'xor':
                 q ^= new_q
+
         return q
