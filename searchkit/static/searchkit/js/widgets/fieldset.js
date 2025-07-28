@@ -97,19 +97,25 @@
             const lookup = this.fieldLookupSelect.options[this.fieldLookupSelect.selectedIndex].innerHTML;
             const operator_value = this.operatorSelect.value;
             const operator = this.operatorSelect.options[this.operatorSelect.selectedIndex].innerHTML;
-            const _values = Array.from(this.valueInputs).map(input => input.value);
-            const values = Array.from(_values).map(value => !!value ? value : '???')
+            const values = Array.from(this.valueInputs).map((el) => {
+                if (el.multiple) {
+                    const options = Array.from(el.selectedOptions).map(option => option.value);
+                    return options.length > 0 ? options.join(', ') : '???';
+                } else {
+                    return !!el.value ? el.value : '???';
+                }
+            });
 
             let value;
             if (values.length === 1) {
                 value = values[0];
             } else if (values.length === 2) {
-                const between = operator_value === 'range' ? ' and ' : ' ';
+                const between = operator_value === 'range' ? ' -> ' : ' ';
                 value = `${values[0]}${between}${values[1]}`;
             } else if (values.length === 4) {
-                value = `${values[0]} ${values[1]} and ${values[2]} ${values[3]}`;
+                value = `${values[0]} ${values[1]} -> ${values[2]} ${values[3]}`;
             }
-            this.h2.textContent = `\`${lookup}\` | ${operator} | ${value}`;
+            this.h2.textContent = `${lookup} | ${operator} | ${value}`;
         }
     }
 
