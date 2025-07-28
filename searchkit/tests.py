@@ -511,10 +511,10 @@ class SearchkitViewTest(CreateTestDataMixin, TestCase):
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        html_error = '<li>Enter a whole number.</li>'
-        self.assertInHTML(html_error, str(resp.content))
+        # There shouldn't be any errors since they are removed by the view.
+        self.assertNotIn('.errorlist', str(resp.content))
 
-    def test_searchkit_view_missing_data(self):
+    def test_searchkit_view_with_missing_data(self):
         initial = self.initial.copy()
         del(initial[0]['value'])
         data = get_form_data(initial)
@@ -523,8 +523,8 @@ class SearchkitViewTest(CreateTestDataMixin, TestCase):
         url = f'{base_url}?{url_params}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
-        html_error = '<li>This field is required.</li>'
-        self.assertInHTML(html_error, str(resp.content))
+        # There shouldn't be any errors since they are removed by the view.
+        self.assertNotIn('.errorlist', str(resp.content))
 
     def test_searchkit_view_with_range_operator(self):
         data = get_form_data(self.initial_range)
