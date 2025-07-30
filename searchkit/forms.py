@@ -391,7 +391,7 @@ class LogicalStructureForm(forms.Form):
     negation = forms.BooleanField(
         required=False,
         label=_('Use negation'),
-        widget=forms.Select(choices=TRUE_FALSE_CHOICES),
+        widget=forms.Select(choices=reversed(TRUE_FALSE_CHOICES)),
         help_text=_('Negate this filter rule using a NOT statement in sql.'),
     )
 
