@@ -48,30 +48,30 @@
 
         constructor (fieldset, index) {
             super(fieldset, index);
-            this.logicalOperatorInput = this.fieldset.querySelector('.field-logical_operator select');
-            this.negationInput = this.fieldset.querySelector('.field-negation input[type="checkbox"]');
+            this.logicalOperatorField = this.fieldset.querySelector('.field-logical_operator select');
+            this.negationSelect = this.fieldset.querySelector('.field-negation select');
             this.updateHeading();
 
             // Remove the logical operator field for the first filter rule.
             if (this.index === 0) {
                 this.fieldset.querySelector('.field-logical_operator').remove();
-                this.logicalOperatorInput = null;
+                this.logicalOperatorField = null;
             // Otherwise add an event listener to update the heading text.
             } else {
-                this.logicalOperatorInput.addEventListener('change', () => {
+                this.logicalOperatorField.addEventListener('change', () => {
                     this.updateHeading();
                 });
             }
 
             // Set event listener for the negation input to update the heading text.
-            this.negationInput.addEventListener('change', () => {
+            this.negationSelect.addEventListener('change', () => {
                 this.updateHeading();
             });
         }
 
         updateHeading() {
-            let header = this.index === 0 ? 'WHERE' : `... ${this.logicalOperatorInput.value.toUpperCase()}`;
-            header += this.negationInput.checked ? ' NOT ...' : ' ...';
+            let header = this.index === 0 ? 'WHERE' : `... ${this.logicalOperatorField.value.toUpperCase()}`;
+            header += this.negationSelect.value === 'True' ? ' NOT ...' : ' ...';
             this.h2.textContent = header;
         }
     }
@@ -80,13 +80,13 @@
 
         constructor (fieldset, index) {
             super(fieldset, index);
-            this.fieldLookupSelect = this.fieldset.querySelector('.field-field select');
-            this.operatorSelect = this.fieldset.querySelector('.field-operator select');
-            this.valueInputs = this.fieldset.querySelectorAll('.field-value input, .field-value select');
+            this.fieldLookupField = this.fieldset.querySelector('.field-field select');
+            this.operatorField = this.fieldset.querySelector('.field-operator select');
+            this.valueFields = this.fieldset.querySelectorAll('.field-value input, .field-value select');
             this.updateHeading();
 
             // Set event listener for the value fields to update the heading text.
-            this.valueInputs.forEach((el) => {
+            this.valueFields.forEach((el) => {
                 el.addEventListener('change', () => {this.updateHeading()});
                 // We also need focusout event listeners for the datetime widgets.
                 el.addEventListener('focusout', () => {this.updateHeading()});
@@ -94,10 +94,10 @@
         }
 
         updateHeading() {
-            const lookup = this.fieldLookupSelect.options[this.fieldLookupSelect.selectedIndex].innerHTML;
-            const operator_value = this.operatorSelect.value;
-            const operator = this.operatorSelect.options[this.operatorSelect.selectedIndex].innerHTML;
-            const values = Array.from(this.valueInputs).map((el) => {
+            const lookup = this.fieldLookupField.options[this.fieldLookupField.selectedIndex].innerHTML;
+            const operator_value = this.operatorField.value;
+            const operator = this.operatorField.options[this.operatorField.selectedIndex].innerHTML;
+            const values = Array.from(this.valueFields).map((el) => {
                 if (el.multiple) {
                     const options = Array.from(el.selectedOptions).map(option => option.value);
                     return options.length > 0 ? options.join(', ') : '???';

@@ -15,6 +15,11 @@ from . import fields as  skfields
 
 RELOAD_CSS_CLASS = "searchkit-reload"
 
+TRUE_FALSE_CHOICES = (
+    (True, _('Yes')),
+    (False, _('No'))
+)
+
 
 # TODO: Check unique_together contraint for search name and content type.
 class SearchForm(forms.ModelForm):
@@ -136,11 +141,6 @@ class FieldPlan:
         'range': _('is within range'),
         'in': _('is one of'),
     }
-
-    TRUE_FALSE_CHOICES = (
-        (True, _('Yes')),
-        (False, _('No'))
-    )
 
     CHARACTER_FIELD_TYPES = (
         models.CharField,
@@ -290,7 +290,7 @@ class FieldPlan:
         if operator == 'isnull':
             form_field = forms.BooleanField(
                 required=False,
-                widget=forms.Select(choices=self.TRUE_FALSE_CHOICES),
+                widget=forms.Select(choices=TRUE_FALSE_CHOICES),
                 )
 
         # Create form field for character based field types.
@@ -368,7 +368,7 @@ class FieldPlan:
             else:
                 form_field = forms.BooleanField(
                     required=False,
-                    widget=forms.Select(choices=self.TRUE_FALSE_CHOICES),
+                    widget=forms.Select(choices=TRUE_FALSE_CHOICES),
                     )
 
         return form_field
@@ -391,6 +391,7 @@ class LogicalStructureForm(forms.Form):
     negation = forms.BooleanField(
         required=False,
         label=_('Use negation'),
+        widget=forms.Select(choices=TRUE_FALSE_CHOICES),
         help_text=_('Negate this filter rule using a NOT statement in sql.'),
     )
 
