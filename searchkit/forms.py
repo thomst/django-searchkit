@@ -453,22 +453,24 @@ class BaseSearchkitForm(forms.Form):
                 data[key[len(self.prefix) + 1:]] = value
         return data
 
-    def _preload_clean_data(self, field_name):
+    def _get_field_value(self, field_name):
+        # Get all choices values.
+        choices = self.fields[field_name].choices
+        flattened_choices = [c[0] for sublist in choices for c in sublist[1]]
+
         # Try the initial value first since it is already cleaned.
         if self.initial and field_name in self.initial:
             return self.initial[field_name]
         # Otherwise look up the data dict.
-        elif field_name in self.unprefixed_data:
-            try:
-                # Do we have a valid value?
-                return self.fields[field_name].clean(self.unprefixed_data[field_name])
-            except forms.ValidationError:
-                # Otherwise return the first option.
-                return self.fields[field_name].choices[0][1][0][0]
+        elif (
+            field_name in self.unprefixed_data
+            and self.unprefixed_data[field_name] in flattened_choices
+        ):
+            return self.unprefixed_data[field_name]
         else:
             # At a default return the first option which will be the selected
             # one.
-            return  self.fields[field_name].choices[0][1][0][0]
+            return  flattened_choices[0]
 
     def _add_field_lookup_field(self):
         choices = self.field_plan.get_field_lookup_choices()
@@ -477,14 +479,14 @@ class BaseSearchkitForm(forms.Form):
         self.fields['field'] = field
 
     def _add_operator_field(self):
-        field_lookup = self._preload_clean_data('field')
+        field_lookup = self._get_field_value('field')
         choices = self.field_plan.get_operator_choices(field_lookup)
         field = forms.ChoiceField(label=_('Operator'), choices=choices)
         field.widget.attrs.update(self.html_attrs)
         self.fields['operator'] = field
 
     def _add_value_field(self):
-        operator = self._preload_clean_data('operator')
+        operator = self._get_field_value('operator')
         form_field = self.field_plan.get_form_field(operator)
         self.fields['value'] = form_field
 
