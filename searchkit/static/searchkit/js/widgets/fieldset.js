@@ -120,8 +120,8 @@
             // Store the fieldset in the global object.
             window.searchkitFieldsets[fieldset.id] = window.searchkitFieldsets[fieldset.id] || false;
 
-            // If the searchkit formset has been reloaded and the fieldset is
-            // collapsible...
+            // If the searchkit formset has been reloaded (count > 0) and the
+            // fieldset is collapsible...
             if (count != 0 && fieldset.collapsible) {
                 // ... open previously opened fieldsets or the last fieldset
                 // added dynamically by the add filter rule button.
