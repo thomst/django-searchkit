@@ -378,6 +378,13 @@ class LogicalStructureForm(forms.Form):
     """
     This form represents elements of the logic structure of a search.
     """
+    def __init__(self, *args, **kwargs):
+        index = kwargs.pop('index')
+        super().__init__(*args, **kwargs)
+        # Remove the logical operator for the first form.
+        if index == 0:
+            del self.fields['logical_operator']
+
     logical_operator = forms.ChoiceField(
         choices=[
             ('and', _('AND (conjunction)')),
@@ -415,6 +422,7 @@ class BaseSearchkitForm(forms.Form):
     }
 
     def __init__(self, *args, **kwargs):
+        self.index = kwargs.pop('index')
         super().__init__(*args, **kwargs)
         self.field_plan = FieldPlan(self.model, self.initial)
         self._add_field_lookup_field()
@@ -437,7 +445,7 @@ class BaseSearchkitForm(forms.Form):
         """
         Returns a form for the logical structure of a search.
         """
-        kwargs = dict(prefix=self.prefix)
+        kwargs = dict(prefix=self.prefix, index=self.index)
         if self.data:
             kwargs['data'] = self.data
         elif self.initial:
@@ -502,6 +510,11 @@ class BaseSearchkitFormSet(forms.BaseFormSet):
 
     def add_prefix(self, index):
         return "%s-%s-%s-%s" % (self.prefix, self.model._meta.app_label, self.model._meta.model_name, index)
+
+    def get_form_kwargs(self, index):
+        kwargs = super().get_form_kwargs(index)
+        kwargs['index'] = index
+        return kwargs
 
     @classmethod
     def get_default_prefix(self):
