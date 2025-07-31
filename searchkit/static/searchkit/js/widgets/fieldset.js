@@ -12,18 +12,19 @@
             this.id = this.h2.id;
             this.details = this.fieldset.querySelector('details');
             this.summary = this.fieldset.querySelector('summary');
-            if (this.collapsible) this.initCollapsible();
+            if (this.collapsible) {
+                this.addEventListenerOnCollapse();
+            }
         }
 
         get collapsible() {
-            return this.details && this.summary;
+            return !!this.details && !!this.summary;
         }
 
-        initCollapsible() {
-            // Set event listener for the summary element to update the collapse
-            // state.
-            this.summary.addEventListener('click', (e) => {
-                window.searchkitFieldsets[this.id] = !window.searchkitFieldsets[this.id];
+        addEventListenerOnCollapse() {
+            // Update the collapse state when fieldset is toggled.
+            this.details.addEventListener('toggle', (e) => {
+                window.searchkitFieldsets[this.id] = this.details.open;
             });
         }
     }
@@ -37,21 +38,16 @@
             this.negationField = this.fieldset.querySelector('.field-negation select');
             this.updateHeading();
 
-            // Remove the logical operator field for the first filter rule.
-            if (this.index === 0) {
-                this.fieldset.querySelector('.field-logical_operator').remove();
-                this.logicalOperatorField = null;
-            // Otherwise add an event listener to update the heading text.
-            } else {
-                this.logicalOperatorField.addEventListener('change', () => {
-                    this.updateHeading();
-                });
-            }
-
             // Set event listener for the negation input to update the heading text.
             this.negationField.addEventListener('change', () => {
                 this.updateHeading();
             });
+            // Set event listender for logicalOperatorField.
+            if (this.logicalOperatorField) {
+                this.logicalOperatorField.addEventListener('change', () => {
+                    this.updateHeading();
+                });
+            }
         }
 
         updateHeading() {
@@ -104,36 +100,46 @@
         }
     }
 
-    function initFieldsets() {
+    function initFieldsets(reloaded=false) {
         // Track count of previously initialized fieldsets.
-        const count = Object.keys(window.searchkitFieldsets).length;
+        const states = window.searchkitFieldsets || {};
+        const count = Object.keys(states).length;
+        let fieldsets = [];
 
         // Initialize all searchkit fieldsets.
         document.querySelectorAll('fieldset.searchkit').forEach((el, index) => {
             // Initialize the fieldset based on its class.
-            let fieldset;
             if (el.classList.contains('filter-logic')) {
-                fieldset = new LogicFormFieldset(el, index);
+                fieldsets.push(new LogicFormFieldset(el, index));
             } else if (el.classList.contains('filter-rule')) {
-                fieldset = new FilterRuleFieldset(el, index);
+                fieldsets.push(new FilterRuleFieldset(el, index));
             }
-            // Store the fieldset in the global object.
-            window.searchkitFieldsets[fieldset.id] = window.searchkitFieldsets[fieldset.id] || false;
+        });
 
-            // If the searchkit formset has been reloaded (count > 0) and the
-            // fieldset is collapsible...
-            if (count != 0 && fieldset.collapsible) {
-                // ... open previously opened fieldsets or the last fieldset
-                // added dynamically by the add filter rule button.
-                if (window.searchkitFieldsets[fieldset.id] || index > count) {
-                    fieldset.summary.click();
+        if (reloaded) {
+            // If a filter rule was added we open the last fieldset.
+            if (count < fieldsets.length) {
+                const lastFieldset = fieldsets[fieldsets.length - 1];
+                if (lastFieldset.collapsible) {
+                    lastFieldset.details.open = true;
                 }
             }
+
+            // Also open all fieldsets that were open before the reload.
+            fieldsets.forEach((fieldset, index) => {
+                if (fieldset.collapsible && states[fieldset.id]) {
+                    fieldset.details.open = true;
+                }
+            });
+        }
+
+        // Track the collapse states of the fieldsets.
+        window.searchkitFieldsets = {};
+        fieldsets.forEach((fieldset) => {
+            window.searchkitFieldsets[fieldset.id] = fieldset.details.open;
         });
     }
 
-    // Fieldsets collapse state are tracked by their ids within a global object.
-    window.searchkitFieldsets = {};
-    document.addEventListener("DOMContentLoaded", initFieldsets);
-    document.addEventListener("searchkit:reloaded", initFieldsets);
+    document.addEventListener("DOMContentLoaded", function (e) {initFieldsets(false)});
+    document.addEventListener("searchkit:reloaded", function (e) {initFieldsets(true)});
 }
