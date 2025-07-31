@@ -11,33 +11,29 @@
             this.h2 = this.fieldset.querySelector('h2');
             this.id = this.h2.id;
             this.details = this.fieldset.querySelector('details');
-            this.toggle = this.fieldset.querySelector('summary');
-            if (this.toggle) this.initCollapsible();
+            this.summary = this.fieldset.querySelector('summary');
+            if (this.collapsible) this.initCollapsible();
+        }
+
+        get collapsible() {
+            return this.details && this.summary;
         }
 
         initCollapsible() {
             // For backward compatibility we backported the fieldset template to
             // use details and summary HTML elements for Django <5.1. We also
             // need some adjustments to the CSS.
-            if (window.getComputedStyle(this.toggle).getPropertyValue('background-color') === 'rgba(0, 0, 0, 0)') {
+            if (window.getComputedStyle(this.summary).getPropertyValue('background-color') === 'rgba(0, 0, 0, 0)') {
                 const bgcolor = window.getComputedStyle(this.h2).getPropertyValue('background-color');
-                this.toggle.style.backgroundColor = bgcolor;
-                this.toggle.style.padding = '8px';
-                this.toggle.style.cursor = 'pointer';
+                this.summary.style.backgroundColor = bgcolor;
+                this.summary.style.padding = '8px';
+                this.summary.style.cursor = 'pointer';
                 this.h2.style.display = 'inline';
             }
 
-            // Track the fieldset and its collapse state.
-            window.searchkitFieldsets[this.id] = window.searchkitFieldsets[this.id] || false;
-
-            // Uncollapse the fieldset if it was previously opened.
-            if (window.searchkitFieldsets[this.id]) {
-                this.toggle.click();
-            }
-
-            // Set event listener for the toggle element to update the collapse
+            // Set event listener for the summary element to update the collapse
             // state.
-            this.toggle.addEventListener('click', (e) => {
+            this.summary.addEventListener('click', (e) => {
                 window.searchkitFieldsets[this.id] = !window.searchkitFieldsets[this.id];
             });
         }
@@ -49,7 +45,7 @@
         constructor (fieldset, index) {
             super(fieldset, index);
             this.logicalOperatorField = this.fieldset.querySelector('.field-logical_operator select');
-            this.negationSelect = this.fieldset.querySelector('.field-negation select');
+            this.negationField = this.fieldset.querySelector('.field-negation select');
             this.updateHeading();
 
             // Remove the logical operator field for the first filter rule.
@@ -64,14 +60,14 @@
             }
 
             // Set event listener for the negation input to update the heading text.
-            this.negationSelect.addEventListener('change', () => {
+            this.negationField.addEventListener('change', () => {
                 this.updateHeading();
             });
         }
 
         updateHeading() {
             let header = this.index === 0 ? 'WHERE' : `... ${this.logicalOperatorField.value.toUpperCase()}`;
-            header += this.negationSelect.value === 'True' ? ' NOT ...' : ' ...';
+            header += this.negationField.value === 'True' ? ' NOT ...' : ' ...';
             this.h2.textContent = header;
         }
     }
@@ -120,27 +116,35 @@
     }
 
     function initFieldsets() {
+        // Track count of previously initialized fieldsets.
+        const count = Object.keys(window.searchkitFieldsets).length;
+
+        // Initialize all searchkit fieldsets.
         document.querySelectorAll('fieldset.searchkit').forEach((el, index) => {
+            // Initialize the fieldset based on its class.
+            let fieldset;
             if (el.classList.contains('filter-logic')) {
-                new LogicFormFieldset(el, index);
+                fieldset = new LogicFormFieldset(el, index);
             } else if (el.classList.contains('filter-rule')) {
-                new FilterRuleFieldset(el, index);
+                fieldset = new FilterRuleFieldset(el, index);
+            }
+            // Store the fieldset in the global object.
+            window.searchkitFieldsets[fieldset.id] = window.searchkitFieldsets[fieldset.id] || false;
+
+            // If the searchkit formset has been reloaded and the fieldset is
+            // collapsible...
+            if (count != 0 && fieldset.collapsible) {
+                // ... open previously opened fieldsets or the last fieldset
+                // added dynamically by the add filter rule button.
+                if (window.searchkitFieldsets[fieldset.id] || index > count) {
+                    fieldset.summary.click();
+                }
             }
         });
     }
 
-    function initFieldsetsOnReload() {
-        const fieldsets = { ...window.searchkitFieldsets };
-        initFieldsets();
-        // If a filter rule was added we open the last filter-rule fieldset.
-        if (Object.keys(window.searchkitFieldsets).length > Object.keys(fieldsets).length) {
-            const lastFieldset = [...document.querySelectorAll('fieldset.searchkit.filter-rule')].pop();
-            lastFieldset.querySelector('summary').click();
-        }
-    }
-
-    // Fieldsets are tracked by their ids within a global object.
+    // Fieldsets collapse state are tracked by their ids within a global object.
     window.searchkitFieldsets = {};
     document.addEventListener("DOMContentLoaded", initFieldsets);
-    document.addEventListener("searchkit:reloaded", initFieldsetsOnReload);
+    document.addEventListener("searchkit:reloaded", initFieldsets);
 }
