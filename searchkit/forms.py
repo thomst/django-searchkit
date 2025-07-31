@@ -378,8 +378,7 @@ class LogicalStructureForm(forms.Form):
     """
     This form represents elements of the logic structure of a search.
     """
-    def __init__(self, *args, **kwargs):
-        index = kwargs.pop('index')
+    def __init__(self, *args, index=0, **kwargs):
         super().__init__(*args, **kwargs)
         # Remove the logical operator for the first form.
         if index == 0:
@@ -421,9 +420,9 @@ class BaseSearchkitForm(forms.Form):
         "data-reload-handler": "change",
     }
 
-    def __init__(self, *args, **kwargs):
-        self.index = kwargs.pop('index')
+    def __init__(self, *args, index=0, **kwargs):
         super().__init__(*args, **kwargs)
+        self.index = index
         self.field_plan = FieldPlan(self.model, self.initial)
         self._add_field_lookup_field()
         self._add_operator_field()
