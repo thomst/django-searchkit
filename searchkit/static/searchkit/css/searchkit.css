@@ -1,0 +1,21 @@
+
+
+#searchkit_formset > fieldset > h2,
+#searchkit_formset > fieldset > details > summary,
+#searchkit_formset > fieldset > details > summary > h2 {
+    background-color: white;
+    color: var(--body-quiet-color);
+}
+#searchkit_formset > fieldset > h2,
+#searchkit_formset > fieldset > details > summary {
+    border: 1px solid var(--header-bg);
+}
+
+#searchkit_formset > fieldset > details > summary {
+    padding: 8px;
+    cursor: pointer;
+}
+
+#searchkit_formset > fieldset > details > summary > h2 {
+    display: inline;
+}

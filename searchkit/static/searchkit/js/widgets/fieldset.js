@@ -20,17 +20,6 @@
         }
 
         initCollapsible() {
-            // For backward compatibility we backported the fieldset template to
-            // use details and summary HTML elements for Django <5.1. We also
-            // need some adjustments to the CSS.
-            if (window.getComputedStyle(this.summary).getPropertyValue('background-color') === 'rgba(0, 0, 0, 0)') {
-                const bgcolor = window.getComputedStyle(this.h2).getPropertyValue('background-color');
-                this.summary.style.backgroundColor = bgcolor;
-                this.summary.style.padding = '8px';
-                this.summary.style.cursor = 'pointer';
-                this.h2.style.display = 'inline';
-            }
-
             // Set event listener for the summary element to update the collapse
             // state.
             this.summary.addEventListener('click', (e) => {

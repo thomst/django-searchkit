@@ -2,5 +2,6 @@
 {% load searchkit %}
 {% block after_field_sets %}
     {% as_fieldset adminform.form.searchkit_model_form "Search model" prefix="searchkit_model" %}
+    <fieldset class="module aligned"><h2 class="fieldset-heading">Search Filter Rules</h2></fieldset>
     {{ adminform.form.formset }}
 {% endblock %}

@@ -521,12 +521,19 @@ class BaseSearchkitFormSet(forms.BaseFormSet):
         # update media assets on the client site.
 
         # Basic searchkit media.
-        media = forms.Media(js=[
+        media = forms.Media(
+            js=[
             "searchkit/js/searchkit.js",
             "searchkit/js/widgets/fieldset.js",
             "searchkit/js/widgets/datetime.js",
             "searchkit/js/widgets/select2.js",
-        ])
+            ],
+            css={
+                'all': [
+                    "searchkit/css/searchkit.css",
+                ]
+            }
+        )
 
         # Get media assets for calender and select2 widgets.
         media += widgets.AdminSplitDateTime().media
