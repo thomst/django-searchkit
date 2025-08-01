@@ -23,8 +23,12 @@ of your model fields or the fields of related models.
 
 
 ## Features
-- Build and apply complex searches using a dynamic formset.
+
+- Build and apply complex searches using a dynamic formset with a ...
+- ...clear and easy to use layout.
 - Add as many filter rules as you want using django's various [field lookups](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#field-lookups).
+- Chain filter rules by logical operators like AND or OR.
+- Filter over fields of related models.
 - Save and reuse your searches at any time by a handy admin changelist filter.
 
 
@@ -68,3 +72,8 @@ class MyModelAdmin(admin.ModelAdmin):
 4. Configure as many filter rules as you want.
 5. Click "Save and apply".
 6. Reuse your filter whenever you want using the Searchkit filter section.
+
+
+## Contribute
+
+Contributions as feedback, feature requests, bug reports or pull requests are most welcome. Just use the common github infrastructure.
