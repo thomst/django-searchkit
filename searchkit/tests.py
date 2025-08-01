@@ -190,7 +190,7 @@ class CheckFormMixin:
         # Check logic form.
         self.assertTrue(form.logic_form)
         self.assertIn('negation', form.logic_form.fields)
-        if form.index == 0:
+        if int(form.prefix.split('-')[-1]) == 0:
             # The first form should not have a logical operator.
             self.assertNotIn('logical_operator', form.logic_form.fields)
             self.assertEqual(len(form.logic_form.fields), 1)
