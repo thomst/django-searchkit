@@ -24,7 +24,7 @@
         addEventListenerOnCollapse() {
             // Update the collapse state when fieldset is toggled.
             this.details.addEventListener('toggle', (e) => {
-                window.searchkitFieldsets[this.id] = this.details.open;
+                fieldsetStates[this.id] = this.details.open;
             });
         }
     }
@@ -102,8 +102,7 @@
 
     function initFieldsets(reloaded=false) {
         // Track count of previously initialized fieldsets.
-        const states = window.searchkitFieldsets || {};
-        const count = Object.keys(states).length;
+        const count = Object.keys(fieldsetStates).length;
         let fieldsets = [];
 
         // Initialize all searchkit fieldsets.
@@ -127,19 +126,20 @@
 
             // Also open all fieldsets that were open before the reload.
             fieldsets.forEach((fieldset, index) => {
-                if (fieldset.collapsible && states[fieldset.id]) {
+                if (fieldset.collapsible && fieldsetStates[fieldset.id]) {
                     fieldset.details.open = true;
                 }
             });
         }
 
         // Track the collapse states of the fieldsets.
-        window.searchkitFieldsets = {};
+        fieldsetStates = {};
         fieldsets.forEach((fieldset) => {
-            window.searchkitFieldsets[fieldset.id] = fieldset.details.open;
+            fieldsetStates[fieldset.id] = fieldset.details.open;
         });
     }
 
+    let fieldsetStates = {};
     document.addEventListener("DOMContentLoaded", function (e) {initFieldsets(false)});
     document.addEventListener("searchkit:reloaded", function (e) {initFieldsets(true)});
 }
