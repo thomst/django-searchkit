@@ -47,6 +47,14 @@ INSTALLED_APPS = [
 ]
 ```
 
+Include the searchkit.urls into your project urlpatterns:
+```
+urlpatterns = [
+   path('searchkit/', include('searchkit.urls')),
+   ...
+]
+```
+
 Add the `SearkitFilter` to your `ModelAdmin`:
 ```
 from django.contrib import admin
