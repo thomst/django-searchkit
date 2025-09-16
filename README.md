@@ -43,9 +43,13 @@ Add `searchkit` to your `INSTALLED_APPS`:
 ```
 INSTALLED_APPS = [
    'searchkit',
+   'django.contrib.admin',
    ...
 ]
 ```
+Put `searchkit` in front of `django.contrib.admin` since we do some template
+overwriting.
+
 
 Include the searchkit.urls into your project urlpatterns:
 ```
