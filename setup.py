@@ -3,7 +3,6 @@
 import os
 from pathlib import Path
 from setuptools import setup
-from setuptools import find_namespace_packages
 
 
 def get_version():
@@ -38,10 +37,11 @@ setup(
     author="Thomas Leichtfuß",
     author_email="thomas.leichtfuss@posteo.de",
     url="https://github.com/thomst/django-searchkit",
-    license="BSD License",
+    license="BSD-2-Clause",
     platforms=["OS Independent"],
-    packages=find_namespace_packages(exclude=["example"]),
-    include_package_data=True,
+    packages=["searchkit"],
+    package_data={'searchkit': ['static/**', 'templates/**'],},
+    include_package_data=False,
     install_requires=[
         "Django>=4.0",
         "django-picklefield",
@@ -59,7 +59,6 @@ setup(
         "Framework :: Django :: 5.2",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
