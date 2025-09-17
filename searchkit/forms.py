@@ -198,7 +198,7 @@ class FieldPlan:
 
     def get_field_lookup_choices(self):
         # Not all fields have a verbose_name attribute.
-        get_field_name = lambda f: getattr(f, 'verbose_name', f.name)
+        get_field_name = lambda f: str(getattr(f, 'verbose_name', f.name))
         choices = []
 
         # Iterate the model tree...
