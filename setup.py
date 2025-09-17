@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 def get_version():
@@ -39,7 +39,7 @@ setup(
     url="https://github.com/thomst/django-searchkit",
     license="BSD-2-Clause",
     platforms=["OS Independent"],
-    packages=["searchkit"],
+    packages=find_packages(include=['searchkit', 'searchkit.*']),
     package_data={'searchkit': ['static/**', 'templates/**'],},
     include_package_data=False,
     install_requires=[
