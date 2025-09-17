@@ -227,7 +227,7 @@ class FieldPlan:
                 # Skip relational fields that could not be null.
                 elif (
                     model_field.is_relation
-                    and (model_field.one_to_one or model_field.one_to_many)
+                    and (model_field.one_to_one or model_field.many_to_one)
                     and not model_field.null
                 ):
                     continue
