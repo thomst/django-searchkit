@@ -9,6 +9,7 @@
         constructor () {
             this.formset = document.getElementById('searchkit_formset');
             this.form = this.formset.closest('form');
+            this.modelField = this.form.querySelector('select[name="searchkit_model"]');
             this.baseUrl = this.formset.dataset.url;
             this.reloadCssClass = this.formset.dataset.reloadCssClass;
             this.totalFormsInput = this.form.querySelector('input[name$="TOTAL_FORMS"]');
@@ -20,8 +21,10 @@
 
                 el.addEventListener(reloadHandler, (e) => {
                     e.preventDefault();
+                    // Update total forms count if a form is added or removed.
                     if (totalFormsCount) this.totalFormsInput.value = parseInt(totalFormsCount);
-                    this.reload();
+                    // Only reload if a model is selected.
+                    if (this.modelField.value) this.reload();
                 });
             });
         }
