@@ -10,6 +10,7 @@
             this.formset = document.getElementById('searchkit_formset');
             this.form = this.formset.closest('form');
             this.modelField = this.form.querySelector('select[name="searchkit_model"]');
+            this.fieldsets = this.formset.querySelectorAll('fieldset');
             this.baseUrl = this.formset.dataset.url;
             this.reloadCssClass = this.formset.dataset.reloadCssClass;
             this.totalFormsInput = this.form.querySelector('input[name$="TOTAL_FORMS"]');
@@ -24,7 +25,12 @@
                     // Update total forms count if a form is added or removed.
                     if (totalFormsCount) this.totalFormsInput.value = parseInt(totalFormsCount);
                     // Only reload if a model is selected.
-                    if (this.modelField.value) this.reload();
+                    if (this.modelField.value) {
+                        this.reload()
+                    // Otherwise remove all fieldsets.
+                    } else {
+                        this.fieldsets.forEach((fs) => { fs.remove() });
+                    }
                 });
             });
         }
