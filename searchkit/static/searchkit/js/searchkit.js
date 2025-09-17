@@ -30,15 +30,21 @@
         }
 
         reload () {
-            const formData = new URLSearchParams(new FormData(this.form)).toString();
-            const url = `${this.baseUrl}?${formData}`;
+            const urlParams = new URLSearchParams(new FormData(this.form)).toString();
+            const url = `${this.baseUrl}?${urlParams}`;
 
             fetch(url, {
                 method: 'GET',
                 credentials: 'same-origin',
                 headers: {'Accept': 'text/html'},
             })
-            .then(response => response.text())
+            .then(response => {
+                if (response.ok) {
+                    return response.text()
+                } else {
+                    throw response;
+                }
+            })
             .then(html => {
                 // Get dom element from html string.
                 const wrapper = document.createElement('div');
