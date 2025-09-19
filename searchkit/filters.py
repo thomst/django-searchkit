@@ -5,6 +5,10 @@ from .utils import is_searchable_model
 
 
 class SearchkitFilter(admin.SimpleListFilter):
+    """
+    Apply searches for any searchable model. Also offer a link to create a new
+    search.
+    """
     title = 'Searchkit Filter'
     parameter_name = 'search'
     template = 'searchkit/searchkit_filter.html'
@@ -33,6 +37,9 @@ class SearchkitFilter(admin.SimpleListFilter):
 
 
 class SearchableModelFilter(admin.filters.RelatedFieldListFilter):
+    """
+    Only offer searchable models as filter choices.
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         contenttypes = ContentType.objects.order_by('app_label', 'model')
