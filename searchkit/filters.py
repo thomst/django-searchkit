@@ -17,6 +17,7 @@ class SearchkitFilter(admin.SimpleListFilter):
         # We need the app_label and model as get parameter for the new search
         # link.
         self.searchkit_model = ContentType.objects.get_for_model(model)
+        self.details = None
         super().__init__(request, params, model, model_admin)
 
     def has_output(self):
@@ -24,6 +25,9 @@ class SearchkitFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         searches = Search.objects.filter(contenttype=self.searchkit_model).order_by('-created_date')
+        # Store the details for each search to add them to the choices later.
+        # The first entry is None for the "All" choice.
+        self.details = [None] + [obj.details for obj in searches]
         return [(str(obj.id), obj.name) for obj in searches]
 
     def queryset(self, request, queryset):
@@ -34,6 +38,12 @@ class SearchkitFilter(admin.SimpleListFilter):
             return queryset.filter(search.as_q()).distinct()
         else:
             return queryset
+
+    def choices(self, changelist):
+        for choice in super().choices(changelist):
+            # Add the details for each choice from the stored list.
+            choice['details'] = self.details.pop(0)
+            yield choice
 
 
 class SearchableModelFilter(admin.filters.RelatedFieldListFilter):

@@ -622,3 +622,32 @@ class Select2ViewTestCase(CreateTestDataMixin, TestCase):
         queryset = queryset.distinct()
         self.assertEqual(len(result['results']), queryset.count())
 
+
+class SearchTestCase(CreateTestDataMixin, TestCase):
+    def test_search_as_q(self):
+        search = Search.objects.create(
+            name='Test search',
+            contenttype=ContentType.objects.get_for_model(ModelA),
+            data=INITIAL_DATA
+        )
+        q = search.as_q()
+        self.assertIsInstance(q, Q)
+        self.assertTrue(len(q) > 0)
+
+    def test_search_details(self):
+        search = Search.objects.create(
+            name='Test search',
+            contenttype=ContentType.objects.get_for_model(ModelA),
+            data=INITIAL_DATA
+        )
+        q = search.as_q()
+        self.assertEqual(search.details, str(q))
+
+    def test_search_description(self):
+        search = Search.objects.create(
+            name='Test search',
+            description='My description',
+            contenttype=ContentType.objects.get_for_model(ModelA),
+            data=INITIAL_DATA
+        )
+        self.assertEqual(search.details, search.description)

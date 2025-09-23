@@ -8,12 +8,20 @@ from django.db.models import Q
 
 class Search(models.Model):
     name = models.CharField(_('Search name'), max_length=255)
+    description = models.TextField(_('Description'), blank=True)
     contenttype = models.ForeignKey(ContentType, on_delete=models.CASCADE, verbose_name=_('Model'))
     data = PickledObjectField(_('Serialized filter rule data'))
     created_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('name', 'contenttype')
+
+    @property
+    def details(self):
+        if self.description:
+            return self.description
+        else:
+            return self.as_q().__str__()
 
     def as_q(self):
         """

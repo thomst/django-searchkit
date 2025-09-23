@@ -29,7 +29,8 @@ class SearchForm(forms.ModelForm):
     """
     class Meta:
         model = Search
-        fields = ['name']
+        fields = ['name', 'description']
+        widgets = {'description': forms.Textarea(attrs={'rows':4, 'cols':30})}
 
     @property
     def media(self):
