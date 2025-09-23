@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from picklefield.fields import PickledObjectField
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
