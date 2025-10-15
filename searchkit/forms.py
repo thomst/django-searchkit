@@ -82,6 +82,10 @@ class SearchForm(forms.ModelForm):
             else:
                 return cleaned_value.model_class()
 
+        # Finally use the first choice if there is no empty label.
+        elif self.searchkit_model_form.fields['searchkit_model'].empty_label is None:
+            return self.searchkit_model_form.fields['searchkit_model'].queryset.first().model_class()
+
     @cached_property
     def searchkit_model_form(self):
         kwargs = dict()
