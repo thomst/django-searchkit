@@ -50,6 +50,8 @@ class SearchForm(forms.ModelForm):
     Represents a SearchkitSearch model. Using a SearchkitFormSet for the data
     json field.
     """
+    searchkit_model_form_class = SearchkitModelForm
+
     class Meta:
         model = Search
         fields = ['name', 'description']
@@ -86,8 +88,10 @@ class SearchForm(forms.ModelForm):
         elif self.searchkit_model_form.fields['searchkit_model'].empty_label is None:
             return self.searchkit_model_form.fields['searchkit_model'].queryset.first().model_class()
 
-    @cached_property
-    def searchkit_model_form(self):
+    def get_searchkit_model_form_class(self):
+        return self.searchkit_model_form_class
+
+    def get_searchkit_model_form_kwargs(self):
         kwargs = dict()
         if self.data:
             kwargs['data'] = self.data
@@ -95,7 +99,15 @@ class SearchForm(forms.ModelForm):
             kwargs['initial'] = dict(searchkit_model=self.instance.contenttype)
         elif self.initial:
             kwargs['initial'] = dict(searchkit_model=self.initial.get('searchkit_model'))
-        return SearchkitModelForm(**kwargs)
+        return kwargs
+
+    def get_searchkit_model_form(self):
+        kwargs = self.get_searchkit_model_form_kwargs()
+        return self.get_searchkit_model_form_class()(**kwargs)
+
+    @cached_property
+    def searchkit_model_form(self):
+        return self.get_searchkit_model_form()
 
     @cached_property
     def formset(self):
