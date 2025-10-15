@@ -21,6 +21,29 @@ TRUE_FALSE_CHOICES = (
 )
 
 
+class SearchkitModelForm(forms.Form):
+    """
+    Form to select a content type.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        models = [m for m in apps.get_models() if is_searchable_model(m)]
+        ids = [ContentType.objects.get_for_model(m).id for m in models]
+        queryset = self.fields['searchkit_model'].queryset.filter(pk__in=ids)
+        self.fields['searchkit_model'].queryset = queryset
+
+    searchkit_model = forms.ModelChoiceField(
+        queryset=ContentType.objects.all().order_by('app_label', 'model'),
+        label=_('Model'),
+        empty_label=_('Select a Model'),
+        widget=forms.Select(attrs={
+            "class": RELOAD_CSS_CLASS,
+            "data-reload-handler": "change",
+            "data-total-forms": 1,
+        }),
+    )
+
+
 # TODO: Check unique_together contraint for search name and content type.
 class SearchForm(forms.ModelForm):
     """
@@ -94,29 +117,6 @@ class SearchForm(forms.ModelForm):
         if self.formset.is_valid():
             self.instance.data = self.formset.cleaned_data
         return super().clean()
-
-
-class SearchkitModelForm(forms.Form):
-    """
-    Form to select a content type.
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        models = [m for m in apps.get_models() if is_searchable_model(m)]
-        ids = [ContentType.objects.get_for_model(m).id for m in models]
-        queryset = self.fields['searchkit_model'].queryset.filter(pk__in=ids)
-        self.fields['searchkit_model'].queryset = queryset
-
-    searchkit_model = forms.ModelChoiceField(
-        queryset=ContentType.objects.all().order_by('app_label', 'model'),
-        label=_('Model'),
-        empty_label=_('Select a Model'),
-        widget=forms.Select(attrs={
-            "class": RELOAD_CSS_CLASS,
-            "data-reload-handler": "change",
-            "data-total-forms": 1,
-        }),
-    )
 
 
 class FieldPlan:
