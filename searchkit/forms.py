@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from django import forms
 from django.db import models
 from django.apps import apps
@@ -199,11 +200,10 @@ class FieldPlan:
     )
 
 
-    def __init__(self, model, initial=None, case_sensitive=False):
+    def __init__(self, model, initial=None):
         self.model = model
         self.model_tree = ModelTree(model)
         self.initial = initial or dict()
-        self.case_sensitive = case_sensitive
         self.field_lookup = None
         self.model_field = None
 
@@ -277,27 +277,25 @@ class FieldPlan:
     def get_operator_choices(self, field_lookup):
         self.field_lookup = field_lookup
         self.model_field = self._get_model_field()
+        operators = OrderedDict()
+        operators[None] = []
 
         if isinstance(self.model_field, models.BooleanField):
-            operators = ['exact']
+            operators[None] = ['exact']
 
         elif isinstance(self.model_field, models.TextField):
-            if self.case_sensitive:
-                operators = ['contains', 'startswith', 'endswith', 'regex']
-            else:
-                operators = ['icontains', 'istartswith', 'iendswith', 'iregex']
+            operators['case insensitive'] = ['icontains', 'istartswith', 'iendswith', 'iregex']
+            operators['case sensitive'] = ['contains', 'startswith', 'endswith', 'regex']
 
         elif isinstance(self.model_field, self.CHARACTER_FIELD_TYPES):
-            if self.case_sensitive:
-                operators = ['exact', 'contains', 'startswith', 'endswith', 'regex', 'in']
-            else:
-                operators = ['iexact', 'icontains', 'istartswith', 'iendswith', 'iregex', 'in']
+            operators['case insensitive'] = ['iexact', 'icontains', 'istartswith', 'iendswith', 'iregex']
+            operators['case sensitive'] = ['exact', 'contains', 'startswith', 'endswith', 'regex', 'in']
 
         elif isinstance(self.model_field, self.ARITHMETIC_FIELD_TYPES):
-            operators = ['exact', 'gt', 'gte', 'lt', 'lte', 'range']
+            operators[None] = ['exact', 'gt', 'gte', 'lt', 'lte', 'range']
 
         elif self.model_field.is_relation:
-            operators = ['isnull']
+            operators[None] = ['isnull']
 
         # Add an isnull lookup for model fields allowing null values.
         # Exclude relational fields since they already have an isnull operator.
@@ -308,10 +306,10 @@ class FieldPlan:
             and not self.model_field.is_relation
             and not isinstance(self.model_field, models.BooleanField)
         ):
-            operators = [*operators, 'isnull']
+            operators[None] = [*operators[None], 'isnull']
 
-        # Use an option group to be consistent with the field lookup choices.
-        return [(None, [(o, self.OPERATOR_DESCRIPTION[o]) for o in operators])]
+        # Build the final choices list.
+        return [(g, [(l, self.OPERATOR_DESCRIPTION[l]) for l in o]) for g, o in operators.items()]
 
     def get_form_field(self, operator):
         model_field_class = type(self.model_field)
