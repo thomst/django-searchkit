@@ -389,6 +389,10 @@ class FieldPlan:
                     widget=forms.Select(choices=TRUE_FALSE_CHOICES),
                     )
 
+        # Raise an error if we cannot build a form field.
+        else:
+            raise ValueError("Cannot build a form field for the given model field and operator.")
+
         return form_field
 
 
