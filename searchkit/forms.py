@@ -148,10 +148,15 @@ class FieldPlan:
     OPERATOR_DESCRIPTION = {
         'isnull': _('is null'),
         'exact': _('is exact'),
+        'iexact': _('is exact'),
         'contains': _('contains'),
+        'icontains': _('contains'),
         'startswith': _('starts with'),
+        'istartswith': _('starts with'),
         'endswith': _('ends with'),
+        'iendswith': _('ends with'),
         'regex': _('matches regular expression'),
+        'iregex': _('matches regular expression'),
         'gt': _('is greater than'),
         'gte': _('is greater than or equal'),
         'lt': _('is lower than'),
@@ -194,10 +199,11 @@ class FieldPlan:
     )
 
 
-    def __init__(self, model, initial=None):
+    def __init__(self, model, initial=None, case_sensitive=False):
         self.model = model
         self.model_tree = ModelTree(model)
         self.initial = initial or dict()
+        self.case_sensitive = case_sensitive
         self.field_lookup = None
         self.model_field = None
 
@@ -276,10 +282,16 @@ class FieldPlan:
             operators = ['exact']
 
         elif isinstance(self.model_field, models.TextField):
-            operators = ['contains', 'startswith', 'endswith', 'regex']
+            if self.case_sensitive:
+                operators = ['contains', 'startswith', 'endswith', 'regex']
+            else:
+                operators = ['icontains', 'istartswith', 'iendswith', 'iregex']
 
         elif isinstance(self.model_field, self.CHARACTER_FIELD_TYPES):
-            operators = ['exact', 'contains', 'startswith', 'endswith', 'regex', 'in']
+            if self.case_sensitive:
+                operators = ['exact', 'contains', 'startswith', 'endswith', 'regex', 'in']
+            else:
+                operators = ['iexact', 'icontains', 'istartswith', 'iendswith', 'iregex', 'in']
 
         elif isinstance(self.model_field, self.ARITHMETIC_FIELD_TYPES):
             operators = ['exact', 'gt', 'gte', 'lt', 'lte', 'range']
@@ -315,7 +327,8 @@ class FieldPlan:
         elif isinstance(self.model_field, self.CHARACTER_FIELD_TYPES):
 
             # With these operators we use a standard search term field.
-            if operator in ['contains', 'startswith', 'endswith', 'regex']:
+            if operator in ['iexact', 'contains', 'icontains', 'startswith',
+                            'istartswith', 'endswith', 'iendswith', 'regex', 'iregex']:
                 form_field = forms.CharField(widget=widgets.AdminTextInputWidget)
 
             # Use a choice field for exact and in operators.

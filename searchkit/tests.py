@@ -57,27 +57,27 @@ INITIAL_DATA = [
     ),
     dict(
         field='chars_choices',
-        operator='exact',
+        operator='iexact',
         value='one',
     ),
     dict(
         field='text',
-        operator='contains',
+        operator='icontains',
         value='xyz',
     ),
     dict(
         field='email',
-        operator='startswith',
+        operator='istartswith',
         value='user12',
     ),
     dict(
         field='url',
-        operator='regex',
+        operator='iregex',
         value='^.+\.com/[a-z]+/66$',
     ),
     dict(
         field='uuid',
-        operator='endswith',
+        operator='iendswith',
         value='x',
     ),
     dict(
@@ -469,7 +469,7 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
         data['name'] = 'Using ModelB'
         data['searchkit_model'] = ContentType.objects.get_for_model(ModelB).pk
         data['searchkit-example-modelb-0-field'] = 'chars'
-        data['searchkit-example-modelb-0-operator'] = 'contains'
+        data['searchkit-example-modelb-0-operator'] = 'icontains'
         data['searchkit-example-modelb-0-value'] = 'abc'
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
@@ -486,7 +486,7 @@ class SearchkitViewTest(CreateTestDataMixin, TestCase):
         self.initial = [
             dict(
                 field='integer',
-                operator='exact',
+                operator='iexact',
                 value=1,
             )
         ]
