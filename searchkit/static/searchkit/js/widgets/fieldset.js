@@ -115,6 +115,11 @@
             }
         });
 
+        // If there is only one filter rule we open the second fieldset.
+        if (fieldsets.length === 2 && fieldsets[1].collapsible) {
+            fieldsets[1].details.open = true;
+        }
+
         if (reloaded) {
             // If a filter rule was added we open the last fieldset.
             if (count < fieldsets.length) {
