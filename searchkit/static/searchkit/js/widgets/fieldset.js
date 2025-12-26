@@ -125,7 +125,7 @@
             }
 
             // Also open all fieldsets that were open before the reload.
-            fieldsets.forEach((fieldset, index) => {
+            fieldsets.forEach((fieldset) => {
                 if (fieldset.collapsible && fieldsetStates[fieldset.id]) {
                     fieldset.details.open = true;
                 }
