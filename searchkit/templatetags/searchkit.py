@@ -14,12 +14,11 @@ Fieldset.is_collapsible = property(
 
 register = Library()
 
-@register.inclusion_tag("admin/includes/fieldset.html")
-def as_fieldset(form, name=None, prefix='searchkit', index=0, classes=None):
+def as_fieldset(form, name, prefix, index=None, classes=None):
     """
     Create and render a fieldset for form.
     """
-    classes = classes.split(' ') if classes else []
+    classes = classes or []
     fieldset = Fieldset(form, name=name, fields=form.fields, classes=classes)
     context = dict(
         fieldset=fieldset,
@@ -29,3 +28,38 @@ def as_fieldset(form, name=None, prefix='searchkit', index=0, classes=None):
         id_suffix=index,
     )
     return context
+
+
+@register.inclusion_tag("admin/includes/fieldset.html")
+def as_searchkit_model_fieldset(form):
+    """
+    Render a searchkit model form as fieldset.
+    """
+
+    name = "Search model"
+    prefix="searchkit_model"
+    return as_fieldset(form, name, prefix)
+
+
+@register.inclusion_tag("admin/includes/fieldset.html")
+def as_filter_logic_fieldset(form, index):
+    """
+    Render a filter logic form as fieldset.
+    """
+    name = f"Filter logic {index}"
+    prefix = "searchkit"
+    classes = ["searchkit", "filter-logic", "collapse"]
+    return as_fieldset(form, name, prefix, index, classes)
+
+
+@register.inclusion_tag("admin/includes/fieldset.html")
+def as_filter_rule_fieldset(form, index):
+    """
+    Render a filter rule form as fieldset.
+    """
+    name = f"Filter rule {index}"
+    prefix = "searchkit"
+    classes = ["searchkit", "filter-rule", "collapse"]
+    return as_fieldset(form, name, prefix, index, classes)
+
+
