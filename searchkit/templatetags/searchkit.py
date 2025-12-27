@@ -35,7 +35,6 @@ def as_searchkit_model_fieldset(form):
     """
     Render a searchkit model form as fieldset.
     """
-
     name = "Search model"
     prefix="searchkit_model"
     return as_fieldset(form, name, prefix)
@@ -61,5 +60,3 @@ def as_filter_rule_fieldset(form, index):
     prefix = "searchkit"
     classes = ["searchkit", "filter-rule", "collapse"]
     return as_fieldset(form, name, prefix, index, classes)
-
-
