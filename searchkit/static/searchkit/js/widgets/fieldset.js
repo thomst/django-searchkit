@@ -115,11 +115,6 @@
             }
         });
 
-        // If there is only one filter rule we open the second fieldset.
-        if (fieldsets.length === 2 && fieldsets[1].collapsible) {
-            fieldsets[1].details.open = true;
-        }
-
         if (reloaded) {
             // If a filter rule was added we open the last fieldset.
             if (count < fieldsets.length) {
@@ -135,6 +130,14 @@
                     fieldset.details.open = true;
                 }
             });
+        } else {
+            // For a search create request we open the initial filter rule
+            // fieldset.
+            const initialForms = document.querySelector('input[name$="-INITIAL_FORMS"]');
+            const lastFieldset = fieldsets[fieldsets.length - 1];
+            if (lastFieldset && lastFieldset.collapsible && initialForms.value === "0") {
+                lastFieldset.details.open = true;
+            }
         }
 
         // Track the collapse states of the fieldsets.
