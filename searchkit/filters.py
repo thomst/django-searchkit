@@ -6,6 +6,7 @@ from .utils import get_data_from_base64
 from .utils import is_searchable_model
 
 
+# FIXME: Handle invalid url parameter properly.
 class SearchkitFilter(admin.SimpleListFilter):
     """
     Apply searches for any searchable model. Also offer a link to create a new
