@@ -126,9 +126,9 @@ INITIAL_DATA = [
         value=False,
     ),
     dict(
-        field='model_b__model_c__integer',
-        operator='gt',
-        value=4,
+        field='model_b__model_c__boolean',
+        operator='exact',
+        value=True,
     ),
 ]
 
