@@ -1,12 +1,13 @@
+import json
+from django.utils.http import urlsafe_base64_decode
 from django.contrib import admin
+from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from .models import Search
 from .forms import SearchForm
-from .utils import get_data_from_base64
 from .utils import is_searchable_model
 
 
-# FIXME: Handle invalid url parameter properly.
 class SearchkitFilter(admin.SimpleListFilter):
     """
     Apply searches for any searchable model. Also offer a link to create a new
@@ -37,20 +38,28 @@ class SearchkitFilter(admin.SimpleListFilter):
         # Filter the queryset based on the selected SearchkitSearch object
         if self.value():
             if self.value().isdigit():
-                search = Search.objects.get(id=int(self.value()))
+                try:
+                    search = Search.objects.get(id=int(self.value()))
+                except Search.DoesNotExist:
+                    messages.error(request, "The selected search does not exist.")
+                    return queryset.none()
 
             else:
                 # Try for base64 encoded json data.
-                data = get_data_from_base64(self.value())
-                if data is None:
-                    return queryset
+                try:
+                    json_data = urlsafe_base64_decode(self.value()).decode('utf-8')
+                    data = json.loads(json_data)
+                except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
+                    messages.error(request, "Invalid base64 encoded json data.")
+                    return queryset.none()
 
                 # Get search object from search form.
                 form = SearchForm(data=data)
                 if form.is_valid():
                     search = form.save(commit=False)
                 else:
-                    return queryset
+                    messages.error(request, "No valid search data provided.")
+                    return queryset.none()
 
             # We use distinct since we might filter over many-to-many relations.
             return queryset.filter(search.as_q()).distinct()

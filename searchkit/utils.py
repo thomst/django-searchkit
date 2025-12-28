@@ -1,5 +1,3 @@
-import json
-from django.utils.http import urlsafe_base64_decode
 from collections import OrderedDict
 from modeltree import ModelTree as BaseModelTree
 from django import forms
@@ -10,16 +8,6 @@ from django.utils.translation import gettext_lazy as _
 from django.template import Template, Context
 from django.contrib.admin.options import FORMFIELD_FOR_DBFIELD_DEFAULTS
 from . import fields as  skfields
-
-
-def get_data_from_base64(base64_data):
-    try:
-        json_data = urlsafe_base64_decode(base64_data).decode('utf-8')
-        data = json.loads(json_data)
-    except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
-        return None
-    else:
-        return data
 
 
 def is_searchable_model(model):
