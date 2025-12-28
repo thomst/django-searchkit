@@ -667,20 +667,9 @@ class SearchTestCase(CreateTestDataMixin, TestCase):
     def test_search_details(self):
         search = Search.objects.create(
             name='Test search',
-            contenttype=ContentType.objects.get_for_model(ModelA),
-            data=INITIAL_DATA
-        )
-        q = search.as_q()
-        self.assertEqual(search.details, str(q))
-
-    def test_search_details(self):
-        search = Search.objects.create(
-            name='Test search',
             description='My description',
             contenttype=ContentType.objects.get_for_model(ModelA),
             data=INITIAL_DATA
         )
         details = search.details
         self.assertEqual(len(INITIAL_DATA), len(details.splitlines()))
-
-# TODO: Add test for applying searches with base64 encoded json data.
