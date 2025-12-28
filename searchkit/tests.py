@@ -477,6 +477,35 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
         self.assertIn('was changed successfully', str(resp.content))
         self.assertEqual(Search.objects.get(pk=1).name, data['name'])
 
+    def test_apply_search(self):
+        # Create a search object via the admin backend.
+        url = reverse('admin:searchkit_search_add')
+        data = FORM_DATA.copy()
+        data['_apply'] = True
+        resp = self.client.post(url, data, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(Search.objects.all()), 0)
+
+    def test_apply_saved_search(self):
+        # Create a search object via the admin backend.
+        url = reverse('admin:searchkit_search_add')
+        data = FORM_DATA.copy()
+        data['_save'] = True
+        resp = self.client.post(url, data, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(Search.objects.all()), 1)
+
+        # Apply the saved search.
+        url = reverse('admin:searchkit_search_change', args=(1,))
+        data = FORM_DATA.copy()
+        data['_apply'] = True
+        resp = self.client.post(url, data, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(Search.objects.all()), 1)
+        redirect_url = resp.redirect_chain[0][0]
+        base46_string = redirect_url.split('=')[1]
+        self.assertTrue(base46_string)
+
 
 class SearchkitViewTest(CreateTestDataMixin, TestCase):
 
@@ -653,3 +682,5 @@ class SearchTestCase(CreateTestDataMixin, TestCase):
         )
         details = search.details
         self.assertEqual(len(INITIAL_DATA), len(details.splitlines()))
+
+# TODO: Add test for applying searches with base64 encoded json data.
