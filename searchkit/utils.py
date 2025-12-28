@@ -32,6 +32,9 @@ def get_value_representation(value):
     elif isinstance(value, str):
         return f'"{value}"'
     else:
+        # FIXME: Consider rendering special types explicitly to have more control.
+        # Use template rendering to get proper representation of special value
+        # types like date and datetime.
         template = Template("{{ value }}")
         return template.render(Context({'value': value}))
 
