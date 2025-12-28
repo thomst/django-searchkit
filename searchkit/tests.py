@@ -643,11 +643,12 @@ class SearchTestCase(CreateTestDataMixin, TestCase):
         q = search.as_q()
         self.assertEqual(search.details, str(q))
 
-    def test_search_description(self):
+    def test_search_details(self):
         search = Search.objects.create(
             name='Test search',
             description='My description',
             contenttype=ContentType.objects.get_for_model(ModelA),
             data=INITIAL_DATA
         )
-        self.assertEqual(search.details, search.description)
+        details = search.details
+        self.assertEqual(len(INITIAL_DATA), len(details.splitlines()))
