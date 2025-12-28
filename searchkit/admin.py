@@ -1,3 +1,5 @@
+import json
+from django.utils.http import urlsafe_base64_encode
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -14,21 +16,39 @@ class SearchkitSearchAdmin(admin.ModelAdmin):
     list_display = ('name', 'contenttype', 'created_date', 'apply_search_view')
     list_filter = (('contenttype', SearchableModelFilter),)
 
-    def get_url_for_applied_search(self, obj):
+    def save_model(self, request, obj, form, change):
+        """
+        Given a model instance save it to the database.
+        """
+        # We do not want to save the object when just applying the search.
+        if not '_apply' in request.POST:
+            obj.save()
+
+    def get_apply_search_url(self, obj, data=None):
         app_label = obj.contenttype.app_label
         model_name = obj.contenttype.model
         base_url = reverse(f'admin:{app_label}_{model_name}_changelist')
-        return f'{base_url}?{SearchkitFilter.parameter_name}={obj.pk}'
+        if data:
+            # Use post data as json formatted url parameter.
+            json_data = json.dumps(data)
+            base64_data = urlsafe_base64_encode(json_data.encode('utf-8'))
+            return f'{base_url}?{SearchkitFilter.parameter_name}={base64_data}'
+        else:
+            return f'{base_url}?{SearchkitFilter.parameter_name}={obj.pk}'
 
     def response_add(self, request, obj, *args, **kwargs):
         if '_save_and_apply' in request.POST:
-            return HttpResponseRedirect(self.get_url_for_applied_search(obj))
+            return HttpResponseRedirect(self.get_apply_search_url(obj))
+        elif '_apply' in request.POST:
+            return HttpResponseRedirect(self.get_apply_search_url(obj, request.POST))
         else:
             return super().response_add(request, obj, *args, **kwargs)
 
     def response_change(self, request, obj, *args, **kwargs):
         if '_save_and_apply' in request.POST:
-            return HttpResponseRedirect(self.get_url_for_applied_search(obj))
+            return HttpResponseRedirect(self.get_apply_search_url(obj))
+        elif '_apply' in request.POST:
+            return HttpResponseRedirect(self.get_apply_search_url(obj, data=request.POST))
         else:
             return super().response_change(request, obj, *args, **kwargs)
 
@@ -38,7 +58,7 @@ class SearchkitSearchAdmin(admin.ModelAdmin):
         """
         return format_html(
             '<a href="{}" >Apply search "{}"</a>',
-            self.get_url_for_applied_search(obj),
+            self.get_apply_search_url(obj),
             obj.name
         )
     apply_search_view.short_description = 'Apply Search'

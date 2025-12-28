@@ -2,6 +2,7 @@
 {% load i18n admin_urls %}
 <div class="submit-row">
 {% block submit-row %}
+    <input type="submit" value="{% translate 'Apply' %}" class="default" name="_apply">
     {% if show_save %}
         <input type="submit" value="{% translate 'Save and apply' %}" class="default" name="_save_and_apply">
     {% endif %}

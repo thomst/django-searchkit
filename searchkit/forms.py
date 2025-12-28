@@ -37,6 +37,7 @@ class SearchkitModelForm(forms.Form):
 
 
 # TODO: Check unique_together contraint for search name and content type.
+# FIXME: Validate missing name when _apply is used.
 class SearchForm(forms.ModelForm):
     """
     Represents a SearchkitSearch model. Using a SearchkitFormSet for the data

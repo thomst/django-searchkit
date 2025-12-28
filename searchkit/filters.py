@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.contenttypes.models import ContentType
 from .models import Search
+from .forms import SearchForm
+from .utils import get_data_from_base64
 from .utils import is_searchable_model
 
 
@@ -33,9 +35,25 @@ class SearchkitFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         # Filter the queryset based on the selected SearchkitSearch object
         if self.value():
-            search = Search.objects.get(id=int(self.value()))
+            if self.value().isdigit():
+                search = Search.objects.get(id=int(self.value()))
+
+            else:
+                # Try for base64 encoded json data.
+                data = get_data_from_base64(self.value())
+                if data is None:
+                    return queryset
+
+                # Get search object from search form.
+                form = SearchForm(data=data)
+                if form.is_valid():
+                    search = form.save(commit=False)
+                else:
+                    return queryset
+
             # We use distinct since we might filter over many-to-many relations.
             return queryset.filter(search.as_q()).distinct()
+
         else:
             return queryset
 
