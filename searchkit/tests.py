@@ -385,6 +385,7 @@ class SearchkitSearchFormTestCase(CreateTestDataMixin, TestCase):
         for data in INITIAL_DATA:
             self.assertIn(f'{data["field"]}__{data["operator"]}', lookups)
 
+
 class SearchkitModelFormTestCase(TestCase):
     def test_searchkit_model_form_choices(self):
         form = SearchkitModelForm()
