@@ -27,7 +27,7 @@ class SearchkitFilter(admin.SimpleListFilter):
         searches = Search.objects.filter(contenttype=self.searchkit_model).order_by('-created_date')
         # Store the details for each search to add them to the choices later.
         # The first entry is None for the "All" choice.
-        self.details = [None] + [obj.details for obj in searches]
+        self.details = [None] + [obj.description or obj.details for obj in searches]
         return [(str(obj.id), obj.name) for obj in searches]
 
     def queryset(self, request, queryset):

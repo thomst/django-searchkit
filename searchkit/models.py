@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
+from .utils import get_value_representation
 
 
 class Search(models.Model):
@@ -17,10 +18,23 @@ class Search(models.Model):
 
     @property
     def details(self):
-        if self.description:
-            return self.description
-        else:
-            return self.as_q().__str__()
+        """
+        Get a detailed string representation of the search.
+        """
+        details = 'WHERE '
+        for data in self.data:
+            if data.get('logical_operator'):
+                details += data["logical_operator"].upper() + ' '
+            if data.get('negation'):
+                details += 'NOT '
+
+            # FIXME: Get proper field name from model.
+            # FIXME: Get the label of the operator. (Need to put the operator
+            # descriptions to utils since we cannot import from forms here.)
+            value_repr = get_value_representation(data['value'])
+            details += f'{data["field"]} | {data["operator"]} | {value_repr}\n'
+
+        return details.strip()
 
     def as_q(self):
         """
