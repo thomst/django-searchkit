@@ -36,6 +36,19 @@ def get_value_representation(value):
         return template.render(Context({'value': value}))
 
 
+def flatten_option_group_choices(choices):
+    """
+    Flatten option group choices into a simple list of choices.
+    """
+    flat_choices = []
+    for choice in choices:
+        if isinstance(choice[1], (list, tuple)):
+            flat_choices.extend(choice[1])
+        else:
+            flat_choices.append(choice)
+    return flat_choices
+
+
 # TODO: Make modeltree parameters configurable.
 class ModelTree(BaseModelTree):
     MAX_DEPTH = 3

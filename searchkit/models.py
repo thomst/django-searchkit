@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
+from .utils import FieldPlan
+from .utils import flatten_option_group_choices
 from .utils import get_value_representation
 
 
@@ -28,11 +30,13 @@ class Search(models.Model):
             if data.get('negation'):
                 details += 'NOT '
 
-            # FIXME: Get proper field name from model.
-            # FIXME: Get the label of the operator. (Need to put the operator
-            # descriptions to utils since we cannot import from forms here.)
+            field_plan = FieldPlan(self.contenttype.model_class(), initial=data)
+            field_choices = flatten_option_group_choices(field_plan.get_field_lookup_choices())
+            field_label = dict(field_choices).get(data['field'], data['field'])
+            operator_choices = flatten_option_group_choices(field_plan.get_operator_choices(data['field']))
+            operator_label = dict(operator_choices).get(data['operator'], data['operator'])
             value_repr = get_value_representation(data['value'])
-            details += f'{data["field"]} | {data["operator"]} | {value_repr}\n'
+            details += f'{field_label} | {operator_label} | {value_repr}\n'
 
         return details.strip()
 
