@@ -132,15 +132,17 @@ INITIAL_DATA = [
     ),
 ]
 
+
 add_prefix = lambda i: SearchkitFormSet().add_prefix(i)
-MODELA_CT = ContentType.objects.get_for_model(ModelA)
 DEFAULT_PREFIX = SearchkitFormSet.get_default_prefix()
 
+
 def get_form_data(initial_data=INITIAL_DATA, max=None):
+    modela_ct = ContentType.objects.get_for_model(ModelA)
     count = max or len(initial_data)
     data = {
         'name': 'test search',                          # The name of the search.
-        'searchkit_model': f'{MODELA_CT.pk}',         # Data for the searchkit-model form.
+        'searchkit_model': f'{modela_ct.pk}',         # Data for the searchkit-model form.
         f'{DEFAULT_PREFIX}-TOTAL_FORMS': f'{count}',    # Data for the managment form.
         f'{DEFAULT_PREFIX}-INITIAL_FORMS': f'{count}',  # Data for the managment form.
     }
@@ -160,8 +162,6 @@ def get_form_data(initial_data=INITIAL_DATA, max=None):
             break
 
     return data
-
-FORM_DATA = get_form_data()
 
 
 @contextmanager
@@ -313,6 +313,9 @@ class SearchkitFormTestCase(CheckFormMixin, TestCase):
 
 
 class SearchkitFormSetTestCase(CreateTestDataMixin, CheckFormMixin, TestCase):
+    def setUp(self):
+        self.data = get_form_data()
+
     def test_blank_searchkitform(self):
         # Instantiating the formset neither with a model instance nor with model
         # related data or initial data should result in a formset without forms,
@@ -322,11 +325,11 @@ class SearchkitFormSetTestCase(CreateTestDataMixin, CheckFormMixin, TestCase):
         self.assertFalse(formset.is_valid())
 
     def test_searchkit_formset_with_valid_data(self):
-        formset = SearchkitFormSet(FORM_DATA)
+        formset = SearchkitFormSet(self.data)
         self.assertTrue(formset.is_valid())
 
     def test_searchkit_formset_with_invalid_data(self):
-        data = FORM_DATA.copy()
+        data = self.data.copy()
         del data[f'{add_prefix(0)}-value']
         formset = SearchkitFormSet(data)
         self.assertFalse(formset.is_valid())
@@ -347,6 +350,9 @@ class SearchkitFormSetTestCase(CreateTestDataMixin, CheckFormMixin, TestCase):
 
 
 class SearchkitSearchFormTestCase(CreateTestDataMixin, TestCase):
+    def setUp(self):
+        self.data = get_form_data()
+
     def test_searchkit_search_form_without_data(self):
         form = SearchForm()
         self.assertFalse(form.is_bound)
@@ -355,7 +361,7 @@ class SearchkitSearchFormTestCase(CreateTestDataMixin, TestCase):
         self.assertEqual(form.formset.model, None)
 
     def test_searchkit_search_form_with_data(self):
-        form = SearchForm(FORM_DATA)
+        form = SearchForm(self.data)
         self.assertTrue(form.is_bound)
         self.assertTrue(form.is_valid())
         self.assertIsInstance(form.formset, BaseSearchkitFormSet)
@@ -402,6 +408,9 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
     def setUp(self):
         admin = User.objects.get(username='admin')
         self.client.force_login(admin)
+        self.modela_ct = ContentType.objects.get_for_model(ModelA)
+        self.data = get_form_data()
+
 
     def test_search_form(self):
         url = reverse('admin:searchkit_search_add')
@@ -412,19 +421,19 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
             self.assertIn(snippet, str(resp.content))
 
     def test_search_form_with_initial(self):
-        url = reverse('admin:searchkit_search_add') + f'?searchkit_model={MODELA_CT.id}'
+        url = reverse('admin:searchkit_search_add') + f'?searchkit_model={self.modela_ct.id}'
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         select = '<select name="searchkit_model" class="searchkit-reload" data-reload-handler="change" data-total-forms="1" required id="id_searchkit_model">'
         for snippet in select.split(' '):
             self.assertIn(snippet, str(resp.content))
-        self.assertIn(f'<option value="{MODELA_CT.id}" selected>', str(resp.content))
+        self.assertIn(f'<option value="{self.modela_ct.id}" selected>', str(resp.content))
         self.assertIn('name="searchkit-example-modela-0-field"', str(resp.content))
 
     def test_add_search(self):
         # Create a search object via the admin backend.
         url = reverse('admin:searchkit_search_add')
-        data = FORM_DATA.copy()
+        data = self.data.copy()
         data['_save_and_apply'] = True
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
@@ -435,7 +444,7 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertIn('<select name="searchkit_model"', str(resp.content))
-        self.assertIn(f'<option value="{MODELA_CT.id}" selected>', str(resp.content))
+        self.assertIn(f'<option value="{self.modela_ct.id}" selected>', str(resp.content))
         self.assertIn('name="searchkit-example-modela-0-field"', str(resp.content))
         self.assertIn('value="ModelA chars 1"', str(resp.content))
 
@@ -480,7 +489,7 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
     def test_apply_search(self):
         # Create a search object via the admin backend.
         url = reverse('admin:searchkit_search_add')
-        data = FORM_DATA.copy()
+        data = self.data.copy()
         data['_apply'] = True
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
@@ -489,7 +498,7 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
     def test_apply_saved_search(self):
         # Create a search object via the admin backend.
         url = reverse('admin:searchkit_search_add')
-        data = FORM_DATA.copy()
+        data = self.data.copy()
         data['_save'] = True
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
@@ -497,7 +506,7 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
 
         # Apply the saved search.
         url = reverse('admin:searchkit_search_change', args=(1,))
-        data = FORM_DATA.copy()
+        data = self.data.copy()
         data['_apply'] = True
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
