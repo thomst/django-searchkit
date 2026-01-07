@@ -1,4 +1,4 @@
-import json
+from django.http import QueryDict
 from django.utils.http import urlsafe_base64_decode
 from django.contrib import admin
 from django.contrib import messages
@@ -47,15 +47,17 @@ class SearchkitFilter(admin.SimpleListFilter):
             else:
                 # Try for base64 encoded json data.
                 try:
-                    json_data = urlsafe_base64_decode(self.value()).decode('utf-8')
-                    data = json.loads(json_data)
-                except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
-                    messages.error(request, "Invalid base64 encoded json data.")
+                    raw_data = urlsafe_base64_decode(self.value()).decode('utf-8')
+                except (ValueError, UnicodeDecodeError):
+                    messages.error(request, "Invalid base64 encoded data.")
                     return queryset.none()
+                else:
+                    data = QueryDict(raw_data)
 
                 # Get search object from search form.
                 form = SearchForm(data=data)
                 if form.is_valid():
+                    # Get the search object without saving it to the database.
                     search = form.save(commit=False)
                 else:
                     messages.error(request, "No valid search data provided.")

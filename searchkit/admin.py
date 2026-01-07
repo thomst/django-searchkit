@@ -1,4 +1,3 @@
-import json
 from django.utils.http import urlsafe_base64_encode
 from django.contrib import admin
 from django.http import HttpResponseRedirect
@@ -29,9 +28,8 @@ class SearchkitSearchAdmin(admin.ModelAdmin):
         model_name = obj.contenttype.model
         base_url = reverse(f'admin:{app_label}_{model_name}_changelist')
         if data:
-            # Use post data as json formatted url parameter.
-            json_data = json.dumps(data)
-            base64_data = urlsafe_base64_encode(json_data.encode('utf-8'))
+            # Use base64 encoded post data url parameter.
+            base64_data = urlsafe_base64_encode(data.urlencode().encode('utf-8'))
             return f'{base_url}?{SearchkitFilter.parameter_name}={base64_data}'
         else:
             return f'{base_url}?{SearchkitFilter.parameter_name}={obj.pk}'

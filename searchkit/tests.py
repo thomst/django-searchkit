@@ -493,6 +493,8 @@ class AdminBackendTest(CreateTestDataMixin, TestCase):
         data['_apply'] = True
         resp = self.client.post(url, data, follow=True)
         self.assertEqual(resp.status_code, 200)
+        self.assertNotIn("Invalid base64 encoded json data.", str(resp.content))
+        self.assertNotIn("No valid search data provided.", str(resp.content))
         self.assertEqual(len(Search.objects.all()), 0)
 
     def test_apply_saved_search(self):
